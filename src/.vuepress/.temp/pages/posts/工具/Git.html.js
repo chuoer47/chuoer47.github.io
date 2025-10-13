@@ -1,0 +1,16 @@
+import comp from "F:/code_lib/BlogWeb/chuoer47.github.io/src/.vuepress/.temp/pages/posts/工具/Git.html.vue"
+const data = JSON.parse("{\"path\":\"/posts/%E5%B7%A5%E5%85%B7/Git.html\",\"title\":\"Git\",\"lang\":\"zh-CN\",\"frontmatter\":{\"title\":\"Git\",\"date\":\"2024-05-22T16:32:00.000Z\",\"tags\":\"code\",\"category\":\"工具\",\"description\":\"Git的使用指南\",\"gitInclude\":[],\"head\":[[\"meta\",{\"property\":\"og:url\",\"content\":\"https://mister-hope.github.io/posts/%E5%B7%A5%E5%85%B7/Git.html\"}],[\"meta\",{\"property\":\"og:site_name\",\"content\":\"chuoer47\"}],[\"meta\",{\"property\":\"og:title\",\"content\":\"Git\"}],[\"meta\",{\"property\":\"og:description\",\"content\":\"Git的使用指南\"}],[\"meta\",{\"property\":\"og:type\",\"content\":\"article\"}],[\"meta\",{\"property\":\"og:locale\",\"content\":\"zh-CN\"}],[\"meta\",{\"property\":\"article:author\",\"content\":\"chuoer47\"}],[\"meta\",{\"property\":\"article:published_time\",\"content\":\"2024-05-22T16:32:00.000Z\"}],[\"script\",{\"type\":\"application/ld+json\"},\"{\\\"@context\\\":\\\"https://schema.org\\\",\\\"@type\\\":\\\"Article\\\",\\\"headline\\\":\\\"Git\\\",\\\"image\\\":[\\\"\\\"],\\\"datePublished\\\":\\\"2024-05-22T16:32:00.000Z\\\",\\\"dateModified\\\":null,\\\"author\\\":[{\\\"@type\\\":\\\"Person\\\",\\\"name\\\":\\\"chuoer47\\\"}]}\"]]},\"headers\":[{\"level\":2,\"title\":\"1、全局配置\",\"slug\":\"_1、全局配置\",\"link\":\"#_1、全局配置\",\"children\":[]},{\"level\":2,\"title\":\"2、创建仓库\",\"slug\":\"_2、创建仓库\",\"link\":\"#_2、创建仓库\",\"children\":[]},{\"level\":2,\"title\":\"3、版本回退\",\"slug\":\"_3、版本回退\",\"link\":\"#_3、版本回退\",\"children\":[]},{\"level\":2,\"title\":\"4、Git远程仓库创建\",\"slug\":\"_4、git远程仓库创建\",\"link\":\"#_4、git远程仓库创建\",\"children\":[{\"level\":3,\"title\":\"1）HTTP\",\"slug\":\"_1-http\",\"link\":\"#_1-http\",\"children\":[]},{\"level\":3,\"title\":\"2)SSH（推荐）\",\"slug\":\"_2-ssh-推荐\",\"link\":\"#_2-ssh-推荐\",\"children\":[]},{\"level\":3,\"title\":\"3)关联远程仓库\",\"slug\":\"_3-关联远程仓库\",\"link\":\"#_3-关联远程仓库\",\"children\":[]},{\"level\":3,\"title\":\"5、分支管理\",\"slug\":\"_5、分支管理\",\"link\":\"#_5、分支管理\",\"children\":[]}]},{\"level\":2,\"title\":\"6、冲突的产生与解决\",\"slug\":\"_6、冲突的产生与解决\",\"link\":\"#_6、冲突的产生与解决\",\"children\":[]}],\"readingTime\":{\"minutes\":2.92,\"words\":875},\"filePathRelative\":\"posts/工具/Git.md\",\"localizedDate\":\"2024年5月23日\",\"excerpt\":\"<!--more--->\\n<h1>Git</h1>\\n<h2>1、全局配置</h2>\\n<div class=\\\"language-bash\\\" data-ext=\\\"sh\\\" data-title=\\\"sh\\\"><pre class=\\\"language-bash\\\"><code><span class=\\\"token function\\\">git</span> config <span class=\\\"token parameter variable\\\">--global</span> user.name <span class=\\\"token string\\\">\\\"******\\\"</span>  //用户名\\n\\t//git config <span class=\\\"token parameter variable\\\">--global</span> user.name  查看用户名\\n<span class=\\\"token function\\\">git</span> config <span class=\\\"token parameter variable\\\">--global</span> user.email <span class=\\\"token string\\\">\\\"1*******@qq.com\\\"</span>  // 邮箱\\n</code></pre></div>\"}")
+export { comp, data }
+
+if (import.meta.webpackHot) {
+  import.meta.webpackHot.accept()
+  if (__VUE_HMR_RUNTIME__.updatePageData) {
+    __VUE_HMR_RUNTIME__.updatePageData(data)
+  }
+}
+
+if (import.meta.hot) {
+  import.meta.hot.accept(({ data }) => {
+    __VUE_HMR_RUNTIME__.updatePageData(data)
+  })
+}

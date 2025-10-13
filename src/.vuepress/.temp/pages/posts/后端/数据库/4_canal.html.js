@@ -1,0 +1,16 @@
+import comp from "F:/code_lib/BlogWeb/chuoer47.github.io/src/.vuepress/.temp/pages/posts/后端/数据库/4_canal.html.vue"
+const data = JSON.parse("{\"path\":\"/posts/%E5%90%8E%E7%AB%AF/%E6%95%B0%E6%8D%AE%E5%BA%93/4_canal.html\",\"title\":\"Canal数据同步\",\"lang\":\"zh-CN\",\"frontmatter\":{\"title\":\"Canal数据同步\",\"date\":\"2024-07-07T16:24:22.000Z\",\"tag\":\"mysql\",\"category\":[\"数据库\",\"数据同步\"],\"icon\":\"/img/数据同步.svg\",\"order\":4,\"description\":\"一、介绍 canal，译意为水道/管道/沟渠，主要用途是基于 MySQL 数据库增量日志解析，提供增量数据订阅和消费。\",\"gitInclude\":[],\"head\":[[\"meta\",{\"property\":\"og:url\",\"content\":\"https://mister-hope.github.io/posts/%E5%90%8E%E7%AB%AF/%E6%95%B0%E6%8D%AE%E5%BA%93/4_canal.html\"}],[\"meta\",{\"property\":\"og:site_name\",\"content\":\"chuoer47\"}],[\"meta\",{\"property\":\"og:title\",\"content\":\"Canal数据同步\"}],[\"meta\",{\"property\":\"og:description\",\"content\":\"一、介绍 canal，译意为水道/管道/沟渠，主要用途是基于 MySQL 数据库增量日志解析，提供增量数据订阅和消费。\"}],[\"meta\",{\"property\":\"og:type\",\"content\":\"article\"}],[\"meta\",{\"property\":\"og:image\",\"content\":\"https://mister-hope.github.io/image\\\\mysql\\\\mysql2.png\"}],[\"meta\",{\"property\":\"og:locale\",\"content\":\"zh-CN\"}],[\"meta\",{\"property\":\"article:author\",\"content\":\"chuoer47\"}],[\"meta\",{\"property\":\"article:tag\",\"content\":\"mysql\"}],[\"meta\",{\"property\":\"article:published_time\",\"content\":\"2024-07-07T16:24:22.000Z\"}],[\"script\",{\"type\":\"application/ld+json\"},\"{\\\"@context\\\":\\\"https://schema.org\\\",\\\"@type\\\":\\\"Article\\\",\\\"headline\\\":\\\"Canal数据同步\\\",\\\"image\\\":[\\\"https://mister-hope.github.io/image\\\\\\\\mysql\\\\\\\\mysql2.png\\\"],\\\"datePublished\\\":\\\"2024-07-07T16:24:22.000Z\\\",\\\"dateModified\\\":null,\\\"author\\\":[{\\\"@type\\\":\\\"Person\\\",\\\"name\\\":\\\"chuoer47\\\"}]}\"]]},\"headers\":[{\"level\":2,\"title\":\"一、介绍\",\"slug\":\"一、介绍\",\"link\":\"#一、介绍\",\"children\":[{\"level\":3,\"title\":\"1、工作原理\",\"slug\":\"_1、工作原理\",\"link\":\"#_1、工作原理\",\"children\":[]},{\"level\":3,\"title\":\"2、canal能做什么\",\"slug\":\"_2、canal能做什么\",\"link\":\"#_2、canal能做什么\",\"children\":[]}]},{\"level\":2,\"title\":\"二、环境搭建\",\"slug\":\"二、环境搭建\",\"link\":\"#二、环境搭建\",\"children\":[{\"level\":3,\"title\":\"1、MySQL\",\"slug\":\"_1、mysql\",\"link\":\"#_1、mysql\",\"children\":[]},{\"level\":3,\"title\":\"2、Canal\",\"slug\":\"_2、canal\",\"link\":\"#_2、canal\",\"children\":[]},{\"level\":3,\"title\":\"3、TCP模式\",\"slug\":\"_3、tcp模式\",\"link\":\"#_3、tcp模式\",\"children\":[]},{\"level\":3,\"title\":\"4、RabbitMQ模式\",\"slug\":\"_4、rabbitmq模式\",\"link\":\"#_4、rabbitmq模式\",\"children\":[]}]}],\"readingTime\":{\"minutes\":5.16,\"words\":1547},\"filePathRelative\":\"posts/后端/数据库/4_canal.md\",\"localizedDate\":\"2024年7月8日\",\"excerpt\":\"\\n<h2>一、介绍</h2>\\n<img src=\\\"/image\\\\mysql\\\\mysql1.png\\\" style=\\\"zoom:50%;\\\">\\n<p>canal，译意为水道/管道/沟渠，主要用途是基于 <strong>MySQL 数据库增量日志解析</strong>，提供<strong>增量数据订阅和消费</strong>。</p>\\n\",\"autoDesc\":true}")
+export { comp, data }
+
+if (import.meta.webpackHot) {
+  import.meta.webpackHot.accept()
+  if (__VUE_HMR_RUNTIME__.updatePageData) {
+    __VUE_HMR_RUNTIME__.updatePageData(data)
+  }
+}
+
+if (import.meta.hot) {
+  import.meta.hot.accept(({ data }) => {
+    __VUE_HMR_RUNTIME__.updatePageData(data)
+  })
+}

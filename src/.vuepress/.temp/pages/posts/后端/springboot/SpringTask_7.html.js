@@ -1,0 +1,16 @@
+import comp from "F:/code_lib/BlogWeb/chuoer47.github.io/src/.vuepress/.temp/pages/posts/后端/springboot/SpringTask_7.html.vue"
+const data = JSON.parse("{\"path\":\"/posts/%E5%90%8E%E7%AB%AF/springboot/SpringTask_7.html\",\"title\":\"SpringTask\",\"lang\":\"zh-CN\",\"frontmatter\":{\"title\":\"SpringTask\",\"date\":\"2024-06-22T00:00:00.000Z\",\"tags\":\"Spring\",\"category\":\"Spring\",\"order\":7,\"icon\":\"/img/定时任务.svg\",\"description\":\"SpringTask 一、介绍 Spring Task 是Spring框架提供的任务调度工具，可以按照约定的时间自动执行某个代码逻辑 应用场景： •信用卡每月还款提醒 •银行贷款每月还款提醒 •火车票售票系统处理未支付订单 •入职纪念日为用户发送通知 只要是需要定时处理的场景都可以使用Spring Task 二、cron表达式 cron表达式其实就是一...\",\"gitInclude\":[],\"head\":[[\"meta\",{\"property\":\"og:url\",\"content\":\"https://mister-hope.github.io/posts/%E5%90%8E%E7%AB%AF/springboot/SpringTask_7.html\"}],[\"meta\",{\"property\":\"og:site_name\",\"content\":\"chuoer47\"}],[\"meta\",{\"property\":\"og:title\",\"content\":\"SpringTask\"}],[\"meta\",{\"property\":\"og:description\",\"content\":\"SpringTask 一、介绍 Spring Task 是Spring框架提供的任务调度工具，可以按照约定的时间自动执行某个代码逻辑 应用场景： •信用卡每月还款提醒 •银行贷款每月还款提醒 •火车票售票系统处理未支付订单 •入职纪念日为用户发送通知 只要是需要定时处理的场景都可以使用Spring Task 二、cron表达式 cron表达式其实就是一...\"}],[\"meta\",{\"property\":\"og:type\",\"content\":\"article\"}],[\"meta\",{\"property\":\"og:image\",\"content\":\"https://mister-hope.github.io/image\\\\spring\\\\spring2.png\"}],[\"meta\",{\"property\":\"og:locale\",\"content\":\"zh-CN\"}],[\"meta\",{\"property\":\"article:author\",\"content\":\"chuoer47\"}],[\"meta\",{\"property\":\"article:published_time\",\"content\":\"2024-06-22T00:00:00.000Z\"}],[\"script\",{\"type\":\"application/ld+json\"},\"{\\\"@context\\\":\\\"https://schema.org\\\",\\\"@type\\\":\\\"Article\\\",\\\"headline\\\":\\\"SpringTask\\\",\\\"image\\\":[\\\"https://mister-hope.github.io/image\\\\\\\\spring\\\\\\\\spring2.png\\\"],\\\"datePublished\\\":\\\"2024-06-22T00:00:00.000Z\\\",\\\"dateModified\\\":null,\\\"author\\\":[{\\\"@type\\\":\\\"Person\\\",\\\"name\\\":\\\"chuoer47\\\"}]}\"]]},\"headers\":[{\"level\":2,\"title\":\"一、介绍\",\"slug\":\"一、介绍\",\"link\":\"#一、介绍\",\"children\":[]},{\"level\":2,\"title\":\"二、cron表达式\",\"slug\":\"二、cron表达式\",\"link\":\"#二、cron表达式\",\"children\":[]},{\"level\":2,\"title\":\"三、快速使用\",\"slug\":\"三、快速使用\",\"link\":\"#三、快速使用\",\"children\":[]},{\"level\":2,\"title\":\"四、多线程\",\"slug\":\"四、多线程\",\"link\":\"#四、多线程\",\"children\":[]}],\"readingTime\":{\"minutes\":1.93,\"words\":578},\"filePathRelative\":\"posts/后端/springboot/SpringTask_7.md\",\"localizedDate\":\"2024年6月22日\",\"excerpt\":\"<!--more--->\\n<h1>SpringTask</h1>\\n<h2>一、介绍</h2>\\n<p>Spring Task 是Spring框架提供的任务调度工具，可以按照约定的时间自动执行某个代码逻辑</p>\\n<div class=\\\"hint-container tip\\\">\\n<p class=\\\"hint-container-title\\\">应用场景：</p>\\n<p>•信用卡每月还款提醒</p>\\n<p>•银行贷款每月还款提醒</p>\\n<p>•火车票售票系统处理未支付订单</p>\\n<p>•入职纪念日为用户发送通知</p>\\n<p><strong>只要是需要定时处理的场景都可以使用Spring Task</strong></p>\\n</div>\",\"autoDesc\":true}")
+export { comp, data }
+
+if (import.meta.webpackHot) {
+  import.meta.webpackHot.accept()
+  if (__VUE_HMR_RUNTIME__.updatePageData) {
+    __VUE_HMR_RUNTIME__.updatePageData(data)
+  }
+}
+
+if (import.meta.hot) {
+  import.meta.hot.accept(({ data }) => {
+    __VUE_HMR_RUNTIME__.updatePageData(data)
+  })
+}

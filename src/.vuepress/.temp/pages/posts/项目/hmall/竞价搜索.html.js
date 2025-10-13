@@ -1,0 +1,16 @@
+import comp from "F:/code_lib/BlogWeb/chuoer47.github.io/src/.vuepress/.temp/pages/posts/项目/hmall/竞价搜索.html.vue"
+const data = JSON.parse("{\"path\":\"/posts/%E9%A1%B9%E7%9B%AE/hmall/%E7%AB%9E%E4%BB%B7%E6%90%9C%E7%B4%A2.html\",\"title\":\"竞价排名\",\"lang\":\"zh-CN\",\"frontmatter\":{\"title\":\"竞价排名\",\"date\":\"2024-07-04T16:24:22.000Z\",\"tags\":\"项目\",\"category\":\"黑马商城\",\"icon\":\"/img/竞价排名.svg\",\"order\":1,\"description\":\"一、使用ElasticSearch 搜索业务并发压力可能会比较高，目前与商品服务在一起，不方便后期优化，为此我们将搜索业务单独拆分出来，创建一个新的微服务，并且使用elasticSearch作为搜索引擎。 1、创建索引库 由于要实现对商品搜索，所以我们需要将商品添加到Elasticsearch中，不过需要根据搜索业务的需求来设定索引库结构，而不是一股脑...\",\"gitInclude\":[],\"head\":[[\"meta\",{\"property\":\"og:url\",\"content\":\"https://mister-hope.github.io/posts/%E9%A1%B9%E7%9B%AE/hmall/%E7%AB%9E%E4%BB%B7%E6%90%9C%E7%B4%A2.html\"}],[\"meta\",{\"property\":\"og:site_name\",\"content\":\"chuoer47\"}],[\"meta\",{\"property\":\"og:title\",\"content\":\"竞价排名\"}],[\"meta\",{\"property\":\"og:description\",\"content\":\"一、使用ElasticSearch 搜索业务并发压力可能会比较高，目前与商品服务在一起，不方便后期优化，为此我们将搜索业务单独拆分出来，创建一个新的微服务，并且使用elasticSearch作为搜索引擎。 1、创建索引库 由于要实现对商品搜索，所以我们需要将商品添加到Elasticsearch中，不过需要根据搜索业务的需求来设定索引库结构，而不是一股脑...\"}],[\"meta\",{\"property\":\"og:type\",\"content\":\"article\"}],[\"meta\",{\"property\":\"og:image\",\"content\":\"https://mister-hope.github.io/image/project/p1.png\"}],[\"meta\",{\"property\":\"og:locale\",\"content\":\"zh-CN\"}],[\"meta\",{\"property\":\"article:author\",\"content\":\"chuoer47\"}],[\"meta\",{\"property\":\"article:published_time\",\"content\":\"2024-07-04T16:24:22.000Z\"}],[\"script\",{\"type\":\"application/ld+json\"},\"{\\\"@context\\\":\\\"https://schema.org\\\",\\\"@type\\\":\\\"Article\\\",\\\"headline\\\":\\\"竞价排名\\\",\\\"image\\\":[\\\"https://mister-hope.github.io/image/project/p1.png\\\",\\\"https://mister-hope.github.io/image/project/p2.png\\\"],\\\"datePublished\\\":\\\"2024-07-04T16:24:22.000Z\\\",\\\"dateModified\\\":null,\\\"author\\\":[{\\\"@type\\\":\\\"Person\\\",\\\"name\\\":\\\"chuoer47\\\"}]}\"]]},\"headers\":[{\"level\":2,\"title\":\"一、使用ElasticSearch\",\"slug\":\"一、使用elasticsearch\",\"link\":\"#一、使用elasticsearch\",\"children\":[{\"level\":3,\"title\":\"1、创建索引库\",\"slug\":\"_1、创建索引库\",\"link\":\"#_1、创建索引库\",\"children\":[]},{\"level\":3,\"title\":\"2、新增文档\",\"slug\":\"_2、新增文档\",\"link\":\"#_2、新增文档\",\"children\":[]},{\"level\":3,\"title\":\"3、数据同步\",\"slug\":\"_3、数据同步\",\"link\":\"#_3、数据同步\",\"children\":[]},{\"level\":3,\"title\":\"4、条件搜索\",\"slug\":\"_4、条件搜索\",\"link\":\"#_4、条件搜索\",\"children\":[]}]},{\"level\":2,\"title\":\"二、竞价排名\",\"slug\":\"二、竞价排名\",\"link\":\"#二、竞价排名\",\"children\":[]}],\"readingTime\":{\"minutes\":6.85,\"words\":2055},\"filePathRelative\":\"posts/项目/hmall/竞价搜索.md\",\"localizedDate\":\"2024年7月5日\",\"excerpt\":\"\\n<h2>一、使用ElasticSearch</h2>\\n<p>搜索业务并发压力可能会比较高，目前与商品服务在一起，不方便后期优化，为此我们将搜索业务单独拆分出来，创建一个新的微服务，并且使用elasticSearch作为搜索引擎。</p>\\n<h3>1、创建索引库</h3>\\n<p>由于要实现对商品搜索，所以我们需要将商品添加到Elasticsearch中，不过需要根据搜索业务的需求来设定索引库结构，而不是一股脑的把MySQL数据写入Elasticsearch.</p>\\n\",\"autoDesc\":true}")
+export { comp, data }
+
+if (import.meta.webpackHot) {
+  import.meta.webpackHot.accept()
+  if (__VUE_HMR_RUNTIME__.updatePageData) {
+    __VUE_HMR_RUNTIME__.updatePageData(data)
+  }
+}
+
+if (import.meta.hot) {
+  import.meta.hot.accept(({ data }) => {
+    __VUE_HMR_RUNTIME__.updatePageData(data)
+  })
+}
