@@ -4,14 +4,15 @@
   "description": "A project of vuepress-theme-hope",
   "license": "MIT",
   "type": "module",
+  "packageManager": "pnpm@9.0.0",
   "scripts": {
     "docs:build": "vuepress-vite build src",
     "docs:clean-dev": "vuepress-vite dev src --clean-cache",
     "docs:dev": "vuepress-vite dev src",
     "docs:update-package": "pnpm dlx vp-update",
-    "docs:deploy-mac": " sh ./deploy_code.sh ",
-    "docs:deploy-win": "deploy_code.bat ",
-    "docs:pull": " git pull"
+    "docs:deploy-mac": "sh ./deploy.sh",
+    "docs:deploy-win": "deploy.bat",
+    "docs:pull": "git fetch origin --prune"
   },
   "devDependencies": {
     "@vuepress/bundler-vite": "2.0.0-rc.9",

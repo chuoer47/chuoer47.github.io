@@ -1,12 +1,7 @@
+#!/usr/bin/env sh
 set -e
-#pnpm run docs:build
 
-cd ./src/.vuepress/dist
+pnpm run docs:build
 
-git init
-git add -A
-git commit -m 'deploy'
-
-
-git push -f --set-upstream https://github.com/chuoer47/chuoer47.github.io.git master:main
-
+printf '\nBuilt site to src/.vuepress/dist.\n'
+printf 'Push your source branch to GitHub to publish via GitHub Pages.\n'

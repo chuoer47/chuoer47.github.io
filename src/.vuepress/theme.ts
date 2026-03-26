@@ -3,7 +3,7 @@ import navbar from "./navbar.js";
 import sidebar from "./sidebar.js";
 
 export default hopeTheme({
-  hostname: "https://mister-hope.github.io",
+  hostname: "https://chuoer47.github.io",
 
   author: {
     name: "chuoer47",
@@ -14,9 +14,10 @@ export default hopeTheme({
 
   logo: "/logo.svg",
 
-  repo: "chuoer47",
+  repo: "chuoer47/chuoer47.github.io",
 
   docsDir: "src",
+  docsBranch: "source",
 
   // 导航栏
   navbar,
@@ -75,7 +76,7 @@ export default hopeTheme({
     // 警告: 这是一个仅供演示的测试服务，在生产环境中请自行部署并使用自己的服务！
     comment: {
       provider: "Waline",
-      serverURL: "waline-blog-sigma-rose.vercel.app",
+      serverURL: "https://waline-blog-sigma-rose.vercel.app",
     },
 
     components: {

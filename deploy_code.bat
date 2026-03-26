@@ -1,5 +1,4 @@
-set -e 
-git add -A
-git commit -m 'deploy'
-git push
+@echo off
+setlocal
 
+call deploy.bat

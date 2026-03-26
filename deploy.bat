@@ -1,12 +1,9 @@
-set -e
-#pnpm run docs:build
+@echo off
+setlocal
 
-cd ./src/.vuepress/dist
+call pnpm run docs:build
+if errorlevel 1 exit /b %errorlevel%
 
-git init
-git add -A
-git commit -m 'deploy'
-
-git checkout -b main
-git push -f --set-upstream git@github.com:weiruyi/weiruyi.github.io.git main
-
+echo.
+echo Built site to src\.vuepress\dist.
+echo Push your source branch to GitHub to publish via GitHub Pages.
