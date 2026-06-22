@@ -4,7 +4,7 @@ date: 2023-12-05 :38
 tags:
 - 操作系统
 category: 本科课程笔记
-order: 42
+order: 3
 ---
 
 # XJTUSE-OS-ch9-13
@@ -15,7 +15,7 @@ order: 42
 
 #### 基本硬件
 
-- 基地址寄存器- 界限地址寄存器![](https://i-blog.csdnimg.cn/blog_migrate/d59bef4a617a7e6efcf458b7caac3623.png)
+- 基地址寄存器- 界限地址寄存器![](./XJTUSE-OS-ch9-13.assets/image-001-7012ec9ba4.png)
 
 #### 地址绑定
 
@@ -27,7 +27,7 @@ MMC：内存管理单元，一个硬件设备，完成逻辑地址到物理地�
 
 基地址寄存器：重定位寄存器
 
-![](https://i-blog.csdnimg.cn/blog_migrate/78c6535cfea994119a2b0af62b74c4f9.png)
+![](./XJTUSE-OS-ch9-13.assets/image-002-34d8899b4b.png)
 
 #### 动态加载
 
@@ -35,7 +35,7 @@ MMC：内存管理单元，一个硬件设备，完成逻辑地址到物理地�
 
 #### 动态链接与共享库
 
-![](https://i-blog.csdnimg.cn/blog_migrate/d95fb2993e672b70083fef2c1eccd8ad.png)
+![](./XJTUSE-OS-ch9-13.assets/image-003-8136845295.png)
 
 可以看到动态链接在图的左下角，即二进制镜像对每一个库程序的引用都有一个存根。
 
@@ -45,7 +45,7 @@ MMC：内存管理单元，一个硬件设备，完成逻辑地址到物理地�
 
 如图所示：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/9d0e4a197b3d08b5ac265fc3b3126ed4.png)
+![](./XJTUSE-OS-ch9-13.assets/image-004-1b43226f00.png)
 
 有时候也称滚入和滚出。
 
@@ -81,9 +81,9 @@ MMC：内存管理单元，一个硬件设备，完成逻辑地址到物理地�
 
 物理内存分块，叫帧；逻辑内存分块，叫页；
 
-![](https://i-blog.csdnimg.cn/blog_migrate/8e8e9220305a17b597a13cdfda670be4.png)
+![](./XJTUSE-OS-ch9-13.assets/image-005-dd57355f32.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/b8544d37341f405336feb0239fa4f07e.png)
+![](./XJTUSE-OS-ch9-13.assets/image-006-5f87017178.png)
 
 p称为页号；d称为偏移
 
@@ -93,15 +93,15 @@ p=m-n;d=n
 
 为了提升查找效率，增加了TLB(联想寄存器)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/d9c306058ed1380e78e78f405454066a.png)
+![](./XJTUSE-OS-ch9-13.assets/image-007-fd08269af4.png)
 
 #### 硬件支持
 
 硬件的工作原理如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/759285eecce893203615abbf3b30b27e.png)
+![](./XJTUSE-OS-ch9-13.assets/image-008-4b356ecc40.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/0b423f0cee47f1c15d8d78de4d25c510.png)
+![](./XJTUSE-OS-ch9-13.assets/image-009-fb8c29b514.png)
 
 不再赘述。PCB(program control block)
 
@@ -111,7 +111,7 @@ p=m-n;d=n
 
 Valid-invalid bit(有效-无效位)来表明页是否在进程的逻辑地址空间内，即是不是合法的页。这样子进行了保护。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/4ec90795e9ea2f2b455b895e9104f7c4.png)
+![](./XJTUSE-OS-ch9-13.assets/image-010-ad2e94046b.png)
 
 可以注意到一件事情，即最后一个页存在内碎片
 
@@ -119,27 +119,27 @@ Valid-invalid bit(有效-无效位)来表明页是否在进程的逻辑地址空
 
 这一部分完全就是计组的知识了，简单给个图激活一下记忆即可
 
-![](https://i-blog.csdnimg.cn/blog_migrate/a4fac07c0e8878e4cfd0114ba7a0055a.png)
+![](./XJTUSE-OS-ch9-13.assets/image-011-06eae1ac84.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/1a1108b8ec618003c195f532f16c1552.png)
+![](./XJTUSE-OS-ch9-13.assets/image-012-1a4cf31e9e.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/8ea780f8cd98b972080e3208d3c0c089.png)
+![](./XJTUSE-OS-ch9-13.assets/image-013-2088d47522.png)
 
 同理，可以推至多级页表。
 
 #### Hashed Page Tables
 
-![](https://i-blog.csdnimg.cn/blog_migrate/74be49852c1b5e0930f41077dc3e3eae.png)
+![](./XJTUSE-OS-ch9-13.assets/image-014-a7cf7e89c3.png)
 
 ####  Inverted Page Table
 
-![](https://i-blog.csdnimg.cn/blog_migrate/e771df00e958d45a6244bf419debe266.png)
+![](./XJTUSE-OS-ch9-13.assets/image-015-4f9f953acc.png)
 
 按照物理内存建表，增加了查找表的时间。
 
 #### Shared Pages
 
-![](https://i-blog.csdnimg.cn/blog_migrate/bf6eb5ec1b5006b148566ceaba73d5d8.png)
+![](./XJTUSE-OS-ch9-13.assets/image-016-dd61febfd0.png)
 
 #### 特点
 
@@ -153,17 +153,17 @@ n程序全部装入内存。
 
 #### 基本方法
 
-![](https://i-blog.csdnimg.cn/blog_migrate/4e65fd6efa66ae47cbc67c8ddb9967a8.png)
+![](./XJTUSE-OS-ch9-13.assets/image-017-cf22e66acc.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/86b3b6f4f574aae686490ea03ff4e18f.png)
+![](./XJTUSE-OS-ch9-13.assets/image-018-e98e5845bd.png)
 
 一图胜前言！！
 
 #### 硬件实现
 
-![](https://i-blog.csdnimg.cn/blog_migrate/17e0be637547444d0d7285b3f097bbf8.png)
+![](./XJTUSE-OS-ch9-13.assets/image-019-38872e096e.png)
 
-#### ![](https://i-blog.csdnimg.cn/blog_migrate/aad3dbaa7ee31a2bfce36b3a4b46575f.png)
+#### ![](./XJTUSE-OS-ch9-13.assets/image-020-2e413da309.png)
 
 #### 特点
 
@@ -175,7 +175,7 @@ n程序全部装入内存。
 
 ### 分页VS分段
 
-![](https://i-blog.csdnimg.cn/blog_migrate/9a1dfb8c66cafb5d7c6f877cffb69475.png)
+![](./XJTUSE-OS-ch9-13.assets/image-021-e348e2fcf7.png)
 
 ## 第十章-Virtual Memory
 
@@ -189,7 +189,7 @@ n程序全部装入内存。
 
 页面调入策略：预调页(准确率低)，请求调页
 
-![](https://i-blog.csdnimg.cn/blog_migrate/44d21b78671a058942dd9dedc5686777.png)
+![](./XJTUSE-OS-ch9-13.assets/image-022-29a61fb84e.png)
 
 #### 性能评价
 
@@ -237,7 +237,7 @@ n这个数目取决于指令的格式、功能和寻址方式。
 
 调入又调出：刚被换出的页很快又被访问，需重新调入，导致系统频繁地交换页面，以致大部分CPU时间花费在完成页面置换的工作上。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/e98ddd7255c54587e6381a3cc88e003a.png)
+![](./XJTUSE-OS-ch9-13.assets/image-023-7e8f9d63a9.png)
 
 为了防止颠簸，应该给进程提供足够多的帧
 
@@ -311,11 +311,11 @@ Policy if D > m, then suspend one of the processes.
 
 改进措施：使用文件分配表FAT。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/5d2c747c36e93a59fcea9f32f283385f.png)
+![](./XJTUSE-OS-ch9-13.assets/image-024-be6e5268c1.png)
 
 3、索引结构
 
-![](https://i-blog.csdnimg.cn/blog_migrate/4389972872127750e0d1a804de2d137c.png)
+![](./XJTUSE-OS-ch9-13.assets/image-025-08f394af90.png)
 
 引出了多级索引结构。
 
@@ -405,7 +405,7 @@ FCB包含：
 
 ### 文件系统实现
 
-![](https://i-blog.csdnimg.cn/blog_migrate/b343d073898064292a7d53d6562645dd.png)
+![](./XJTUSE-OS-ch9-13.assets/image-026-9097563545.png)
 
 ## 第十二章-Secondary-Storage
 
@@ -437,17 +437,17 @@ RAID技术：将多个物理磁盘通过一定的逻辑关系集合起来，成�
 
 练习一
 
-![](https://i-blog.csdnimg.cn/blog_migrate/0f418b9a7974185e7574e5f79fd91cbf.png)
+![](./XJTUSE-OS-ch9-13.assets/image-027-2e6c4a547f.png)
 
 105-110-170-180-195-68-45-35-12
 
 练习二
 
-![](https://i-blog.csdnimg.cn/blog_migrate/ddd7a4bd3e534cd1d6e5d3286c5f9786.png)
+![](./XJTUSE-OS-ch9-13.assets/image-028-d5b9e987db.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/2529d3248147b1a1597df6c0ed8085e7.png)
+![](./XJTUSE-OS-ch9-13.assets/image-029-86335b2fb0.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/e64f81fae582d863fd6ca1b4706329be.png)
+![](./XJTUSE-OS-ch9-13.assets/image-030-bd9dcaaf72.png)
 
 ## 第十三章-I/O Systems
 
@@ -475,7 +475,7 @@ RAID技术：将多个物理磁盘通过一定的逻辑关系集合起来，成�
 
 虚拟设备:通过虚拟技术把一台独占设备变换为若干台逻辑设备，可供多个用户使用
 
-![](https://i-blog.csdnimg.cn/blog_migrate/5cf837fa3820040d799fed9b45abb129.png)
+![](./XJTUSE-OS-ch9-13.assets/image-031-04fda79b9b.png)
 
 ### Controller
 
@@ -515,11 +515,11 @@ RAID技术：将多个物理磁盘通过一定的逻辑关系集合起来，成�
 
 - 单缓冲- 双缓冲- 循环缓冲缓冲池
 
-![](https://i-blog.csdnimg.cn/blog_migrate/fbeed374989a585f719bdf029ccab2eb.png)
+![](./XJTUSE-OS-ch9-13.assets/image-032-17d154b4da.png)
 
 ### I/O软件
 
-![](https://i-blog.csdnimg.cn/blog_migrate/f6e8c799b15b821195d4bef10bca3545.png)
+![](./XJTUSE-OS-ch9-13.assets/image-033-175c14bf9e.png)
 
 #### 设备独立软件
 
@@ -579,7 +579,7 @@ SPOOLing系统组成如下图：
 
 输入进程和输出进程。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/668d8c425ac17a87f8fbfd15c1ac4e46.png)
+![](./XJTUSE-OS-ch9-13.assets/image-034-d869e00892.png)
 
 特点
 

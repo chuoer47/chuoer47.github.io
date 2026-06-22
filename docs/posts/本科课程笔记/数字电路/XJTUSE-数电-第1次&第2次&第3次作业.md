@@ -4,7 +4,7 @@ date: 2024-06-25 :10
 tags:
 - 数字电路
 category: 本科课程笔记
-order: 48
+order: 1
 ---
 
 # XJTUSE-数电-第1次&第2次&第3次作业
@@ -65,19 +65,19 @@ order: 48
 
 单精度浮点格式共 32 位，其中，s、exp 和 frac 段分别为 1 位、k=8 位和 n=23 位，如图 6 所示。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/02c6dd5b2c627618dc460b16b0e33f3c.jpeg)
+![](./XJTUSE-数电-第1次&第2次&第3次作业.assets/image-001-4dccb90589.jpg)
 图 6
 
 其中，32 位中的第 0 位存放小数段 frac 的最低有效位 LSB(least significant bit)，第 22 位存放小数段 frac 的最高有效位 MSB(most significant bit)；第 23 位存放指数段 exp 的最低有效位 LSB，第 30 位存放指数段 exp 的最高有效位 MSB；最高位，即第 31 位存放符号 s。例如，单精度数 8.25 的存储方式如图 7 所示。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/dc1b452599086a480651629b8f761a5b.jpeg)
+![](./XJTUSE-数电-第1次&第2次&第3次作业.assets/image-002-a46f950a4a.jpg)
 图 7
 
 2) 双精度浮点格式
 
 双精度浮点格式共 64 位，其中，s、exp 和 frac 段分别为 1 位、k=11 位和 n=52 位，如图 8 所示。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/cd1b21930aa44274d108a5b7bf8038da.jpeg)
+![](./XJTUSE-数电-第1次&第2次&第3次作业.assets/image-003-bf8eb01f97.jpg)
 图 8
 
 其中，frac[31：0] 存放小数段的低 32 位(即第 0 位存放整个小数段的最低有效位 LSB，第 31 位存放小数段低 32 位的最高有效位 MSB)；frac[51：32] 存放小数段的高 20 位(即第 32 位存放高 20 位的最低有效位 LSB，第 51 位存放整个小数段的最高有效位 MSB)；第 52 位存放指数段 exp 的最低有效位 LSB，第 62 位存放指数段 exp 的最高有效位 MSB；最高位，即第 63 位存放符号 s。
@@ -86,9 +86,9 @@ order: 48
 
 前面主要讨论了 IEEE 754 的单精度与双精度浮点格式，下表对浮点数的相关参数进行了总结，有兴趣的读者可以根据此表对其他浮点格式进行深入解读。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/f040f801f997891521b14801c4bf8d8b.jpeg)
+![](./XJTUSE-数电-第1次&第2次&第3次作业.assets/image-004-e02ba08b5e.jpg)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/ba45f2ad6fff0e0b4232434ee0b591a5.jpeg)
+![](./XJTUSE-数电-第1次&第2次&第3次作业.assets/image-005-79753c023f.jpg)
 
 3)半精度
 
@@ -96,7 +96,7 @@ IEEE754-2008包含一种“半精度”格式，只有16位宽。故它又被称
 
 半精度的格式与单精度的格式类似，最左边的一位仍是符号位，指数有5位宽且以余-16(excess-16)的形式存储，尾数有10位宽，但具有隐含1。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/5ec461c4e9839862791caa4e214d4625.png)
+![](./XJTUSE-数电-第1次&第2次&第3次作业.assets/image-006-40fa33796f.png)
 
 如图所示，sign为符号位，0表示这个浮点数为正，1表示这个浮点数为负
 
@@ -404,7 +404,7 @@ BC'+A'B'C
 
 设计图如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/4de523277f28d2cd84b6eda72a9fd3c9.png)
+![](./XJTUSE-数电-第1次&第2次&第3次作业.assets/image-007-5b427994cc.png)
 
 3.6 题略
 
@@ -424,7 +424,7 @@ A8 = (B2+B4+B8)’ = B2’B4’B8’
 
 绘制出下表：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/e3a350a6ad8a44eadcd571adb9ac1710.png)
+![](./XJTUSE-数电-第1次&第2次&第3次作业.assets/image-008-38efa8fd8d.png)
 
 功能如下：
 

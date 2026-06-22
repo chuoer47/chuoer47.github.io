@@ -2,7 +2,7 @@
 title: "XJTUSE - 21 级 Linux 综合实验"
 date: 2024-03-15 :58
 tags:
-- Linux实验
+- Linux 实验
 category: 本科课程笔记
 order: 2
 ---
@@ -55,7 +55,7 @@ order: 2
 
 配置如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/3f2b914ffa4116c58a01a1a07946477f.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-001-05b5d5e8bc.png)
 
 ## 虚拟机用户设置
 ### 用户创建
@@ -83,9 +83,9 @@ passwd developer2
 
 展示如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/c6c9c144ef3c2250a335e3fc1d9efce7.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-002-de200f2132.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/f8a492b06989b2e31773385b3a256c2c.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-003-8aafec675f.png)
 
 可以看到每个用户都有自己的工作目录，方便后续的文件管理。
 
@@ -110,7 +110,7 @@ usermod -aG developers developer2
 
 现在在虚拟机上，我们有了四个用户，拥有单独的工作文件夹，同时，进行了分组。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/f3e7b3f4021a6e56087ff800681e9c37.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-004-0dbdd5cba4.png)
 
 ## Samba 用户设置
 现在我们要将 Samba 的用户设置与虚拟机用户设置进行匹配，以完成后续的工作。
@@ -132,7 +132,7 @@ smbpasswd -a developer2
 
  -  Username 是要添加或更改密码的 Samba 用户名。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/791a3a453d2526df1f23245e6d9f0750.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-005-f72c462041.png)
 
 ### 分组
 在 Samba 上进行 testers 和 developers 分组。命令如下：
@@ -153,7 +153,7 @@ gpasswd -a developer2 developers
 
  -  testers 是目标用户组的名称。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/6c7959fc575aed326880cb114cbd2912.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-006-e311486411.png)
 
 ## 文件夹管理
 ### 文件夹创建
@@ -180,9 +180,9 @@ mkdir -p /home/testReport
 
 运行结果如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/f4261cf2670ac6ce805a243bfbd1fb3d.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-007-d920970525.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/c1e6981570e823f227a3c7340d849519.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-008-9abd5fe927.png)
 
 ### 文件夹权限配置
 为了权限分配和后续的 Samba 服务，设置文件夹的权限，命令如下：
@@ -231,7 +231,7 @@ chmod g+s /home/testReport
 
 运行结果：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/93f22328194c9354e493f8d91530fe5f.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-009-a7c42fe6ff.png)
 
 为每一个用户分配自己的主目录，命令如下：
 
@@ -242,7 +242,7 @@ chown -R tester1:tester1 /home/tester1
 chown -R tester2:tester2 /home/tester2
 ```
 
-![](https://i-blog.csdnimg.cn/blog_migrate/ba330134100e724f50e27fff68ac2b7e.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-010-8e7879a03d.png)
 
 ### Samba 配置文件
 配置 /etc/samba/smb.conf ，配置文件的添加内容如下：
@@ -300,7 +300,7 @@ writable = yes
 
 运行结果如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/b3f95b1dbfce3ec11e39b200c184bca5.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-011-e302be0f78.png)
 
 ## 功能--developUse 文件夹
 ### developer1 上传文件
@@ -328,7 +328,7 @@ smb: \> exit
 
 展示结果：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/0e0e19d20abecfbe6e2cd1b427bd4b9c.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-012-43fdfc8543.png)
 
 可以看到上传了一个文件
 
@@ -344,17 +344,17 @@ smb: \> exit
 
 展示结果：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/87dbd3dfcba9e196870e752e62a86db6.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-013-1eefec52c7.png)
 
 像 tester1 和 tester2 的命令一致，查看的结果如下：
 
 tester1 查看开发者上传的代码：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/6335b32a7493f56883c112edaaac49d7.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-014-ded1163e0a.png)
 
 tester2 查看开发者上传的代码：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/aef412fbd945e58955e1ecd5875b343c.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-015-7b590e2b94.png)
 
 ### 其他开发者无法下载
 命令如下：
@@ -365,7 +365,7 @@ smb: \> get developer1_fuc01.txt
 
 展示如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/ff8683c00eeaf3422762a38ca9252bf8.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-016-c6a19c5c76.png)
 
 可以发现不能下载。
 
@@ -426,9 +426,9 @@ echo "------$current_date------" >> "$log_file"
 
 展示：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/7a0c2cf575c8c07ee23c0bfc2fb2acf8.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-017-14252913b8.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/c6fb30581387f659ad47090fb37f6d77.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-018-bc856bc67e.png)
 
 执行自动统计脚本
 
@@ -443,11 +443,11 @@ chmod +x sum.sh
 
 展示：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/c0ddac1e314ab17d00a98893efe0293d.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-019-1c2eea84af.png)
 
 打开 log 文件夹下的相应文件
 
-![](https://i-blog.csdnimg.cn/blog_migrate/87d418b8c27c92ea39597fda584a7ef3.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-020-2bee30c936.png)
 
 可以看到符合题目要求！！！
 
@@ -482,11 +482,11 @@ crontab -e
 
 展示：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/4d3bc07fba6a9775293e935e2e244695.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-021-5a0ae6a454.png)
 
 验证(等待一分钟查看)：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/d49b50e4839daf874515c42c6152be1d.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-022-005392c2b3.png)
 
 发现定时备份成功！！！
 
@@ -560,9 +560,9 @@ echo "Test success"
 
 展示：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/75b58b84e3eeaf24e5ddef83e120f6ed.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-023-207b319f1a.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/8b82a9f130a1f0770c79ad3a008cf236.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-024-f221b91f9d.png)
 
 同时，还要给脚本一定的权限；
 
@@ -572,7 +572,7 @@ chmod +x /home/public/code/testCode.sh
 
 赋予 testers 组进行测试的权力，`visudo` 的填写如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/18e82a53d27255196e467824f200f6f0.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-025-3a8ce39ac6.png)
 
 测试员测试代码的命令如下：
 
@@ -582,11 +582,11 @@ sudo /home/public/code/./testCode.sh tester1
 
 操作如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/1744e5ad981ed0193a611c1ca4244fab.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-026-b1c51460bd.png)
 
 验证如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/ff95ea312c1be5d8be5b5dde7de89363.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-027-d3b2c3a1c4.png)
 
 生成了完整的报告！！！
 
@@ -660,13 +660,13 @@ echo "------$(date "+%Y-%m-%d %H:%M:%S")------" >> "/home/public/log/sumTestLog.
 
 总体来说，该脚本的功能是遍历指定路径下的文件，从文件名中提取出特定信息，然后将这些信息写入日志文件。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/101ca324eeef1361992010a73d80ae18.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-028-207b319f1a.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/3c3d708b66db4bfcf9bb3aea4e096ee8.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-029-6cb4c51087.png)
 
 测试脚本：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/365955833b2b928bab58a010fcc2fd57.png)
+![](./XJTUSE-21-级-Linux-综合实验.assets/image-030-6ec1739844.png)
 
 可以看到，脚本生效，完美实现！
 

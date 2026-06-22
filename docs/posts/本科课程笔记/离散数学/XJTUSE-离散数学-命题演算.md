@@ -4,7 +4,7 @@ date: 2024-08-10 :47
 tags:
 - 离散数学
 category: 本科课程笔记
-order: 61
+order: 3
 ---
 
 # XJTUSE-离散数学-命题演算
@@ -12,7 +12,7 @@ order: 61
 ## 命题与真值联结词
 凡是能分辨真假的语句就是命题
 
-- 合取 : ![](https://latex.csdn.net/eq?P%5Cwedge%20Q)- 析取 ： ![](https://latex.csdn.net/eq?P%20%5Cvee%20Q)- 蕴含： ![](https://latex.csdn.net/eq?P%20%5Crightarrow%20Q%20%3D%20%5Cneg%20P%20%5Cvee%20Q)
+- 合取 : ![](./XJTUSE-离散数学-命题演算.assets/image-001-68b854adf5.png)- 析取 ： ![](./XJTUSE-离散数学-命题演算.assets/image-002-b6ee4b2ad5.png)- 蕴含： ![](./XJTUSE-离散数学-命题演算.assets/image-003-5f8c06cdea.png)
 ## 指派和真值表
 指派就是一个确定的变元组，确定了其真假值。
 
@@ -33,18 +33,18 @@ order: 61
 代入定理
 
 ### 其他联结词
-异或 ： ![](https://latex.csdn.net/eq?P%20%5Coverline%7B%5Cvee%7D%20Q%20%3D%20%28P%20%5Cwedge%20%5Cneg%20Q%29%20%5Cvee%20%28%5Cneg%20P%20%5Cwedge%20Q%29)
+异或 ： ![](./XJTUSE-离散数学-命题演算.assets/image-004-6b234c5fdb.png)
 
-与非 ： ![](https://latex.csdn.net/eq?P%20%5Cuparrow%20Q%20%3D%20%5Cneg%20%28P%20%5Cwedge%20Q%29)
+与非 ： ![](./XJTUSE-离散数学-命题演算.assets/image-005-2dd88f49b7.png)
 
-或非 ： ![](https://latex.csdn.net/eq?P%20%5Cdownarrow%20Q%20%3D%20%5Cneg%20%28P%20%5Cvee%20Q%29)
+或非 ： ![](./XJTUSE-离散数学-命题演算.assets/image-006-da4dbfc183.png)
 
 全功能 (功能完备)的概念 ： 任一真值函数都可以用其联结词表示
 
 极小全功能
 
 ### 析取范式、合取范式的概念
-析取范式 ： ![](https://latex.csdn.net/eq?%5Calpha%20%3D%20%5Calpha_1%20%5Cwedge%5Calpha_2%20......)
+析取范式 ： ![](./XJTUSE-离散数学-命题演算.assets/image-007-7c8a13f464.png)
 
 合取范式同理
 
@@ -55,21 +55,21 @@ order: 61
  略
 
 ## 对偶定理
-原命题 ![](https://latex.csdn.net/eq?a)
+原命题 ![](./XJTUSE-离散数学-命题演算.assets/image-008-1082a3d2ea.png)
 
-对偶命题 ![](https://latex.csdn.net/eq?a%5E*) : 把合取换成析取，把析取换为合取。
+对偶命题 ![](./XJTUSE-离散数学-命题演算.assets/image-009-9016d20f0a-02.png) : 把合取换成析取，把析取换为合取。
 
-内否式 ![](https://latex.csdn.net/eq?a%5E-) : 把变元变成相应的否定形式。
+内否式 ![](./XJTUSE-离散数学-命题演算.assets/image-010-e5e59ad1d8-02.png) : 把变元变成相应的否定形式。
 
 有如下定理：
 
-- ![](https://latex.csdn.net/eq?%5Cneg%20%28a%5E*%29%20%3C%3D%3E%20%28%5Cneg%20a%29%5E*) - ![](https://latex.csdn.net/eq?%5Cneg%20%28a%5E-%29%20%3C%3D%3E%20%28%5Cneg%20a%29%5E-)- ![](https://latex.csdn.net/eq?%5Cneg%20a%20%3C%3D%3E%20%28a%5E*%29%5E-)
+- ![](./XJTUSE-离散数学-命题演算.assets/image-011-dba1be1652.png) - ![](./XJTUSE-离散数学-命题演算.assets/image-012-0ceb73dba1.png)- ![](./XJTUSE-离散数学-命题演算.assets/image-013-e152d4c4b4.png)
 如下定理：
 
-- a为永真公式当且仅当![](https://latex.csdn.net/eq?a%5E-)为永真公式- ![](https://latex.csdn.net/eq?%5Cneg%20a)为永真公式当且仅当![](https://latex.csdn.net/eq?a%5E*)为永真公式
+- a为永真公式当且仅当![](./XJTUSE-离散数学-命题演算.assets/image-010-e5e59ad1d8-02.png)为永真公式- ![](./XJTUSE-离散数学-命题演算.assets/image-015-d07e97178f.png)为永真公式当且仅当![](./XJTUSE-离散数学-命题演算.assets/image-009-9016d20f0a-02.png)为永真公式
 对偶定理[[1]](https://blog.csdn.net/myRealization/article/details/120175968)：
 
-![](https://i-blog.csdnimg.cn/direct/d7ce7cb04faa4aa59466290e38693232.png)
+![](./XJTUSE-离散数学-命题演算.assets/image-017-f3cd984e07.png)
 
 ## 命题演算的形式推理
 ### 直接引入规则

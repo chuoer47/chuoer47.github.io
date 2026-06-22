@@ -4,7 +4,7 @@ date: 2023-11-20 :29
 tags:
 - 软件工程
 category: 本科课程笔记
-order: 113
+order: 3
 ---
 
 # XJTUSE-系统设计与分析
@@ -77,24 +77,24 @@ order: 113
 #### 数据流图
 数据流图可以分为顶层图，第一层数据流图，第二层数据流图。或上下文图+0级图+n级图
 
-![](https://i-blog.csdnimg.cn/blog_migrate/de3dd2bc864ed5713b17fe4492989d06.png)
+![](./XJTUSE-系统设计与分析.assets/image-001-802c6abb27.png)
 
 绘图时需要了解以下符号和原则：
 
 符号：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/cc9356bd575feed0ef72029768c65d42.png)
+![](./XJTUSE-系统设计与分析.assets/image-002-97330cbe8f.png)
 
 原则：
 
-- 父图-子图平衡原则：即父图输入输出数据流等于子图输入输出数据流- 数据守恒原则：![](https://i-blog.csdnimg.cn/blog_migrate/8eeef7069dd2d43a959798e208557883.png)- 守恒加工原则 每个加工至少有一个输入数据流和一个输出数据流
+- 父图-子图平衡原则：即父图输入输出数据流等于子图输入输出数据流- 数据守恒原则：![](./XJTUSE-系统设计与分析.assets/image-003-b92c3d1438.png)- 守恒加工原则 每个加工至少有一个输入数据流和一个输出数据流
 下面给出我作业的DFD图：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/784a6c9f84a284da9bf259139a12ce12.png)
+![](./XJTUSE-系统设计与分析.assets/image-004-7f6bf24699.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/770080b08f37e3bea65e03db98c5f1e0.png)
+![](./XJTUSE-系统设计与分析.assets/image-005-37b9967378.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/5ebe796747e54ef5b5414528aaa7d011.png)
+![](./XJTUSE-系统设计与分析.assets/image-006-9674bdfb14.png)
 
 现在看来，还是有不少瑕疵的。下面指出：
 
@@ -109,17 +109,17 @@ order: 113
 
 RBAC0
 
-![](https://i-blog.csdnimg.cn/blog_migrate/0deacdc7e582c416e1c26cae009fe3a7.png)
+![](./XJTUSE-系统设计与分析.assets/image-007-78813c9208.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/35363d1a36b00310024caafb51b31f42.png)
+![](./XJTUSE-系统设计与分析.assets/image-008-4a54859da9.png)
 
 解释要点：RBAC0是由用户，角色，会话，权限四部分构成的。其中用户-角色和角色-权限均为多对多关系。会话是由单个用户控制的，会话只能由用户创建。在一个会话中的角色的激活是由用户来决断的，因此会话-角色为一对多关系。(字数有点超出，考试的时候自行省略即可)
 
 RBAC1
 
-![](https://i-blog.csdnimg.cn/blog_migrate/6e58e616c7342112d50844fbbf9e2e95.png)
+![](./XJTUSE-系统设计与分析.assets/image-009-fadae66ede.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/654a8f2b66ce1e4ec0f9174523fd58af.png)
+![](./XJTUSE-系统设计与分析.assets/image-010-1f7ac2850a.png)
 
 RBAC1解释要点：RBAC1建立在RBAC0基础之上，在角色中引入了继承的概念，有了继承那么角色就有了上下级或者等级关系，即子角色可以继承父角色的所有权限，但是子角色必须是在父角色的基础上减少权限点。
 
@@ -127,9 +127,9 @@ RBAC1解释要点：RBAC1建立在RBAC0基础之上，在角色中引入了继�
 
 RBAC2
 
-![](https://i-blog.csdnimg.cn/blog_migrate/fd640fe816297635d06b5f727c19370e.png)
+![](./XJTUSE-系统设计与分析.assets/image-011-1a5cff6ec7.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/26aa6a642764fe0569945c969e977434.png)
+![](./XJTUSE-系统设计与分析.assets/image-012-ae4780a787.png)
 
 要点解释：RBAC2是建立的RBAC0的基础之上的，在RBAC0基础上假如了约束的概念，主要引入了静态职责分离SSD和动态职责分离DSD。
 
@@ -140,9 +140,9 @@ SSD是用户和角色的指派阶段加入的，主要是对用户和角色有�
 - 互斥角色：同一用户不能分配到一组互斥角色集合中的多个角色，互斥角色是指权限互相制约的两个角色。- 基数约束：一个角色被分配的用户数量受限，它指的是有多少用户能拥有这个角色。- 先决条件约束：指要想获得较高的权限，要首先拥有低一级的权限。- 运行时互斥：例如，允许一个用户具有两个角色的成员资格，但在运行中不可同时激活这两个角色
 RBAC3
 
-![](https://i-blog.csdnimg.cn/blog_migrate/829314252c7f3d603255422f83ca6384.png)
+![](./XJTUSE-系统设计与分析.assets/image-013-a725def9ea.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/c5d4f82a34193a7d7109a5e4e67bb84f.png)
+![](./XJTUSE-系统设计与分析.assets/image-014-f6de62cbb7.png)
 
 要点解释：RBAC3 把 RBAC1 和 RBAC2 组合在一起，提供角色的分级和继承的能力。
 
@@ -175,7 +175,7 @@ RBAC3
 
 根据PPT上的内容，应该是这个步骤：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/3df2d041cf76a59ff2f32751b494cef8.png)
+![](./XJTUSE-系统设计与分析.assets/image-015-5bfd04d07c.png)
 
 但是，我觉得考试时间那么紧张，应该是只能一次到位到第三范式，然后进行解释。
 
@@ -190,11 +190,11 @@ RBAC3
 
 题目：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/5940e9766ccc774f70d3191dd5d2b523.png)
+![](./XJTUSE-系统设计与分析.assets/image-016-ca98cd6634.png)
 
 设计：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/81bf7bb53b13900c304c17ab89365db9.png)
+![](./XJTUSE-系统设计与分析.assets/image-017-54486eaab4.png)
 
 我是觉得课堂案例有一些地方挺奇怪的。比如，他一直强调要把表名放在外面，还有对于一对多等等关系的连线他也就只认他的一套。royal总是喜欢把自己认为对的就当成放之四海而皆准的真理。不过设计出来的数据库能看懂，只是部分要求不同，为了成绩也就过去了。
 
@@ -227,19 +227,19 @@ RBAC3
 
 泉的：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/e170f2dcb50d47b1a48398e99f1a2dfa.png)
+![](./XJTUSE-系统设计与分析.assets/image-018-62d8b08701.png)
 
 主要的模板可以归结下面部分：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/f980fe7ce1c18f75f7040d7992a9308b.png)
+![](./XJTUSE-系统设计与分析.assets/image-019-e9e65e2d3c.png)
 
 鄙人的：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/5390aaa15e846461b74ef0d846072f97.png)
+![](./XJTUSE-系统设计与分析.assets/image-020-4ee6112c5c.png)
 
 模板主要可以归结为下面部分：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/7db14cf49f88ecfd5d910bfedf023897.png)
+![](./XJTUSE-系统设计与分析.assets/image-021-7a5653c7d1.png)
 
 我觉得自己的设计应该是满足RBAC1的，因为role表有继承。不过RBAC3可能也满足。
 
@@ -285,11 +285,11 @@ RBAC3
 
 泉佬画的：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/8c67e9d3e3165c8838260c113be57d05.png)
+![](./XJTUSE-系统设计与分析.assets/image-022-8344182069.png)
 
 鄙人画的：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/44373800e1b832596a6c689032b79e27.png)
+![](./XJTUSE-系统设计与分析.assets/image-023-aecf43b3e6.png)
 
 如果知道每个角色的行为(能做什么)，然后根据行为细化，再将行为之间的关系进行细化。用例图基本就出来了，没什么太大的难度。但是，需要知道具体的关系概念，下面给出：
 
@@ -303,23 +303,23 @@ RBAC3
 
     如图：
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/cb1b71cfc4dba6c8683818af2976ef13.png)
+ ![](./XJTUSE-系统设计与分析.assets/image-024-b112c7d5bb.png)
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/b762b63d85b553b6cbb877b34b7dec95.png)
+ ![](./XJTUSE-系统设计与分析.assets/image-025-043598a27b.png)
 
      泛化：当多个用例共同拥有一种类似的结构和行为时，可以将他们的共性抽象成为父用例，其他的用例作为泛化关系的子用例。在用例的泛化关系中，子用例是父用例的一种特殊形式，它继承了父用例的所有结构、行为、关系。其中三角箭头指向父用例。假如在机房收费系统的注册可以通过本地注册和网上注册。
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/6215a7dae7639f07d8320a7308fbed29.jpeg)
+ ![](./XJTUSE-系统设计与分析.assets/image-026-6524e556c0.jpg)
 
 总的来说，如果理解不了，只用包含关系《include》就行。
 
 然后，就是要选择一个用例，进行描述，写基本事件流。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/0f5268dd3d6597b65658a2686f2cc320.png)
+![](./XJTUSE-系统设计与分析.assets/image-027-1a28595476.png)
 
 按照上面的格式写就好了。再给出一个例子。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/76209bbb6807f2ae729652ad86974f8c.png)
+![](./XJTUSE-系统设计与分析.assets/image-028-425b0dd07b.png)
 
  至此，用例图部分编写完毕！
 
@@ -354,17 +354,17 @@ RBAC3
  自关联消息
  表示方法的自身调用或者一个对象内的一个方法调用另外一个方法。以一个半闭合的长方形+下方实心箭头表示。
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/1cd04cdf3b354c30d6c602ef12da5eaf.png)
+ ![](./XJTUSE-系统设计与分析.assets/image-029-06c8de56e5.png)
 
  除了基本的六大元素，还有一些组合片段。感兴趣的可以自己搜索，只给出抉择和循环。
 
  抉择
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/e9f0e8c4ce0986b50fcd2dafbf2b3fa9.png)
+ ![](./XJTUSE-系统设计与分析.assets/image-030-888a63cd32.png)
 
  循环
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/570c2a97146284aba617727310988fb9.png)
+ ![](./XJTUSE-系统设计与分析.assets/image-031-7668c07ef5.png)
 
  同时还需要注意事项：
 
@@ -372,19 +372,19 @@ RBAC3
 
  正确示范
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/4d715bf888063799569a8ed9535c3baa.png)
+ ![](./XJTUSE-系统设计与分析.assets/image-032-55b317d921.png)
 
  错误示范
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/73567423037228a9cb1a1dce94fa0867.png)
+ ![](./XJTUSE-系统设计与分析.assets/image-033-e3e8f69004.png)
 
 下面给出blog的登录时序图
 
-![](https://i-blog.csdnimg.cn/blog_migrate/97ea4417c2add86fb422f463d6682f4e.png)
+![](./XJTUSE-系统设计与分析.assets/image-034-16269ed2c8.png)
 
 给出鄙人绘制的时序图：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/e0e59167b91d74b9e4fbbde8b728705c.png)
+![](./XJTUSE-系统设计与分析.assets/image-035-e83e6a16a1.png)
 
 现在看来，自己画的时序图还是有不少问题的：
 
@@ -404,13 +404,13 @@ RBAC3
 
  类是对一组具有相同属性、操作、关系和语义的对象的描述。关系是类之间的、语义是蕴藏的，对 于一个类而言，其关键的特性是属性(成员变量)和操作(成员方法)。类用一个矩形表示的，包含三 个分栏，每个分栏分别写入类的名称、类的属性和类的操作。
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/5f16d522dd125eb2c69acc88318b0291.png)
+ ![](./XJTUSE-系统设计与分析.assets/image-036-7292757c86.png)
 
  抽象类，接口等知识不再赘述。
 
  类与类之间的关系：
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/80e9b9ea4df3e26be5292c7930b7b37b.png)
+ ![](./XJTUSE-系统设计与分析.assets/image-037-0bc0d16efe.png)
 
 设计类图的时候，可以参考数据库的设计，比如一些实体的数据库表借鉴一下其属性值。比如一些数据库的关系通过理解后，改为聚合，组合，依赖等关系，再比如数据库的继承可以改为类图的继承。通过分析数据库设计，可以得到不少有效信息，然后，合理设置操作，让类与类之间进行交互。完成类图。
 
@@ -422,7 +422,7 @@ RBAC3
 
 给出鄙人设计的类图：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/d978509c2a3a8a9436ed5386954b53d3.png)
+![](./XJTUSE-系统设计与分析.assets/image-038-6e8c86df64.png)
 
 现在来看还是由非常多错误的：
 
@@ -463,11 +463,11 @@ RBAC3
 
 职责链设计模式：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/ce5aad92466fa44b0dbcb21d3b7c0ac8.png)
+![](./XJTUSE-系统设计与分析.assets/image-039-b9a87067c0.png)
 
  2023-11-25 晚8点，我把我考试画的类图放这里了，希望对学弟学妹有用。当然，字丑见谅。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/19a7c98a82cbfe0fac6a3712f74fcd88.jpeg)
+![](./XJTUSE-系统设计与分析.assets/image-040-54a6d11fce.jpg)
 
 2023-11-21开始编写拓展部分。
 
@@ -481,7 +481,7 @@ RBAC3
 
 简单地梳理：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/9fe242aa42aadce646a6cb7f38445434.png)
+![](./XJTUSE-系统设计与分析.assets/image-041-b8c942c70f.png)
 
 先给出一个完整的活动图，然后进行讲解：
 
@@ -503,7 +503,7 @@ RBAC3
 
 笨人自己作业画的状态图：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/21b1b17edde62ed1628d79a252ef5182.png)
+![](./XJTUSE-系统设计与分析.assets/image-042-9eda9d1a9b.png)
 
 感觉还是存在不少问题：
 
@@ -515,7 +515,7 @@ RBAC3
 
 不妨先看实例图：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/036a090a910ac4fa11c54e507b149bfc.png)
+![](./XJTUSE-系统设计与分析.assets/image-043-cae65b060b.png)
 
  有以下元素：
 
@@ -542,15 +542,15 @@ RBAC3
 
 [UML--部署图-CSDN博客](https://blog.csdn.net/neusoft2016/article/details/118089677)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/faebdbd11195417961e78c368b3fc919.png)
+![](./XJTUSE-系统设计与分析.assets/image-044-fc52c273ae.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/c9f75fd14f4b7caf674816820f9350f3.png)
+![](./XJTUSE-系统设计与分析.assets/image-045-e68224df5a.png)
 
-名称解释图例节点节点用一长方形表示，节点定义了运行时对象和构件实例驻留的位置                   ![](https://i-blog.csdnimg.cn/blog_migrate/5378e077fb5016bfab97513fabdcb642.png)
+名称解释图例节点节点用一长方形表示，节点定义了运行时对象和构件实例驻留的位置                   ![](./XJTUSE-系统设计与分析.assets/image-046-598f58037e.png)
 
- 构件指系统中可替换的物理部分，构建的名字标在矩形中，提供一组接口实现              ![](https://i-blog.csdnimg.cn/blog_migrate/31e27d2b3975c7ed53e88890988a26b0.png)
+ 构件指系统中可替换的物理部分，构建的名字标在矩形中，提供一组接口实现              ![](./XJTUSE-系统设计与分析.assets/image-047-35c4cb0ed3.png)
 
- 接口外部可访问到的服务                  ![](https://i-blog.csdnimg.cn/blog_migrate/c0d9db90a61e04e112898e98eccbe79c.png)
+ 接口外部可访问到的服务                  ![](./XJTUSE-系统设计与分析.assets/image-048-e6d7c8bcec.png)
 
 描述了不同节点的物理拓扑关系，主要表达的是不同节点中的组件之间的相互通信关系。
 
@@ -558,7 +558,7 @@ RBAC3
 
 自己画的部署图：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/7c036f1f035eeca5b21a1a2496a2029a.png)
+![](./XJTUSE-系统设计与分析.assets/image-049-1790d70b49.png)
 
  挺简陋的，有时候再改进。
 
@@ -571,11 +571,11 @@ RBAC3
 
 实例:
 
-![](https://i-blog.csdnimg.cn/blog_migrate/a3484c26f6ccac954c2267ddee15490e.png) 其他展示：
+![](./XJTUSE-系统设计与分析.assets/image-050-571547a91c.png) 其他展示：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/b8f8217bfb08067d68371f45cf101abd.png)
+![](./XJTUSE-系统设计与分析.assets/image-051-919355b467.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/ec52c5abc829131e8ca4af5e3043e6ec.png)
+![](./XJTUSE-系统设计与分析.assets/image-052-18836c8f30.png)
 
 我也不太懂这个包图，不过看着这个例子。感觉到时候根据类图就可以画出来。我觉得步骤如下：
 
@@ -586,6 +586,6 @@ RBAC3
 
 对了顺带搞到了试卷
 
-![](https://i-blog.csdnimg.cn/blog_migrate/487c0aa9f9651a26532668a6d837f771.jpeg)
+![](./XJTUSE-系统设计与分析.assets/image-053-ba9e96c2f3.jpg)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/35933cb1ddd5da48fee56b845f836def.jpeg)
+![](./XJTUSE-系统设计与分析.assets/image-054-6647c23467.jpg)

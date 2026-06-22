@@ -1,0 +1,17 @@
+---
+title: 离散数学
+order: 70
+---
+
+# 离散数学
+
+离散数学各主题复习笔记。
+
+## 文章
+
+- [XJTUSE-离散数学-集合](./XJTUSE-%E7%A6%BB%E6%95%A3%E6%95%B0%E5%AD%A6-%E9%9B%86%E5%90%88)
+- [XJTUSE-离散数学-关系](./XJTUSE-%E7%A6%BB%E6%95%A3%E6%95%B0%E5%AD%A6-%E5%85%B3%E7%B3%BB)
+- [XJTUSE-离散数学-命题演算](./XJTUSE-%E7%A6%BB%E6%95%A3%E6%95%B0%E5%AD%A6-%E5%91%BD%E9%A2%98%E6%BC%94%E7%AE%97)
+- [XJTUSE-离散数学-谓词演算](./XJTUSE-%E7%A6%BB%E6%95%A3%E6%95%B0%E5%AD%A6-%E8%B0%93%E8%AF%8D%E6%BC%94%E7%AE%97)
+- [XJTUSE-离散数学-代数系统](./XJTUSE-%E7%A6%BB%E6%95%A3%E6%95%B0%E5%AD%A6-%E4%BB%A3%E6%95%B0%E7%B3%BB%E7%BB%9F)
+- [XJTUSE-离散数学-图论](./XJTUSE-%E7%A6%BB%E6%95%A3%E6%95%B0%E5%AD%A6-%E5%9B%BE%E8%AE%BA)

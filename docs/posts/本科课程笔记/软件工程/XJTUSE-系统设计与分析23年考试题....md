@@ -4,12 +4,12 @@ date: 2024-11-11 :58
 tags:
 - 软件工程
 category: 本科课程笔记
-order: 114
+order: 4
 ---
 
 # XJTUSE-系统设计与分析23年考试题...
 
-![](https://i-blog.csdnimg.cn/direct/e2702429f3fa4078b3bb710cdb7d6955.png)
+![](./XJTUSE-系统设计与分析23年考试题....assets/image-001-90864695e7.png)
 
 一位学弟/学妹？发给我的图片。
 

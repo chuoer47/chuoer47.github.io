@@ -4,7 +4,7 @@ date: 2023-11-08 :45
 tags:
 - 软件工程
 category: 本科课程笔记
-order: 115
+order: 2
 ---
 
 # XJTUSE-项目管理
@@ -71,30 +71,30 @@ order: 115
 
 第三步，看书最后的几页的术语表。我整理如下：
 
-### ![](https://i-blog.csdnimg.cn/blog_migrate/cf3d9a8f3c6c2b4ed50cb848caa03c52.jpeg)
-![](https://i-blog.csdnimg.cn/blog_migrate/537d690fb6e965fd7afcdf16ad3eb408.jpeg)
+### ![](./XJTUSE-项目管理.assets/image-001-74e90b8769.jpg)
+![](./XJTUSE-项目管理.assets/image-002-b44d00c215.jpg)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/3b73cafe76e2c1814bec4beec51639b9.jpeg)
+![](./XJTUSE-项目管理.assets/image-003-15805337a5.jpg)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/8477397aa337a5231ae17627b0634bff.jpeg)
+![](./XJTUSE-项目管理.assets/image-004-79edfa8d06.jpg)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/12148dc48166bf39bc5c77fc66e1d934.jpeg)
+![](./XJTUSE-项目管理.assets/image-005-d13d26aa18.jpg)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/a6efe831f2b75a411921dcaf1a300922.jpeg)
+![](./XJTUSE-项目管理.assets/image-006-37475fc2cb.jpg)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/024559a150f29fd7b78d76a4b599ea51.jpeg)
+![](./XJTUSE-项目管理.assets/image-007-59d16fccc2.jpg)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/fe26364718d0c2637c52730765ca347a.jpeg)
+![](./XJTUSE-项目管理.assets/image-008-e08bb07ed1.jpg)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/d67743775c44e2cc39331fa9c65c9159.jpeg)
+![](./XJTUSE-项目管理.assets/image-009-41d8ad482b.jpg)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/df71f275952bc0055ff193abd94e377a.jpeg)
+![](./XJTUSE-项目管理.assets/image-010-00fa49f076.jpg)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/7c364df1e95d82825e441da4d3eb203d.jpeg)
+![](./XJTUSE-项目管理.assets/image-011-10c9f45ed7.jpg)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/9aeecdeb034e517b736d66fd05e0b4ba.jpeg)
+![](./XJTUSE-项目管理.assets/image-012-02a0d71f18.jpg)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/690ee57f9b246971e4beefbede7bb80f.jpeg)
+![](./XJTUSE-项目管理.assets/image-013-d33bf5a6f5.jpg)
 
 我打勾的是看看，知道在哪章。打O我觉得需要背下来
 
@@ -176,7 +176,7 @@ WBS，即工作分解结构，是对项目所涉及工作面向交付成果的�
 根据开始和结束的约束：
 
 - 开始-结束- 开始-开始- 结束-结束- 结束-开始
-5.活动![](https://latex.csdn.net/eq?%5Cne)工作包。
+5.活动![](./XJTUSE-项目管理.assets/image-014-81dc670acf.png)工作包。
 
 活动定义是指识别项目成员和利益相关者为完成项目所必须开展的具体活动
 
@@ -243,7 +243,7 @@ WBS，即工作分解结构，是对项目所涉及工作面向交付成果的�
 ### 第八章：项目沟通管理
 1.沟通数量计算
 
-![](https://latex.csdn.net/eq?num%20%3D%20%5Cfrac%7Bn%28n-1%29%7D%7B2%7D)
+![](./XJTUSE-项目管理.assets/image-015-094e95526b.png)
 
 2.沟通方式
 

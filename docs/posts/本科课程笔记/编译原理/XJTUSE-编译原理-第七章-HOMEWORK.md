@@ -4,30 +4,30 @@ date: 2024-06-20 :07
 tags:
 - 编译原理
 category: 本科课程笔记
-order: 97
+order: 4
 ---
 
 # XJTUSE-编译原理-第七章-HOMEWORK
 
 ## 第一题
 
-![](https://i-blog.csdnimg.cn/blog_migrate/2dfc2f1670f40388651284c99ea24c99.png)
+![](./XJTUSE-编译原理-第七章-HOMEWORK.assets/image-001-9b80ec8d91.png)
 
 ### 第一问
 
 由公式可知：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/b4f0d74c25b6fa11ad19c28ee17c0eef.png)
+![](./XJTUSE-编译原理-第七章-HOMEWORK.assets/image-002-947c361d20.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/59d1feb4b9c04acf40e0b116d0c62624.png)
+![](./XJTUSE-编译原理-第七章-HOMEWORK.assets/image-003-3609771b7a.png)
 
-其中![](https://i-blog.csdnimg.cn/blog_migrate/0c5525fbd6c86f3dd142d289b52dadec.png)表示为 i 的下界，![](https://i-blog.csdnimg.cn/blog_migrate/fa6a073144b3abd33db8c101e415d8d7.png)表示为 i 的可取值个数，w 表示数组元素宽度
+其中![](./XJTUSE-编译原理-第七章-HOMEWORK.assets/image-004-838a4dd4fb.png)表示为 i 的下界，![](./XJTUSE-编译原理-第七章-HOMEWORK.assets/image-005-fcde935e6e.png)表示为 i 的可取值个数，w 表示数组元素宽度
 
 得：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/5282e30f70c822a6fda89ec9e6624155.png)
+![](./XJTUSE-编译原理-第七章-HOMEWORK.assets/image-006-676e63fbaa.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/994f65630c9ee467d374e78ae021bea6.png)
+![](./XJTUSE-编译原理-第七章-HOMEWORK.assets/image-007-8a99f1598f.png)
 
 ### 第二问
 
@@ -57,23 +57,23 @@ order: 97
 
 ## 第二题
 
-![](https://i-blog.csdnimg.cn/blog_migrate/cd82d590d1f36379bc31cabfe7f4f39c.png)
+![](./XJTUSE-编译原理-第七章-HOMEWORK.assets/image-008-0c17a4c3f8.png)
 
 ### 第一问
 
 由公式可知：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/18c4e6841ac7639ac9b1252e856cdc9f.png)
+![](./XJTUSE-编译原理-第七章-HOMEWORK.assets/image-009-947c361d20.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/bc26d117b83d8501066a70ee3d9d9f63.png)
+![](./XJTUSE-编译原理-第七章-HOMEWORK.assets/image-010-3609771b7a.png)
 
-其中![](https://i-blog.csdnimg.cn/blog_migrate/33ed4ef71bd9353a0a705f7b385cf8cb.png)表示为 i 的下界，![](https://i-blog.csdnimg.cn/blog_migrate/205970779fe0c44342354621bc747cbd.png)表示为 i 的可取值个数，w 表示数组元素宽度
+其中![](./XJTUSE-编译原理-第七章-HOMEWORK.assets/image-011-838a4dd4fb.png)表示为 i 的下界，![](./XJTUSE-编译原理-第七章-HOMEWORK.assets/image-012-fcde935e6e.png)表示为 i 的可取值个数，w 表示数组元素宽度
 
 得：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/d4fb80f935b89dfa23da2271500b6b5c.png)
+![](./XJTUSE-编译原理-第七章-HOMEWORK.assets/image-013-6f40727bb3.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/e67bbe1ee9c15e9b9010f42fc74e8bbe.png)
+![](./XJTUSE-编译原理-第七章-HOMEWORK.assets/image-014-846149d7ff.png)
 
 ### 第二问
 
@@ -103,7 +103,7 @@ order: 97
 
 ## 第三题
 
-![](https://i-blog.csdnimg.cn/blog_migrate/ac19874bfef0a614d61b66b408e258f2.png)
+![](./XJTUSE-编译原理-第七章-HOMEWORK.assets/image-015-6b98032ca5.png)
 
 ### 第一问
 
@@ -165,11 +165,11 @@ backpatch(E3.truelist,M3.quad)=backpatch(102,104)
 
 不存在 S5，下面给出 S4.nextlist 所指的待回填的链构成：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/0f40b7763c33f51f644c0628cd348ccf.jpeg)
+![](./XJTUSE-编译原理-第七章-HOMEWORK.assets/image-016-f0ce563ad2.jpg)
 
 ## 第四题
 
-![](https://i-blog.csdnimg.cn/blog_migrate/9786a0f213c684a84513fecc468a2dc6.png)
+![](./XJTUSE-编译原理-第七章-HOMEWORK.assets/image-017-be254de816.png)
 
 ### 第一问
 
@@ -227,4 +227,4 @@ backpatch(E4.truelist,M4.quad)=backpatch(104,106)
 
 不存在 S5，下面给出 S4.nextlist 所指的待回填的链构成：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/588bc17ff74f1a1ea497d58ad2715d30.png)
+![](./XJTUSE-编译原理-第七章-HOMEWORK.assets/image-018-119e149c4f.png)

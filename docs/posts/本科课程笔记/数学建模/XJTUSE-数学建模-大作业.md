@@ -4,7 +4,7 @@ date: 2024-06-20 :46
 tags:
 - 数学建模
 category: 本科课程笔记
-order: 54
+order: 4
 ---
 
 # XJTUSE-数学建模-大作业
@@ -63,23 +63,23 @@ order: 54
 
 			淡绿
 
-			![](https://i-blog.csdnimg.cn/blog_migrate/f21818d634a03c27ea61046c94f02909.png)
+			![](./XJTUSE-数学建模-大作业.assets/image-001-aa19ef598d.png)
 
-			![](https://i-blog.csdnimg.cn/blog_migrate/9ef99b34c2539d719fb530575a8a0c4c.png)
+			![](./XJTUSE-数学建模-大作业.assets/image-002-aa19ef598d.png)
 
-			![](https://i-blog.csdnimg.cn/blog_migrate/2750148a348486ef1aa45191aa762ba6.jpeg)
+			![](./XJTUSE-数学建模-大作业.assets/image-003-7619f65632.jpg)
 
 - 蜻蜓眼
 
 蜻蜓眼玻璃珠为春秋战国时期玻璃珠的主要形式，同时它还遍布中亚、西亚及北非各地，是中西方玻璃器所共有的品种。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/934ebda52a355cacfbdd2bb8253db9a4.png)  ![](https://i-blog.csdnimg.cn/blog_migrate/5fb5d6b64ab55382fa8257fc358d2f2e.jpeg)
+![](./XJTUSE-数学建模-大作业.assets/image-004-6ac9db7d3c.png)  ![](./XJTUSE-数学建模-大作业.assets/image-005-9540e686e1.jpg)
 
 3.费昂斯
 
 西周贵族组佩中经常与红色玛瑙珠搭配在一起的还有一种蓝色或者绿色的费昂斯珠，珠子大致呈菱形，也有管子，表面釉光，不透明。这就是被西方学者称为费昂斯( faience)的人工合成材料，一般认为它是玻璃的前身，是一种原始玻璃。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/417c1c3b0edb768614941a8018866a60.jpeg)  ![](https://i-blog.csdnimg.cn/blog_migrate/29f4f4051451e2b4715d472ca4d938fc.jpeg)
+![](./XJTUSE-数学建模-大作业.assets/image-006-ece9d330cc.jpg)  ![](./XJTUSE-数学建模-大作业.assets/image-007-90e096d67d.jpg)
 
 ## 论文如下：
 
@@ -129,7 +129,7 @@ order: 54
 
 2.4问题四的分析
 
-第四问需要分析PbO 、BaO 这两种主要化学成分与哪些微量成分含量相关，及含量的影响。通过假设，判断为线性相关，采用线性回归方法解决问题。需要先对微量元素数据进行归一化处理，利用lasso回归模型分析得到不同类别玻璃文物化学成分之间的相关性，通过梯度下降的方法求得一种回归参数，再通过该参数下计算出来的相关性系数的大小，从而得到关联关系。最后验证模型，即需要分析R2![](https://i-blog.csdnimg.cn/blog_migrate/9c7f4a9c181ea95a1f8b4ee7a0723ac8.png)的值判断回归拟合的效果
+第四问需要分析PbO 、BaO 这两种主要化学成分与哪些微量成分含量相关，及含量的影响。通过假设，判断为线性相关，采用线性回归方法解决问题。需要先对微量元素数据进行归一化处理，利用lasso回归模型分析得到不同类别玻璃文物化学成分之间的相关性，通过梯度下降的方法求得一种回归参数，再通过该参数下计算出来的相关性系数的大小，从而得到关联关系。最后验证模型，即需要分析R2![](./XJTUSE-数学建模-大作业.assets/image-008-23773123f9.png)的值判断回归拟合的效果
 
 三、模型假设
 
@@ -179,7 +179,7 @@ order: 54
 
 剔除纹饰缺失的数据8组，一共得到有效数据66个。统计如下表：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/ab134945750418854bdb91a0bebf0bba.png)
+![](./XJTUSE-数学建模-大作业.assets/image-009-839ff32a20.png)
 
 可以通过该表格初步计算出各项后验概率。
 
@@ -193,7 +193,7 @@ P(Xi)表示不附加任何条件下，Xi发生的概率；
 
 由贝叶斯公式计算后验概率：
 
-![](https://latex.csdn.net/eq?P%5Cleft%28A_i%5Cmiddle%7C%20B%5Cright%29%3D%5C%20%5Cfrac%7BP%5Cleft%28A_i%5Cright%29P%28B%7CA_i%29%7D%7B%5Csum_%7Bj%3D1%7D%5E%7Bn%7D%7BP%28A_j%29P%28B%7CA_i%29%7D%7D)
+![](./XJTUSE-数学建模-大作业.assets/image-010-ea87a7c0ce.png)
 
 5.1.3模型的求解
 
@@ -201,7 +201,7 @@ P(Xi)表示不附加任何条件下，Xi发生的概率；
 
 1.在出产年代、纹饰已知时，玻璃珠类型概率如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/c3d59966ceb41f8b87c861cf915e4851.png)
+![](./XJTUSE-数学建模-大作业.assets/image-011-40632015d9.png)
 
 2.在出产年代已知，纹饰未知时，玻璃珠类型概率和在纹饰已知，出产年代未知时，玻璃珠类型概率均可以通过图表1计算得出：
 
@@ -413,7 +413,7 @@ Step 2：根据后验概率表，算出每个P(B|Ai)，注意，由于数据量�
 
 Step 3：将Step1与Step2中算出的数据进行连乘，如下公式：
 
-![](https://latex.csdn.net/eq?P%28A_i%29%5Cprod_%7Bj%3D1%7D%5E%7BN%7D%7BP%28B_j%7CA_i%29%7D)
+![](./XJTUSE-数学建模-大作业.assets/image-012-05eb725e8b.png)
 
 Step 4：由此可以计算出每个类的概率值，进行比较，将概率值最大的类作为分类结果。
 
@@ -461,7 +461,7 @@ Step 4：由此可以计算出每个类的概率值，进行比较，将概率�
 
 1.单一的元素可能无法推测、判断类型，比如只知道出产年代为战国或者纹饰为蜻蜓眼时，难以推测类型。但是，当得知另一元素时，通过朴素贝叶斯算法，利用数据特征，可以进行推测类型而且不同类的概率差值比单元素使用后验概率的差值大，即更有把握。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/ded46ef6b5980f1f3bb5e9f08f96179c.png)
+![](./XJTUSE-数学建模-大作业.assets/image-013-a114ae7d7e.png)
 
 Figure 1玻璃类型热力图
 

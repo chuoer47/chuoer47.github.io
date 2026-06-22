@@ -4,7 +4,7 @@ date: 2023-12-07 :24
 tags:
 - 操作系统
 category: 本科课程笔记
-order: 45
+order: 7
 ---
 
 # XJTUSE-OS-考后

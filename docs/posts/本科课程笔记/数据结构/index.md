@@ -1,11 +1,11 @@
 ---
 title: 数据结构
-date: 2024-04-24 16:24:22
-tags: 数据结构
-category: 计算机基础
+order: 30
 ---
 
 # 数据结构
+
+数据结构课程作业与基础知识整理。
 
 ::: tip 常见数据结构
 
@@ -38,3 +38,8 @@ category: 计算机基础
     - 深度优先搜索（Depth First Search，DFS）、广度优先搜索（Breadth First Search，BFS）
 
 :::
+
+## 文章
+
+- [XJTUSE-数据结构-homework1](./XJTUSE-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-homework1)
+- [XJTUSE-数据结构-homework2](./XJTUSE-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-homework2)

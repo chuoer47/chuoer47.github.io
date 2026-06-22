@@ -2,9 +2,9 @@
 title: "XJTUSE-Linux实验-NFS、Samba、Apache实验"
 date: 2023-12-25 :30
 tags:
-- Linux实验
+- Linux 实验
 category: 本科课程笔记
-order: 3
+order: 5
 ---
 
 # XJTUSE-Linux实验-NFS、Samba、Apache实验
@@ -59,13 +59,13 @@ xjtuser别直接抄我的，仅供参考
 
 ### 展示
 
-![](https://i-blog.csdnimg.cn/blog_migrate/207b99ff64067544f44769c943e72d2e.png)
+![](./XJTUSE-Linux实验-NFS、Samba、Apache实验.assets/image-001-7be8953df5.png)
 
 可能需要下载，看命令行提示即可
 
 需要记住自己的IP地址，我的地址是192.168.52.30，下面配置有用
 
-![](https://i-blog.csdnimg.cn/blog_migrate/e6de4cefb158d2aed406bae38a258c13.png)
+![](./XJTUSE-Linux实验-NFS、Samba、Apache实验.assets/image-002-770c584600.png)
 
 ## 任务二
 
@@ -81,7 +81,7 @@ xjtuser别直接抄我的，仅供参考
 
 `vi /etc/exports`
 
-![](https://i-blog.csdnimg.cn/blog_migrate/6de07f3ec6ca230dc176201ad19834e2.png)
+![](./XJTUSE-Linux实验-NFS、Samba、Apache实验.assets/image-003-ea89427c4c.png)
 
  3.启动服务
 
@@ -100,9 +100,9 @@ mount -t nfs 192.168.52.30:/home .`
 
 ### 展示
 
-![](https://i-blog.csdnimg.cn/blog_migrate/a3735dd2aec48c87252a2b864dae30d6.png)挂接：
+![](./XJTUSE-Linux实验-NFS、Samba、Apache实验.assets/image-004-7df9b56176.png)挂接：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/1bae178de3311e7b972fdbbe997466cd.png)
+![](./XJTUSE-Linux实验-NFS、Samba、Apache实验.assets/image-005-8bfe835b33.png)
 
 全部完成！
 
@@ -169,23 +169,23 @@ sudo chmod 770 /home/share`
 
 配置文件
 
-![](https://i-blog.csdnimg.cn/blog_migrate/5db29df740b583203dae838265701760.png)
+![](./XJTUSE-Linux实验-NFS、Samba、Apache实验.assets/image-006-9c505ef94d.png)
 
 window访问
 
-![](https://i-blog.csdnimg.cn/blog_migrate/cef924fbc28ef219ca2b1cd7fb4eefd4.png)
+![](./XJTUSE-Linux实验-NFS、Samba、Apache实验.assets/image-007-62cda9dce4.png)
 
 linux访问
 
-![](https://i-blog.csdnimg.cn/blog_migrate/2f4076c28a9b44daf77e0df2231c359b.png)
+![](./XJTUSE-Linux实验-NFS、Samba、Apache实验.assets/image-008-81ad34b685.png)
 
 创建用户(这个很重要)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/49ca393a1886b4e8e9ea957030ccc30f.png)
+![](./XJTUSE-Linux实验-NFS、Samba、Apache实验.assets/image-009-6adcccd7d5.png)
 
  linux的user1访问
 
-![](https://i-blog.csdnimg.cn/blog_migrate/8e82a16bb7e024238cec9d4806f380d1.png)
+![](./XJTUSE-Linux实验-NFS、Samba、Apache实验.assets/image-010-d680bfb488.png)
 
 ## 任务四
 
@@ -206,9 +206,9 @@ sudo apt install apache2`
 
 同时添加下面这些
 
-![](https://i-blog.csdnimg.cn/blog_migrate/a31a0ecf92397562b145cb880e98d6e5.png)
+![](./XJTUSE-Linux实验-NFS、Samba、Apache实验.assets/image-011-c7db9905d0.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/c29f5900c1b9414dd07352655e490254.png)
+![](./XJTUSE-Linux实验-NFS、Samba、Apache实验.assets/image-012-8e3030fa46.png)
 
 3.设置Apache监听的端口号：
 
@@ -216,7 +216,7 @@ sudo apt install apache2`
 
 `sudo vi /etc/apache2/ports.conf`
 
-![](https://i-blog.csdnimg.cn/blog_migrate/4ace37c9b43ff108886efea3ff28409e.png)
+![](./XJTUSE-Linux实验-NFS、Samba、Apache实验.assets/image-013-9774ac235e.png)
 
 4.创建用户认证文件：
 
@@ -231,7 +231,7 @@ sudo htpasswd /etc/apache2/.htpasswd lily
 `cat /etc/apache2/.htpasswd
 `
 
-![](https://i-blog.csdnimg.cn/blog_migrate/940004b6a1d8e588195bb1d7eae61d98.png)
+![](./XJTUSE-Linux实验-NFS、Samba、Apache实验.assets/image-014-28e76b5616.png)
 
 5.创建相应的文件夹，index.html文件
 
@@ -262,12 +262,12 @@ sudo systemctl restart apache2`
 
 7.浏览器进行访问
 
-![](https://i-blog.csdnimg.cn/blog_migrate/b6634959f68a93b5a7d71d1b56478a0d.png)
+![](./XJTUSE-Linux实验-NFS、Samba、Apache实验.assets/image-015-952b216c55.png)
 
 关于为什么访问192.***我相信前面工作做应该懂
 
-![](https://i-blog.csdnimg.cn/blog_migrate/016269767f565808ae4d2c581e82eacf.png)
+![](./XJTUSE-Linux实验-NFS、Samba、Apache实验.assets/image-016-d17cd2946e.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/1771da108d03601b0a69d0a72d675548.png)
+![](./XJTUSE-Linux实验-NFS、Samba、Apache实验.assets/image-017-c357d9ec52.png)
 
 至此，三次实验报告全部完成！！！！！！！！

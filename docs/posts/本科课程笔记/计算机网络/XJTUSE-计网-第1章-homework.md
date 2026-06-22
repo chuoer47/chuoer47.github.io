@@ -4,7 +4,7 @@ date: 2024-05-08 :06
 tags:
 - 计算机网络
 category: 本科课程笔记
-order: 107
+order: 2
 ---
 
 # XJTUSE-计网-第1章-homework
@@ -121,23 +121,23 @@ d.三人同时传输的概率为0.2*0.2*0.2 = 0.008
 
 核心公式如下：
 
-![](https://latex.csdn.net/eq?d_%7Bnodal%7D%20%3D%20d%20_%7Bproc%7D%20+%20d_%7Bqueue%7D%20+%20d_%7Bprop%7D%20+d_%7Btrans%7D)
+![](./XJTUSE-计网-第1章-homework.assets/image-001-3776dbf47e.png)
 
 a.无线传输：
 
 不给结果了，注意byte与bit的换算
 
-![](https://latex.csdn.net/eq?T%20%3D%201000m/3*10%5E%7B8%7Dm/s%20+%201500bytes%20/%202Mbps)
+![](./XJTUSE-计网-第1章-homework.assets/image-002-66db66c86b.png)
 
 b.双绞线传输:
 
-![](https://latex.csdn.net/eq?T%20%3D%201000m/2*10%5E8m/s%20+%201500bytes%20/%20100Mbps)
+![](./XJTUSE-计网-第1章-homework.assets/image-003-0dde29030f.png)
 
 7.Consider a client and a server connected through one router. Assume the router can start transmitting an incoming packet after receiving its first h bytes instead of the whole packet. Suppose that the link rates are R byte/s and that the client transmits one packet with a size of L bytes to the server. What is the end-to-end delay? Assume the propagation, processing, and queuing delays are negligible. Generalize the previous result to a scenario where the client and the server are interconnected by N routers.
 
 a. 先考虑一般情况，假设h=T，即学习的存储-转发模型，这时候n个路由器，一共有n+1段R的链路要走，如下图：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/ad2f098c6272b2ff49bdaa7779cda762.png)
+![](./XJTUSE-计网-第1章-homework.assets/image-004-fec474edf0.png)
 
 2个路由器，3段链路要走
 

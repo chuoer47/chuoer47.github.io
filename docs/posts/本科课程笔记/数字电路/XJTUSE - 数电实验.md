@@ -4,7 +4,7 @@ date: 2024-03-17 :50
 tags:
 - 数字电路
 category: 本科课程笔记
-order: 47
+order: 4
 ---
 
 # XJTUSE - 数电实验
@@ -21,13 +21,13 @@ order: 47
 
 BCD 码(Binary-Coded Decimal)，用 4 位二进制数来表示 1 位十进制中的 0∼9 这 10 个数码，是一种二进制的数字编码形式。BCD 码是十位二进制码, 也就是将十进制 的数字转化为二进制, 但是和普通的转化有一点不同, 每一个十进制的数字 0-9 都对应 着一个四位的二进制码图 1-1 表示 BCD 码编译的 1∼9 数字的示意图
 
-![](https://i-blog.csdnimg.cn/blog_migrate/0cc4e8c93c0e62fa16a373e16e15172b.png)
+![](./XJTUSE-数电实验.assets/image-001-15a6e9f6f8.png)
 
 #### 1.1.2 奇偶校验码
 
  校验码的出现是为了保障传输信息准确无误，常见的单位校验码有奇校验码，偶 校验码。其中奇校验：原始码流 + 校验位总共有奇数个数字“1”。偶校验：原始码流 + 校验位总共有偶数个数字“1”。通常把校验码放在码流的前面或者后面。如图 1-2 所示
 
-![](https://i-blog.csdnimg.cn/blog_migrate/bce5dc12f477f350fd3e1c63bc8ba23f.png)
+![](./XJTUSE-数电实验.assets/image-002-6c889ab263.png)
 
 ### 1.2 实验目的
 
@@ -43,7 +43,7 @@ BCD 码(Binary-Coded Decimal)，用 4 位二进制数来表示 1 位十进制中
 
 下面进行简要说明。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/7871a055ada06191eee0177c605d0b86.png)
+![](./XJTUSE-数电实验.assets/image-003-d00141246a.png)
 
 协议说明：先输入 0，然后状态机才进入 start 状态，才可以进行信息传输。然后， 接受四位 BCD 码，再输入 1，状态机进入 stop 状态，一次通信完成。若不按照此协议， 无法完成通信。
 
@@ -57,13 +57,13 @@ done 表示为一次传输协议是否成功。
 
 verify 为根据 4 为 BCD 码生成的奇校验码。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/ba424297dc202179eee85166afb3001c.png)
+![](./XJTUSE-数电实验.assets/image-004-0e989ea1d2.png)
 
 #### 1.2.4 其他模块
 
 为了尽可能模拟信息传递的现实因素过程以及体现状态机的作用，我们设计了其 它按钮代表了不同功能。如表 1-3下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/3ffc1102c6e907d643aa2c8787431cf1.png)
+![](./XJTUSE-数电实验.assets/image-005-b017c9ffd8.png)
 
 ## 2 PROCISE实现
 
@@ -71,7 +71,7 @@ verify 为根据 4 为 BCD 码生成的奇校验码。
 
 总设计电路电子图如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/ea35d255ea5a4f231adf7c7e99d4ca0d.png)
+![](./XJTUSE-数电实验.assets/image-006-55b0a9dc8a.png)
 
 #### 2.1.1信息传输
 
@@ -96,17 +96,17 @@ Verilog代码说明：当按下switch按钮后，$data_in$进行反转，实现�
 
 状态机状态如 2-1表所示
 
-![](https://i-blog.csdnimg.cn/blog_migrate/f1bf0d81c6da6ce263333aadf6b3056c.png)
+![](./XJTUSE-数电实验.assets/image-007-6cbff95416.png)
 
 状态转移图如图 2-2所示
 
-![](https://i-blog.csdnimg.cn/blog_migrate/027d4d275a79db8b4f34fdff39785b68.png)
+![](./XJTUSE-数电实验.assets/image-008-71686a17a6.png)
 
 需要说明的是，虽然状态转移图不是最简的状态图，但是为了解决实际传输数据 遇到的问题，该状态图没有必要进行化简。
 
 该有限状态机的状态表展示如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/2885df2d24e06cf6b2e35932bce95c0c.png)
+![](./XJTUSE-数电实验.assets/image-009-a569b67709.png)
 
 Verilog 核心代码如下：
 
@@ -160,13 +160,13 @@ Verilog 核心代码如下：
 
 1. 输入的情况
 
-![](https://i-blog.csdnimg.cn/blog_migrate/1a68fa0432a3d0fe597e9c85270d4787.png)
+![](./XJTUSE-数电实验.assets/image-010-a5e4b7225a.png)
 
 可以看到，当按下 btn 键后，led 从“6’b000001”变到了”6’b000011”，表明确实输 出了 1。
 
 2. 转化 01 的情况
 
-![](https://i-blog.csdnimg.cn/blog_migrate/0476a5945d46742ce1fd6c40cf4a911b.png)
+![](./XJTUSE-数电实验.assets/image-011-4086163d4a.png)
 
 可以看到，当按下 switch，进行转化后，再按下 btn 键后，led 从“6’b000001”变 到了”6’b000010”，表明确实进行了转换并且输出了 0。而后面再次按下 switch 按钮后， 也成功进行了转换。
 
@@ -174,13 +174,13 @@ Verilog 核心代码如下：
 
 done
 
-![](https://i-blog.csdnimg.cn/blog_migrate/4e4e9bc76ebe566b9ea2053adaa9e91b.png)
+![](./XJTUSE-数电实验.assets/image-012-0b65c9b69f.png)
 
 当输入满足通讯协议时，参数 done 从 0 转化为 1，表明通信正常运行。
 
 verify
 
-![](https://i-blog.csdnimg.cn/blog_migrate/b1d376c40238b5aa86c1b5bb3d48ecb8.png)
+![](./XJTUSE-数电实验.assets/image-013-22291ca3fd.png)
 
 可以看到 verify 波形图实时根据 4 位 BCD 码进行改变。
 
@@ -217,7 +217,7 @@ set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets "change"];`
 
 不同测试图片如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/f9829ef748d6c069f8fb16fcdb2a5017.png)
+![](./XJTUSE-数电实验.assets/image-014-9391cca8e8.png)
 
 可以看到 led 灯 D7 − D12 有着不同闪烁排序，这是我通过 btn 和 switch 按钮录入 不同的 01 数据，从而使 led 灯呈现不同的状态。这表明数据录入成功！
 
@@ -227,7 +227,7 @@ set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets "change"];`
 
 测试图片如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/bd14f27cb5b178fff175fb9d479f68fd.png)
+![](./XJTUSE-数电实验.assets/image-015-93badcb3ab.png)
 
 按照协议进行信息传输后，状态机进入 stop 状态后，done 参数从 0 变为 1，则对 应的 led 灯 D6 从亮变为暗，协议成立并且状态机正常工作，信息传输成功。但是，当 没有按照协议进行信息传输时候，状态机不会进入 stop 状态，对应的 led 灯 D6 一直保 持亮着，信息传输失败。
 
@@ -235,7 +235,7 @@ set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets "change"];`
 
 测试图片如下
 
-![](https://i-blog.csdnimg.cn/blog_migrate/b624f7dee539521e3f0b041371d71818.png)
+![](./XJTUSE-数电实验.assets/image-016-79369fcdaa.png)
 
 可以看到 verify 对应的 led 灯的明暗确实是按照 4 位 BCD 码变化的，而且满足奇 校验码的要求。
 
@@ -243,7 +243,7 @@ set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets "change"];`
 
 reset 按钮测试如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/281f0bd1d622b6e0a6b2c82c0de38476.png)
+![](./XJTUSE-数电实验.assets/image-017-df009b677f.png)
 
 可以看到当按下 reset 按钮后，恢复到初始状态了。
 

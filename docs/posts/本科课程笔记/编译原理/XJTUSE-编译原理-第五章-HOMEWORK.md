@@ -4,14 +4,14 @@ date: 2024-06-20 :49
 tags:
 - 编译原理
 category: 本科课程笔记
-order: 99
+order: 3
 ---
 
 # XJTUSE-编译原理-第五章-HOMEWORK
 
 ## 第一题
 ### 问题描述
-![](https://i-blog.csdnimg.cn/blog_migrate/5d84498f5b4187c92b0bc8c1cc6d16e6.png)
+![](./XJTUSE-编译原理-第五章-HOMEWORK.assets/image-001-ffeedfc4b7.png)
 
 ### 第一问
 
@@ -42,14 +42,14 @@ order: 99
 
 为方便表示，用表示算符的优先符号
 
-![](https://i-blog.csdnimg.cn/blog_migrate/e2971c452cca65afbbf2485f2e4d1834.png)
+![](./XJTUSE-编译原理-第五章-HOMEWORK.assets/image-002-2a08e20071.png)
 
 ### 第三问
 不满足算符优先文法，因为终结符对存在多个优先关系。
 
 ## 第二题
 ### 问题描述
-![](https://i-blog.csdnimg.cn/blog_migrate/9270a7cd49a3e63c5ab19ccbb84c78e8.png)
+![](./XJTUSE-编译原理-第五章-HOMEWORK.assets/image-003-efdf649a99.png)
 
 ### 第一问
 
@@ -80,13 +80,13 @@ order: 99
 
 为方便表示，用表示算符的优先
 
-![](https://i-blog.csdnimg.cn/blog_migrate/97c78fcc2c129d4b0fda19b42fec5b68.png)
+![](./XJTUSE-编译原理-第五章-HOMEWORK.assets/image-004-8d1cdd3afa.png)
 
 ### 第三问
 不满足算符优先文法，因为终结符对存在多个优先关系。
 
 ## 第三题
-![](https://i-blog.csdnimg.cn/blog_migrate/2786ff0dbe9aad61098242f116d2704d.png)
+![](./XJTUSE-编译原理-第五章-HOMEWORK.assets/image-005-f606dd519d.png)
 
  友情链接：[《编译原理》LR 分析法与构造 LR(1) 分析表的步骤 - 例题解析 - xpwi - 博客园](https://www.cnblogs.com/xpwi/p/11070888.html)
 
@@ -178,7 +178,7 @@ U->y·,#
 
 有限状态机如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/57d71410631e3358ecd6d73417986722.jpeg)
+![](./XJTUSE-编译原理-第五章-HOMEWORK.assets/image-006-52b20e2442.jpg)
 
 ### 第三问
 构造的LR(1)分析表如下：
@@ -273,7 +273,7 @@ U->y·,#
 不存在多重定义入口，是LR(1)文法！
 
 ## 第四题
-![](https://i-blog.csdnimg.cn/blog_migrate/f0b1afa7de135811ce803d700c168a94.png)
+![](./XJTUSE-编译原理-第五章-HOMEWORK.assets/image-007-eff4e348be.png)
 
 ### 第一问
 拓广后的文法如下：
@@ -359,7 +359,7 @@ F->dTe·,a
 
 有限状态机如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/66c3744dc24369d0fe66fc13eb251d6b.jpeg)
+![](./XJTUSE-编译原理-第五章-HOMEWORK.assets/image-008-1ea50fef1c.jpg)
 
 ### 第三问
 构造的LR(1)分析表如下：

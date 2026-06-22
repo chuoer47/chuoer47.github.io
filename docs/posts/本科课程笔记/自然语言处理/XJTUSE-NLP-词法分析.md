@@ -4,7 +4,7 @@ date: 2024-04-25 :19
 tags:
 - 自然语言处理
 category: 本科课程笔记
-order: 105
+order: 1
 ---
 
 # XJTUSE-NLP-词法分析
@@ -31,7 +31,7 @@ order: 105
 
 简单的举个例子！
 
-![](https://i-blog.csdnimg.cn/blog_migrate/ec3f6716f7178ad51fd2f31ff94b65f5.png)
+![](./XJTUSE-NLP-词法分析.assets/image-001-a3304e9d70.png)
 下面为算法代码实现(python 语言)
 
 正向最大匹配算法 (Forward MM， FMM)
@@ -120,7 +120,7 @@ return segmented_result
 
 设待切分字串 S=c1  c2…cn，其中 ci (i =1， 2， …， n)  为单个的字， n 为串的长度，n>=1。建立一个节点数 为 n+1 的切分有向无环图 G，各节点编号依次为 V0， V1，V2，…，Vn。  v0 v1 c1 c2 … vi-1 ci-1 ci … cj vj cj+1 … vn cn
 
-![](https://i-blog.csdnimg.cn/blog_migrate/ecffb352b6db2a94daa51a38ec353234.png)
+![](./XJTUSE-NLP-词法分析.assets/image-002-bf6af7bc33.png)
 
 求最短路径：贪心法或简单扩展法。
 
@@ -130,7 +130,7 @@ return segmented_result
 
 如果 w= cici+1…cj (0<i<j<=n) 是一个词，则节点 vi-1 ， vj 之间建 立有向边 <vi-1 ， vj，边对应的词为 w。
 
-![[图片](https://img-blog.csdnimg.cn/direct/ff63af110b1743e0b26bc3a4b71f5310.png)
+![[图片](./XJTUSE-NLP-词法分析.assets/image-003-b613a5be7d.png)
 
 重复步骤(2)，直到没有新路径(词序列)产生。
 
@@ -140,7 +140,7 @@ return segmented_result
 
 假设得到了如下的矩阵：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/3cba423c9bd393390d2bca886c704a4d.png)
+![](./XJTUSE-NLP-词法分析.assets/image-004-22fe7407c7.png)
 
 指标分别如下：
 
@@ -161,12 +161,12 @@ return segmented_result
 
 图模型如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/919f1e6b21407b2f3264d51e2a0589f2.png)
+![](./XJTUSE-NLP-词法分析.assets/image-005-e1e374db60.png)
 参数
 
 参数说明
 
-![](https://i-blog.csdnimg.cn/blog_migrate/4a4d5a7ee9630961216df70eecda38a5.png)
+![](./XJTUSE-NLP-词法分析.assets/image-006-6d1c77d4be.png)
 
 举个例子：
 
@@ -184,7 +184,7 @@ Weather 序列(状态)：Hot， Cold， Hot， Hot， Hot，  Cold…？
 
 假设最后建立如下模型
 
-![](https://i-blog.csdnimg.cn/blog_migrate/5d0c804cf7de7922aa61e7457ed5b88d.png)
+![](./XJTUSE-NLP-词法分析.assets/image-007-b753b9b045.png)
 
 三个基本问题
 
@@ -217,7 +217,7 @@ P(313)=P(313,coldcoldcold)+P(313,coldcoldhot)+P(313,hothotcold)...P(313) =  P(31
 
 利用格栅，减少计算，下面是示例：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/d2d8b827b7ad67820b7ed2f9a22e7c2e.png)
+![](./XJTUSE-NLP-词法分析.assets/image-008-322fbf6575.png)
 
 不再赘述
 
@@ -233,11 +233,11 @@ P(313)=P(313,coldcoldcold)+P(313,coldcoldhot)+P(313,hothotcold)...P(313) =  P(31
 
 Viterbi 算法
 
-![](https://i-blog.csdnimg.cn/blog_migrate/8018f27ba3584f5dd722de8b6099dc50.png)
+![](./XJTUSE-NLP-词法分析.assets/image-009-d1ae2c93c4.png)
 
 找到最大概率后，再进行回退找到序列：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/c063ecf73a55475c0fc46939aba8c440.png)
+![](./XJTUSE-NLP-词法分析.assets/image-010-9d28b94313.png)
 
 参数学习
 
@@ -247,15 +247,15 @@ Viterbi 算法
 
 给出 A 矩阵
 
-![](https://i-blog.csdnimg.cn/blog_migrate/56e7a2b17f78c401a8151e09628a1902.png)
+![](./XJTUSE-NLP-词法分析.assets/image-011-1f0db60fbf.png)
 
 给出 B 矩阵
 
-![](https://i-blog.csdnimg.cn/blog_migrate/ccc5e4dfff68207d2c6de2885c937f2b.png)
+![](./XJTUSE-NLP-词法分析.assets/image-012-2439a773bf.png)
 
 即可进行求解：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/aad1bb55cfc07a7eedee79887693965e.png)
+![](./XJTUSE-NLP-词法分析.assets/image-013-2b04379ece.png)
 
 图没给全，可以自己脑补
 

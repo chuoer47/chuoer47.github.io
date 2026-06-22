@@ -4,7 +4,7 @@ date: 2023-12-07 :17
 tags:
 - 操作系统
 category: 本科课程笔记
-order: 43
+order: 4
 ---
 
 # XJTUSE-OS-homework
@@ -19,13 +19,13 @@ order: 43
 ### 9.13
 题目：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/1964ecd07f065b886e704ce6df37edb8.png)
+![](./XJTUSE-OS-homework.assets/image-001-c04188f507.png)
 
 答案：
 
 a
 
-![](https://i-blog.csdnimg.cn/blog_migrate/cabb755e45eac1be18d99a30f107a473.png)
+![](./XJTUSE-OS-homework.assets/image-002-fb4a5f2185.png)
 
 b
 
@@ -37,7 +37,7 @@ b
 
 c.最优置换算法
 
-![](https://i-blog.csdnimg.cn/blog_migrate/4652d11c99ba539f0010653a554f8886.png)
+![](./XJTUSE-OS-homework.assets/image-003-cac4822583.png)
 
 ## 文件系统
 ### 12.2
@@ -83,7 +83,7 @@ C-LOOK的调度是143 ， 913 ， 948 ， 1022 ， 1470 ， 1509 ， 1750 ， 17
 
 ## PV操作
 ### 理发师问题
-![](https://i-blog.csdnimg.cn/blog_migrate/7fdc4dcf7ee9ab97777b15667d4cb351.png)
+![](./XJTUSE-OS-homework.assets/image-004-5175f43d60.png)
 
 思考如下：
 
@@ -165,7 +165,7 @@ void* barber(void *arg){
 
  原谅我给这个题起的名字
 
-![](https://i-blog.csdnimg.cn/blog_migrate/a1eac376e8e6d4e5ad9a82065e084903.png)
+![](./XJTUSE-OS-homework.assets/image-005-1875234f42.png)
 
 解答：
 
@@ -197,7 +197,7 @@ void* process(void){
 
 ```
 ### 考试问题
-![](https://i-blog.csdnimg.cn/blog_migrate/566192b856b1c7fc3b42f72ca4259cee.png)
+![](./XJTUSE-OS-homework.assets/image-006-bfebd5d9bd.png)
 
 解答：
 

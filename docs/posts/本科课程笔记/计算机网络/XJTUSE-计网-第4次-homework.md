@@ -4,7 +4,7 @@ date: 2024-06-20 :06
 tags:
 - 计算机网络
 category: 本科课程笔记
-order: 111
+order: 5
 ---
 
 # XJTUSE-计网-第4次-homework
@@ -71,7 +71,7 @@ Which features has IPv6 packet?
 
 5.
 
-![](https://i-blog.csdnimg.cn/blog_migrate/9a04600a2fe9bb22f2f0cdaa8930bf1f.png)
+![](./XJTUSE-计网-第4次-homework.assets/image-001-1cae4f8204.png)
 
 a. Dx(w) = 2, Dx(y)= 2+2 = 4, Dx(u) = min(Dx(w)+5,Dx(y)+6) = 7
 
@@ -87,12 +87,12 @@ b2&c2.考虑c(x,w)变化
 
 当c(x,w)6,Dx(u) = min(Dx(w)+5,Dx(y)+6) = 11 ,进行更新。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/49a95b1ba83c32e804dc2725abb989bd.png)
+![](./XJTUSE-计网-第4次-homework.assets/image-002-bf7f09b150.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/040197bf13167c3c09e91f8c635a1604.png)
+![](./XJTUSE-计网-第4次-homework.assets/image-003-662b38c4fb.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/3678482f85c35f6cf3256de53df3b863.png)
+![](./XJTUSE-计网-第4次-homework.assets/image-004-c92f82c3f4.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/00ea212f995a54a2cac1920d5ce48fbe.png)
+![](./XJTUSE-计网-第4次-homework.assets/image-005-52f4327fc1.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/f1361509f82757d01bd3480b2c4d085b.png)
+![](./XJTUSE-计网-第4次-homework.assets/image-006-422402ff4e.png)

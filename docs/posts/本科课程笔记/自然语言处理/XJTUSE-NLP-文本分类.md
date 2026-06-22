@@ -4,7 +4,7 @@ date: 2024-04-27 :05
 tags:
 - 自然语言处理
 category: 本科课程笔记
-order: 104
+order: 3
 ---
 
 # XJTUSE-NLP-文本分类
@@ -51,14 +51,14 @@ Step 4：评价
 
 – aik  表示词 k 在文档 i 中的权重
 
-![](https://i-blog.csdnimg.cn/blog_migrate/774a8ea98507166c341684e7b0d6ab52.png)
+![](./XJTUSE-NLP-文本分类.assets/image-001-41f8af0dee.png)
 感觉说法有点问题，应该是每个文档表示为由词构成的行向量，PPT 可能有点问题？
 
 现在说明几种 aik 的权重计算方式：
 
 符号说明：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/be5ea2eda39e1cc4438939ca507fbbab.png)
+![](./XJTUSE-NLP-文本分类.assets/image-002-d8ce447ec3.png)
 
 预处理后文档集合包含的词条个数
 
@@ -100,7 +100,7 @@ KNN
 
 P(X1X2...Xn∣C)=P(X1∣C)P(X2∣C)...P(Xn∣C)P(X_1X_2...X_n|C) = P(X_1|C)P(X_2|C)...P(X_n|C) P(X1​X2​...Xn​∣C)=P(X1​∣C)P(X2​∣C)...P(Xn​∣C)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/a3860bbe9a63e8f308acea8e706036cb.png)
+![](./XJTUSE-NLP-文本分类.assets/image-003-c6287afe28.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/77a80b14341526257bf78168ffd8cd92.png)
+![](./XJTUSE-NLP-文本分类.assets/image-004-7d6618bdd8.png)
 一定要结合矩阵进行理解！

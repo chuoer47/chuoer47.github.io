@@ -4,7 +4,7 @@ date: 2024-06-03 :04
 tags:
 - 数据库
 category: 本科课程笔记
-order: 55
+order: 1
 ---
 
 # MySQL 数据库实验

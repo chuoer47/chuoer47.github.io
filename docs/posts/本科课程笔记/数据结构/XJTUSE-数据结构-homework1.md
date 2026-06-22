@@ -4,7 +4,7 @@ date: 2024-06-30 :36
 tags:
 - 数据结构
 category: 本科课程笔记
-order: 56
+order: 1
 ---
 
 # XJTUSE-数据结构-homework1
@@ -13,7 +13,7 @@ order: 56
 
 题目：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/70b943a5b607908f45f8f474ae3dbeb7.png)
+![](./XJTUSE-数据结构-homework1.assets/image-001-1bbd6f3cae.png)
 
 排序算法设计：
 
@@ -112,7 +112,7 @@ private void merge(Comparable[] arr,Comparable[] temArr, int leftPos,int rightPo
 
 题目：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/d81ad60d410f5c997c284c106ef172f0.png)
+![](./XJTUSE-数据结构-homework1.assets/image-002-7d3c9b1410.png)
 
 将老师提供的SortTest进行了如下更改：
 
@@ -178,7 +178,7 @@ private void merge(Comparable[] arr,Comparable[] temArr, int leftPos,int rightPo
 
 画出的图像如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/5bea0a580855627e8169d6792f030f3e.png)
+![](./XJTUSE-数据结构-homework1.assets/image-003-5f038b7ba2.png)
 
 总结：
 
@@ -266,13 +266,13 @@ k=5
 
 k=5
 
-![](https://i-blog.csdnimg.cn/blog_migrate/27c8de0e5bd9a6fe18e732b5b93e84c5.png)
+![](./XJTUSE-数据结构-homework1.assets/image-004-d6eb150eec.png)
 
 (k=10和k=3的数据不再给出，下面是图像)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/529e0dc9092ae7098f65841f9e28c6f4.png)
+![](./XJTUSE-数据结构-homework1.assets/image-005-ed4c0b4a43.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/71adee32d5df97fb813630f935c56f3e.png)
+![](./XJTUSE-数据结构-homework1.assets/image-006-47ded06d88.png)
 
 取值不同的k，可以发现，k-序列排序对五种排序算法均有一定程度的影响。大大增加了Selection排序算法的排序时间。而大幅度减少了Insertion排序算法的排序时间。随着k值的增大可以看出，Selection排序算法排序时间增长，Mergesort和Quicksort在数据量较大时(2^15左右)小幅度影响。
 
@@ -307,35 +307,35 @@ k=5
 
 因此Quicksort数据不再给出，图像如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/20afbd6981e420b48289a7becb927a56.png)
+![](./XJTUSE-数据结构-homework1.assets/image-007-a6abea6361.png)
 
 下面将进行五种排序算法的纵向比较。
 
 Mergesort
 
-![](https://i-blog.csdnimg.cn/blog_migrate/617f8016c64dc146ae5ee61e731379b4.png)
+![](./XJTUSE-数据结构-homework1.assets/image-008-1d9da8867d.png)
 
 可以看出来，当数据量增大时，不同序列的Mergesort的运行时间逐渐接近，这与该算法的实现密切相关，因为Mergesort的最好、最坏、平均时间均为O(nlogn)。
 
 Shell
 
-![](https://i-blog.csdnimg.cn/blog_migrate/38490f5a0f8074131f50b482df48aa27.png)
+![](./XJTUSE-数据结构-homework1.assets/image-009-645d7ed842.png)
 
 可以看出，Shell排序算法在k-有序数据序列(近似有序的数据序列)用时明显减少，而该算法在完全随机序列用时最多。这是因为Shell算法先进行局部排序，最后一趟相当于Insert排序，因此排序序列越近似有序，该算法用时越少。
 
 Insertion
 
-![](https://i-blog.csdnimg.cn/blog_migrate/e8b6f06c2037a8cc2e18b583386ca5df.png)
+![](./XJTUSE-数据结构-homework1.assets/image-010-b31d8e0735.png)
 
 在k-有序数据序列(近似有序的数据序列)下用时远远小于其余两项。这与Insertion实现方式有关。耗时主要是因为Insertion在排序时有着大量交换，在k-有序数据序列每项数据离其正确位置相差不大，因此交换次数少，用时少。而在完全随机序列和不均匀序列中，每项顺序离其正确位置不确定，达到了运行平均时间O(n^2)。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/7ded6e6b3171a1205ad99f2409460fcd.png)
+![](./XJTUSE-数据结构-homework1.assets/image-011-e7998c05cd.png)
 
 总体而言，三个序列曲线比较吻合，这是因为Selection无论序列特征如何，均要遍历序列找到最小值，次小值……因此，耗时在序列数值的比较，平均时间为O(n^2)。
 
 Quicksort
 
-![](https://i-blog.csdnimg.cn/blog_migrate/dbd78ea600564caa661f6838772d7861.png)
+![](./XJTUSE-数据结构-homework1.assets/image-012-c426bb80e7.png)
 
  因为不均匀序列无法跑出结果，因此没有加入到图像之中。快速排序通过“随机”选择数值进行划分，在我编写的代码中“随机”的数字是中间值，因此在完全随机和k-有序数据序列中运行时间没有明显的差异。但如果“随机”的数字为前面，会导致在k-有序数据序列出现较差的情况，这是“随机”选择的数值不足以平均划分序列，导致运行时间大大增加。
 

@@ -4,7 +4,7 @@ date: 2024-05-11 :37
 tags:
 - 计算机网络
 category: 本科课程笔记
-order: 109
+order: 3
 ---
 
 # XJTUSE-计网-第2章-homework
@@ -95,11 +95,11 @@ type = MX,A,CNAME,NS
 
 (1) What is the total response time for the scenario illustrated in Figure 2.19? In practice, the queries typically follow the pattern in Figure 2.19: The query from the requesting host to the local DNS server is recursive, and the remaining queries are iterative. in Figure 2.19, each time the local DNS server dns.nyu.edu receives a reply from some DNS server, it can cache any of the information contained in the reply.
 
-![](https://i-blog.csdnimg.cn/blog_migrate/537e8426fb246bc5aeb55718e786c55a.png)
+![](./XJTUSE-计网-第2章-homework.assets/image-001-5d61e5f785.png)
 
 (2) What is the total response time for the scenario illustrated in Figure 2.20? Figure 2.20 shows a DNS query chain for which all of the queries are recursive.
 
-![](https://i-blog.csdnimg.cn/blog_migrate/a584c54b4d431363a386812425be2f5e.png)
+![](./XJTUSE-计网-第2章-homework.assets/image-002-cf55541585.png)
 
 (3) Assume now that the DNS record for the requested name is cached at the local DNS server. What is the total response time for the two scenarios?
 

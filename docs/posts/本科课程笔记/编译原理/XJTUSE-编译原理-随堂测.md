@@ -4,7 +4,7 @@ date: 2024-05-28 :18
 tags:
 - 编译原理
 category: 本科课程笔记
-order: 101
+order: 5
 ---
 
 # XJTUSE-编译原理-随堂测

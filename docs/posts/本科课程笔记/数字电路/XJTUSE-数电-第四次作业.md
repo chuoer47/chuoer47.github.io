@@ -4,7 +4,7 @@ date: 2024-06-25 :19
 tags:
 - 数字电路
 category: 本科课程笔记
-order: 50
+order: 2
 ---
 
 # XJTUSE-数电-第四次作业
@@ -19,7 +19,7 @@ order: 50
 ### 题目1
 学习Booth编码器[[1]](#_ftn1)的乘法器前，先要了解传统的乘法器，如下图：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/59ff5311f94fee9f328ab2c119140779.png)
+![](./XJTUSE-数电-第四次作业.assets/image-001-eac785e64e.png)
 
 可以看到这与我们小学学习的乘法法则并无差别。不过我们从小学习的是十进制的乘法，在数电当中是二进制的乘法，就是上图中的a和b要么是1要么是0。
 
@@ -35,35 +35,35 @@ order: 50
 
  最经常使用的是改进的booth编码。乘数按三位一组进行划分，相互重叠一位。其实就是把公式1重写为公式3。每一组按下表编码，并形成一个部分积。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/77788b78956b321507d9eb3b22b01aa5.png)
+![](./XJTUSE-数电-第四次作业.assets/image-002-098c95f5c9.png)
 
 再考虑前面提及的8位二进制数0111_1110。从msb到lsb，可以把它分为三位一组首尾重叠的四组：01(1)，11(1)，11(1)，10(0)，末尾补了一个辅助位0。根据上表编码得到：10(2)，00(0)，00(0)，-10(-2)，或者表示为1000_000-10，这与前面得到结果是一样的。这时，乘2就是移位。所以布斯算法仅涉及加法，减法和移位操作。
 
 即对于一个X×Y，设Y补=y7y6y5y4y3y2y1y0,我们可以列出booth二位乘:
 
-![](https://i-blog.csdnimg.cn/blog_migrate/88bc96d8b920f895605fe8d5ca00771c.png)
+![](./XJTUSE-数电-第四次作业.assets/image-003-533b5f712a.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/3f68e8f7f37c1fae4e5b5050520af81c.png)
+![](./XJTUSE-数电-第四次作业.assets/image-004-0c9cb6eb43.png)
 
 举个简单的例子计算:
 
-![](https://i-blog.csdnimg.cn/blog_migrate/fc3cd44b5ec0241170034cfc29a43918.png)
+![](./XJTUSE-数电-第四次作业.assets/image-005-c0961c5149.png)
 
 在实际编码中，减法变加法的思想：减去一个数，等于加上这个数的相反数；减去一个数，也等于加上这个数的补码。这个过程中的减数也默认是正数，因为正数的补码还是正数，只有正数前面加一个符号再去补码才有用。那么如上面竖式所写，减去一个负补码，就应该等于加上“这个负补码的补码的相反数”：
  模块图如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/644c1a77e323c4a366e9a5fbc988e7fb.png)
+![](./XJTUSE-数电-第四次作业.assets/image-006-4742f4fbcd.png)
 
 ### 题目2
 课后习题4.4：题目省略
 
 为了表达方便，强制命名，从左到右分别命名为：D2D1D0
 
-![](https://i-blog.csdnimg.cn/blog_migrate/fe0fe35a16fea361adcc29d7bb7077fd.png)
+![](./XJTUSE-数电-第四次作业.assets/image-007-d0d4140061.png)
 
 激励方程如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/dde5cb38275658ea20f41f656db69ec6.png)
+![](./XJTUSE-数电-第四次作业.assets/image-008-5829651fc8.png)
 
 激励/转换表如下：
 
@@ -109,27 +109,27 @@ order: 50
 
 状态图如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/e6601ac343b795f5dc952167ee2f2749.png)
+![](./XJTUSE-数电-第四次作业.assets/image-009-a38ad6724a.png)
 
  分析该电路用途：
 
 该电路没有输入，输出可以取Q。可以看到存在一个节点数为6的环，可以看成模数为6的计数器。
 
 ### 课后习题4.17：题目省略
-![](https://i-blog.csdnimg.cn/blog_migrate/a0427be24188d193616c9c302dda11da.png)
+![](./XJTUSE-数电-第四次作业.assets/image-010-3f6dee12ef.png)
 
 激励函数如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/2eba33a8155752d1bb4bbeb92fa51c60.png)
+![](./XJTUSE-数电-第四次作业.assets/image-011-7bc7ec0e6a.png)
 
 状态表如下：
 
 A~P表示0000~1111
 
-![](https://i-blog.csdnimg.cn/blog_migrate/906e0a3ce3aa60700dfb757074ed6b6c.png)
+![](./XJTUSE-数电-第四次作业.assets/image-012-72e0b92283.png)
  状态图如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/dbefffb6d981871d418b3c6bdd00f955.png)
+![](./XJTUSE-数电-第四次作业.assets/image-013-f9ccdb6102.png)
 
 功能分析：可以看到一共形成了三个划分，而且没有形成环，均终止于自循环中。
 

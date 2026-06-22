@@ -4,7 +4,7 @@ date: 2024-05-11 :24
 tags:
 - 计算机网络
 category: 本科课程笔记
-order: 110
+order: 4
 ---
 
 # XJTUSE-计网-第3章-homework
@@ -249,10 +249,10 @@ c. For the formula in part (b) let n approach infinity. Comment on why this aver
 
 该题就是PPT上的指数衰减的计算题目，不再计算，核心公式如下：
 
-![](https://latex.csdn.net/eq?EstimatedRTT_n%20%3D%20%281-%5Calpha%29*EstimatedRTT_%7Bn-1%7D%20+%20%5Calpha*SampleRTT_n)
+![](./XJTUSE-计网-第3章-homework.assets/image-001-a6f126973b.png)
 
 化简，得到下面公式：
 
-![](https://latex.csdn.net/eq?EstimatedRTT_n%20%3D%20%5Csum%20%5Climits_%7Bi%3D1%7D%5E%7Bn%7D%20%5Calpha*%281-%5Calpha%29%5E%7Bi-1%7D*SampleRTT_%7Bn-i+1%7D)
+![](./XJTUSE-计网-第3章-homework.assets/image-002-e93dc83f97.png)
 
 本题目的下标表示和上面的公式存在出入，但核心思想一致！

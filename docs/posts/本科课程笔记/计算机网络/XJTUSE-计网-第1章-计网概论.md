@@ -4,7 +4,7 @@ date: 2024-05-08 :07
 tags:
 - 计算机网络
 category: 本科课程笔记
-order: 108
+order: 1
 ---
 
 # XJTUSE-计网-第1章-计网概论
@@ -72,7 +72,7 @@ UDP 服务
 将带宽分为片：
 - 频分(FDM)- 时分(TDM)- 波分(WDM)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/009ab2fd9048136104764a5562ceb916.png)
+![](./XJTUSE-计网-第1章-计网概论.assets/image-001-f199bcfdb3.png)
 计算例题：
 
 通过电路交换网络，从主机 A 发送一个 64 万比特的文件到主机 B 需要多长时间？
@@ -107,7 +107,7 @@ UDP 服务
 
 被传输到下一个链路之前，整个分组必须到达路由器
 
-![](https://i-blog.csdnimg.cn/blog_migrate/e33ef35e694173881bef8c9a09640bf8.png)
+![](./XJTUSE-计网-第1章-计网概论.assets/image-002-fec474edf0.png)
 
 R：链路带宽
 
@@ -125,7 +125,7 @@ L：分组长度
 
 4 种分组延时：- 节点处理延时：检查 bit 级差错，检查分组首部和决定将分组导向何处- 排队延迟：在输出链路上等待传输的时间，依赖于路由器的拥塞程度- 传输延迟：即上面介绍的存储-转发时间 L/R- 传播延迟：d=物理链路的长度，s=在媒体上传播速度，t = d/s
 
-![](https://i-blog.csdnimg.cn/blog_migrate/a63e73931cac9f812680a65e889a2d01.png)
+![](./XJTUSE-计网-第1章-计网概论.assets/image-003-fec474edf0.png)
 综上所述：
 
 节点延迟 = 节点处理延迟+排队延迟+传输延迟+传播延迟
@@ -142,7 +142,7 @@ dnodal=dproc+dqueue+dtrans+dpropd_{nodal} = d_{proc} + d_{queue}+d_{trans}+d_{pr
 
 端到端的平均吞吐取决于瓶颈链路 = min(R1，R2，Rn)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/61057b8943fbb4c52cc4b697e1dfdb9e.png)
+![](./XJTUSE-计网-第1章-计网概论.assets/image-004-27a83af710.png)
 
 接入网&物理媒体
 
@@ -174,7 +174,7 @@ ISPs: Internet Service Providers
 
 接入网(与端系统最近)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/c66e9c5d0fbf13316b85265f1dafd21d.png)
+![](./XJTUSE-计网-第1章-计网概论.assets/image-005-57f7e1edc8.png)
 协议层次&服务模型
 
 协议层次

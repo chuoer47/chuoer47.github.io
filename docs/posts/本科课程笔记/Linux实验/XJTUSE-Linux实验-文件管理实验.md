@@ -2,7 +2,7 @@
 title: "XJTUSE-Linux实验-文件管理实验"
 date: 2023-12-25 :52
 tags:
-- Linux实验
+- Linux 实验
 category: 本科课程笔记
 order: 4
 ---
@@ -35,17 +35,17 @@ order: 4
 ### 运行结果
 查看之前的分组：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/6305f471bd9c4c8b4585e1e81745f195.png)
+![](./XJTUSE-Linux实验-文件管理实验.assets/image-001-b32e6e72ee.png)
 
 创建文件夹：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/4ca0496421eabd192d933cf15b99458d.png)配置权限：
+![](./XJTUSE-Linux实验-文件管理实验.assets/image-002-3bddca60a5.png)配置权限：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/b1e7413fa0818ec1b5868fc614889c62.png)
+![](./XJTUSE-Linux实验-文件管理实验.assets/image-003-222f265156.png)
 
 验证：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/4d0a9989237a295d82a4f0475d5471c9.png)
+![](./XJTUSE-Linux实验-文件管理实验.assets/image-004-314452d666.png)
 
 完美完成！！！
 
@@ -67,7 +67,7 @@ rm -f /home/public/user2_file
 
 ```
 ### 运行结果
-![](https://i-blog.csdnimg.cn/blog_migrate/b864116f0ba2e608a418dfb55400c5cc.png)
+![](./XJTUSE-Linux实验-文件管理实验.assets/image-005-57b6d8638f.png)
 
 ## 任务三
 ### 设计思路
@@ -80,7 +80,7 @@ ln -s /home/public /mnt/public
 2.验证
 
 ### 运行结果
-![](https://i-blog.csdnimg.cn/blog_migrate/a76d5e740d7bf3bd6006d4f4e75a1864.png)
+![](./XJTUSE-Linux实验-文件管理实验.assets/image-006-657933dd16.png)
 
 ## 任务四
 ### 设计思路
@@ -103,16 +103,16 @@ quotacheck -m /
 edquota -u user1
 ```
 ### 运行结果
-![](https://i-blog.csdnimg.cn/blog_migrate/50b5b4b5ed9e3d8fbd5bf2bcf4235e9a.png)
+![](./XJTUSE-Linux实验-文件管理实验.assets/image-007-dbed488997.png)
 
 挂载
 
-![](https://i-blog.csdnimg.cn/blog_migrate/455085ee124c1d25894f6abe90fb9a4f.png)
+![](./XJTUSE-Linux实验-文件管理实验.assets/image-008-24789fed38.png)
 
 配置
 
-![](https://i-blog.csdnimg.cn/blog_migrate/f13a74bd2dbb21c3f07fec2e9ed2dbe5.png)
+![](./XJTUSE-Linux实验-文件管理实验.assets/image-009-bbca08fb92.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/ebc2ecd3c40e604668ddebd94e738a28.png)
+![](./XJTUSE-Linux实验-文件管理实验.assets/image-010-daf31ae5b1.png)
 
 其他的用户一样设计。

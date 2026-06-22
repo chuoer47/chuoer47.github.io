@@ -4,7 +4,7 @@ date: 2023-12-05 :29
 tags:
 - 操作系统
 category: 本科课程笔记
-order: 41
+order: 2
 ---
 
 # XJTUSE-OS-ch1-8
@@ -138,7 +138,7 @@ Asynchronous异步：当I/O操作开始时，系统不会等待，而是直接�
 
 ### Storage-Device Hierarchy 存储设备层次
 
-![](https://i-blog.csdnimg.cn/blog_migrate/0f5704c231d2dcd219906d66e4cbd7d0.png)
+![](./XJTUSE-OS-ch1-8.assets/image-001-da9ab9d2fd.png)
 
 ### Dual-Mode Operation 两状态操作
 
@@ -156,7 +156,7 @@ Asynchronous异步：当I/O操作开始时，系统不会等待，而是直接�
 
 - Resource allocation  资源分配- Accounting 账务- Protection 保护### 系统调用
 
-![](https://i-blog.csdnimg.cn/blog_migrate/46f669fcfbbd30475a567c0d1b43bc63.png)
+![](./XJTUSE-OS-ch1-8.assets/image-002-7d65a089ca.png)
 
 ### 系统结构
 
@@ -180,11 +180,11 @@ program control block，进程控制块。包含了与一个特定进程有关�
 
 5状态图：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/a1d9064abe20921c85600230138746e4.png)
+![](./XJTUSE-OS-ch1-8.assets/image-003-1d9a75255b.png)
 
 7状态图(添加了挂起状态)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/d05b76b07e5ae10b4cd880521df6d1c1.png)
+![](./XJTUSE-OS-ch1-8.assets/image-004-00b1e73eba.png)
 
 ###  Schedulers 调度
 
@@ -232,7 +232,7 @@ When CPU switches to another process, the system must save the state of the old 
 
 子进程加载另一个新程序，exec()
 
-![](https://i-blog.csdnimg.cn/blog_migrate/963c41b92e776b194a25fc1bcca30d32.png)
+![](./XJTUSE-OS-ch1-8.assets/image-005-37f0da7583.png)
 
 看懂代码：
 
@@ -285,19 +285,19 @@ main()
 
 搞清楚僵尸进程和孤儿进程的区别。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/347af0f42333783bc51770d27504615a.png)
+![](./XJTUSE-OS-ch1-8.assets/image-006-37f0da7583.png)
 
 #### 进程阻塞
 
-![](https://i-blog.csdnimg.cn/blog_migrate/512af2a25d18f77089fcb2cdf833c2ce.png)
+![](./XJTUSE-OS-ch1-8.assets/image-007-cc487f193b.png)
 
 #### 进程唤醒
 
-![](https://i-blog.csdnimg.cn/blog_migrate/271bbde69dccc3e808daa2dce6eaf50d.png)
+![](./XJTUSE-OS-ch1-8.assets/image-008-8d0bb4328b.png)
 
 ### 进程间通信
 
-![](https://i-blog.csdnimg.cn/blog_migrate/f8626799894d3afc02fced92908aca93.png)
+![](./XJTUSE-OS-ch1-8.assets/image-009-5a544ea4bb.png)
 
 #### 共享存储
 
@@ -343,7 +343,7 @@ main()
 
 - program counter 程序计数器- register set  寄存器集- stack space 栈空间 与同等地位的线程共享：
 
-- 代码段- 数据段(如堆)- 操作系统资源![](https://i-blog.csdnimg.cn/blog_migrate/6080e3333adad7ea4050f29a15be2535.png)
+- 代码段- 数据段(如堆)- 操作系统资源![](./XJTUSE-OS-ch1-8.assets/image-010-2fbc5cf8a9.png)
 
 ### 用户级线程
 
@@ -379,7 +379,7 @@ main()
 
 CPU调度，即前面说的短程调度，定义为决定就绪队列中哪个进程将获得处理机，然后由分派程序执行把处理机分配给该进程的操作。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/0e5a29eaf1e3b2318505bf03796214c0.png)
+![](./XJTUSE-OS-ch1-8.assets/image-011-7e5e334f49.png)
 
 即从ready状态队列里面挑选进程到ruuning状态
 
@@ -469,15 +469,15 @@ nHighest Response Ratio Next (HRRN)高响应比优先 (作业)调度算法
 
 解答
 
-![](https://i-blog.csdnimg.cn/blog_migrate/8f01bfbb1517847dd022f6548ac43997.png)
+![](./XJTUSE-OS-ch1-8.assets/image-012-03fffb20cc.png)
 
 例题2
 
-![](https://i-blog.csdnimg.cn/blog_migrate/c39f7bc0b2bbd60d618d8a7a9f990071.png)
+![](./XJTUSE-OS-ch1-8.assets/image-013-dc294ca312.png)
 
 例题3
 
-![](https://i-blog.csdnimg.cn/blog_migrate/e6332e1beca0cf0cd6a986bcd7b4a64e.png)
+![](./XJTUSE-OS-ch1-8.assets/image-014-9650161c40.png)
 
 例题4
 
@@ -491,7 +491,7 @@ RR调度算法的性能很大程度取决于 时间片的大小
 
 例题6
 
-![](https://i-blog.csdnimg.cn/blog_migrate/5d5a4355d0064f0d25a78d8d64982c94.png)
+![](./XJTUSE-OS-ch1-8.assets/image-015-9f82c2c1a8.png)
 
 错
 
@@ -604,7 +604,7 @@ remainder section..`
 void V(S):
     S++;`
 
-![](https://i-blog.csdnimg.cn/blog_migrate/b27f31fa6e26de189fd9f71dfba12adc.png)
+![](./XJTUSE-OS-ch1-8.assets/image-016-0a2676ac4b.png)
 
 ### 信号量的用法
 
@@ -950,7 +950,7 @@ consumer : begin
 
 ### 死锁避免
 
-![](https://i-blog.csdnimg.cn/blog_migrate/34232ca0ce26e7e3c405563ab20eb9f0.png)
+![](./XJTUSE-OS-ch1-8.assets/image-017-be048ad767.png)
 
 n安全状态是指系统的一种状态，在此状态下,系统能按某种顺序(例如P1、P2……Pn)来为各个进程分配其所需资源，直至最大需求，使每个进程都可顺序地一个个地完成。这个序列(P1、P2…….Pn)称为安全序列。
 
@@ -968,7 +968,7 @@ n若某一时刻不存在一个安全序列，则称系统处于不安全状态�
 
 例题1
 
-![](https://i-blog.csdnimg.cn/blog_migrate/b3b3c3e453e74b89e4fe1a9cd8f9bf71.png)
+![](./XJTUSE-OS-ch1-8.assets/image-018-548431fdbc.png)
 
 例题2
 
@@ -986,7 +986,7 @@ n若某一时刻不存在一个安全序列，则称系统处于不安全状态�
 
 例题4
 
-![](https://i-blog.csdnimg.cn/blog_migrate/8f1cf1819a2388fcd202dc809aa96f87.png)
+![](./XJTUSE-OS-ch1-8.assets/image-019-c766c58fb1.png)
 
 一次分配法：占有并等待
 
@@ -994,20 +994,20 @@ n若某一时刻不存在一个安全序列，则称系统处于不安全状态�
 
 例题5
 
-![](https://i-blog.csdnimg.cn/blog_migrate/5c550811246e94d3c9e138da945d73d7.png)
+![](./XJTUSE-OS-ch1-8.assets/image-020-c342f50377.png)
 
 例题6
 
-![](https://i-blog.csdnimg.cn/blog_migrate/39ab0e32fa696a8ecb249d279e880b00.png)
+![](./XJTUSE-OS-ch1-8.assets/image-021-3164154e21.png)
 
  例题7
 
-![](https://i-blog.csdnimg.cn/blog_migrate/88ccb2850cb1d0b1e42866baad779d7d.png)
+![](./XJTUSE-OS-ch1-8.assets/image-022-2c07e7bb29.png)
 
 对的
 
 例题8
 
-![](https://i-blog.csdnimg.cn/blog_migrate/268fffe4b038b4b65a400c2def158420.png)
+![](./XJTUSE-OS-ch1-8.assets/image-023-245f9da3a2.png)
 
 答案：存在一个安全序列{P0, P3, P4, P1, P2},该状态安全。

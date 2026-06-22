@@ -4,7 +4,7 @@ date: 2024-08-24 :36
 tags:
 - 编译原理
 category: 本科课程笔记
-order: 103
+order: 7
 ---
 
 # XJTUSE-编译原理实验-语法分析

@@ -4,7 +4,7 @@ date: 2024-06-19 :27
 tags:
 - 数学建模
 category: 本科课程笔记
-order: 51
+order: 1
 ---
 
 # XJTUSE-数学建模-homework1
@@ -21,15 +21,15 @@ order: 51
 
        比如给出初始图如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/d62ca56df17771f1ca1b54eac1ba49a2.png)
+![](./XJTUSE-数学建模-homework1.assets/image-001-5ec3df3688.png)
 
        需要进行题目所说的操作，在该圈的外围增加棋子，变成下面这幅图：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/27f121c6a2c1e0dca9c52b7921ced6a8.png)
+![](./XJTUSE-数学建模-homework1.assets/image-002-57fcb11c07.png)
 
        再撤销掉之前的棋子得到新的圈：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/bac1fbfab806a0f194dffb73543445ac.png)
+![](./XJTUSE-数学建模-homework1.assets/image-003-140e10376f.png)
 
        不难发现以下规律：
 
@@ -159,9 +159,9 @@ while flag and game < 2 ** n:
 
 如下表：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/303d6872ad8b008be8efb78b735793b7.png)
+![](./XJTUSE-数学建模-homework1.assets/image-004-6a9f999656.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/7aa18f9d2c6426981e4f1f2206e374c2.png)
+![](./XJTUSE-数学建模-homework1.assets/image-005-55f297958d.png)
 
 结论2证明：
 

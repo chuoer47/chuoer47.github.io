@@ -4,7 +4,7 @@ date: 2024-04-27 :39
 tags:
 - 自然语言处理
 category: 本科课程笔记
-order: 106
+order: 2
 ---
 
 # XJTUSE-NLP-语法分析
@@ -15,13 +15,13 @@ order: 106
 
 在依存语法理论中， “依存”就是指词与词之间支 配与被支配的关系，这种关系不是对等的，而是有方 向的。处于支配地位的成分称为支配者(governor，  regent， head)，而处于被支配地位的成分称为从属者 (modifier， subordinate， dependency)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/2983e1f8323d5a8e318b026c8bb21e56.png)
+![](./XJTUSE-NLP-语法分析.assets/image-001-57f6ae8e4b.png)
 
 两个有向图用带有方向的弧(或称边，edge)来表 示两个成分之间的依存关系，支配者在有向弧的发 出端，被支配者在箭头端，我们通常说被支配者依 存于支配者。
 
 考试只需掌握画线，无需掌握 SBV，VOB，DE…的概念
 
-![](https://i-blog.csdnimg.cn/blog_migrate/bb63410e7dd9733ac24e39361cfa07bc.png)
+![](./XJTUSE-NLP-语法分析.assets/image-002-2d5d5b2c5c.png)
 
 4 条公理：
 
@@ -44,7 +44,7 @@ order: 106
 
 理论过于复杂，直接看例子即可：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/620e55862b259c8317a02f729aba2be6.png)
+![](./XJTUSE-NLP-语法分析.assets/image-003-00e893c620.png)
 
 一共三个操作，移进，左规约，右规约。
 
@@ -54,16 +54,16 @@ order: 106
 
 例题 1：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/f28d26d5d2e93a0afbfd37ae61da83ed.png)
+![](./XJTUSE-NLP-语法分析.assets/image-004-7ae9c450a2.png)
 例题 2：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/54c9bb65ca9702e45139be869e78c67e.png)
+![](./XJTUSE-NLP-语法分析.assets/image-005-9f13a49cff.png)
 
 例题 3：
 
 Vinken will join the board as a  nonexecutive director Nov 29
 
-![](https://i-blog.csdnimg.cn/blog_migrate/4940348e10ce8162ebfd55ae8548ae94.png)
+![](./XJTUSE-NLP-语法分析.assets/image-006-042207763d.png)
 
 个人理解：
 
@@ -84,7 +84,7 @@ Context-free grammars (CFGs)
 
 上下文无关特性：句法规则X−>λX->\lambdaX−>λ的应用不依赖于出现在什么上下文环境中
 
-![](https://i-blog.csdnimg.cn/blog_migrate/cebc6c70766921ddd876a9590ee259b3.png)
+![](./XJTUSE-NLP-语法分析.assets/image-007-083e2edb16.png)
 Chomsky 范式
 
 一个受 Chomsky 范式约束的 CFG 句法G=(T,N,S,R)G = (T, N, S, R)G=(T,N,S,R)，具有以下形式：
@@ -108,9 +108,9 @@ CYK 句法分析
 
 给个例子进行理解：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/5cb7373a30b94c8247a2dd17af52ec4e.png)
+![](./XJTUSE-NLP-语法分析.assets/image-008-8e4343095b.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/c200d8f462d7cbce44cb4d9ac7390eb6.png)
+![](./XJTUSE-NLP-语法分析.assets/image-009-f030cda92b.png)
 函数 CYK算法(输入: 词串w, 文法G)
 
 初始化 chart 为一个二维数组，大小为 |w| × |w|，初始值为 空集
@@ -146,7 +146,7 @@ G = (T, N, S, R, P)
 tree∗=arg⁡ max⁡t∈T(s)⁡p(t)tree^* = arg⁡ \ \max \limits_{t \in Τ(s)}⁡ p(t)tree∗=arg⁡ t∈T(s)max​⁡p(t)
 举个例子：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/bb89571df4d24511204cd2b789ef26c8.png)
+![](./XJTUSE-NLP-语法分析.assets/image-010-bb19689ce5.png)
 
 HMM vs PCFGs
 

@@ -4,7 +4,7 @@ date: 2024-08-10 :10
 tags:
 - 离散数学
 category: 本科课程笔记
-order: 62
+order: 6
 ---
 
 # XJTUSE-离散数学-图论
@@ -55,7 +55,7 @@ order: 62
 
 极大连通子图：连通支
 
-- 强连通：任意两点可达- 单向连通：任意两点，至少有一个结点可达另一个结点。- 弱连通：去掉边方向后，是连通的。![](https://i-blog.csdnimg.cn/direct/0bdbbb8bd5b14fc39f2348b5e632a466.png)
+- 强连通：任意两点可达- 单向连通：任意两点，至少有一个结点可达另一个结点。- 弱连通：去掉边方向后，是连通的。![](./XJTUSE-离散数学-图论.assets/image-001-b1063a0b16.png)
 
 ## 图的矩阵表示
 
@@ -63,9 +63,9 @@ order: 62
 
 1表示连接，0表示不连接
 
-矩阵相乘，![](https://latex.csdn.net/eq?a_%7Bij%7D%5E%7Bm%7D)表示为从i到j长度为m的路有几条。
+矩阵相乘，![](./XJTUSE-离散数学-图论.assets/image-002-5085468f16.png)表示为从i到j长度为m的路有几条。
 
-![](https://i-blog.csdnimg.cn/direct/805b72d010ae4e4f9b1a5ba55946f695.png)
+![](./XJTUSE-离散数学-图论.assets/image-003-9c518f27e4.png)
 
 ### 可达矩阵
 
@@ -75,7 +75,7 @@ order: 62
 
 ### 可达矩阵与连通性的关系
 
-- 强连通：R全为1- 单向连通：![](https://latex.csdn.net/eq?R%5Ccup%20R%5ET)除对角线，全为1- 弱连通：![](https://latex.csdn.net/eq?A%5Ccup%20A%5ET)确定的R全为1- 有圈：R对角线上有1## 带权图的最短路径
+- 强连通：R全为1- 单向连通：![](./XJTUSE-离散数学-图论.assets/image-004-e18cdaa1ce.png)除对角线，全为1- 弱连通：![](./XJTUSE-离散数学-图论.assets/image-005-8d62f2fa78.png)确定的R全为1- 有圈：R对角线上有1## 带权图的最短路径
 
 太经典的问题了，Dij算法。
 
@@ -105,19 +105,19 @@ Hamilton圈：每条点一次且仅一次的圈；
 
 H图 的 必要条件为 ：
 
-对于结点集合V的任一非空子集S，均有![](https://latex.csdn.net/eq?W%28G%20/%20S%29%20%5Cleq%20%7CS%7C)，其中W(G)为连通支数。
+对于结点集合V的任一非空子集S，均有![](./XJTUSE-离散数学-图论.assets/image-006-1a2da9168a.png)，其中W(G)为连通支数。
 
 ### 充分条件
 
-H路的充分条件为 ： G为n个结点的简单无向图，![](https://latex.csdn.net/eq?%5Cforall%20u%2Cv%20%5Cin%20V%2Cdeg%28u%29+deg%28v%29%20%5Cgeq%20n-1)
+H路的充分条件为 ： G为n个结点的简单无向图，![](./XJTUSE-离散数学-图论.assets/image-007-96c47f2bf1.png)
 
-H圈的充分条件为 ： G为n个结点的简单无向图，![](https://latex.csdn.net/eq?%5Cforall%20u%2Cv%20%5Cin%20V%2Cdeg%28u%29+deg%28v%29%20%5Cgeq%20n)
+H圈的充分条件为 ： G为n个结点的简单无向图，![](./XJTUSE-离散数学-图论.assets/image-008-1c284d8f02.png)
 
 ### 竞赛图
 
 完全图的定向图为竞赛图
 
-![](https://i-blog.csdnimg.cn/direct/e1af0f4b762f40f5b8b5bbe37b8bf564.png)
+![](./XJTUSE-离散数学-图论.assets/image-009-631cdbe3d5.png)
 
 竞赛图必有一条H-路
 
@@ -161,9 +161,9 @@ G = (V,E)是简单无向图，存在V的一个划分，使得G中的每一条边
 
 G为连通的(n,m)平面图，区域数为r，有n-m+r = 2
 
-每个区域都是三条边及以上构成的，有不等式：![](https://latex.csdn.net/eq?m%20%5Cleq%203n-6)
+每个区域都是三条边及以上构成的，有不等式：![](./XJTUSE-离散数学-图论.assets/image-010-81597301f4.png)
 
-每个区域都是四条边及以上构成的，有不等式：![](https://latex.csdn.net/eq?m%20%5Cleq%202n-4)
+每个区域都是四条边及以上构成的，有不等式：![](./XJTUSE-离散数学-图论.assets/image-011-afe74ed6d8.png)
 
 ### Kuratowsti定理
 

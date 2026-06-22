@@ -4,7 +4,7 @@ date: 2024-06-20 :25
 tags:
 - 数学建模
 category: 本科课程笔记
-order: 53
+order: 3
 ---
 
 # XJTUSE-数学建模-homework3
@@ -47,23 +47,23 @@ order: 53
 
 1.患者进行口服药，需要时间才能被吸收，药物被吸收的速率与存量药物的浓度成正比，由于体积可以看出近似不变，因此药物被吸收的速率与存量药物的数量成正比，记比例系数为K1。满足下面公式：
 
-![](https://latex.csdn.net/eq?%5Cfrac%7Bdy%7D%7Bdt%7D%3D%5C%20-K1%5Cast%20y)
+![](./XJTUSE-数学建模-homework3.assets/image-001-0f109ab688.png)
 
-![](https://latex.csdn.net/eq?y%5Cleft%280%5Cright%29%3DD)
+![](./XJTUSE-数学建模-homework3.assets/image-002-5996daff1f.png)
 
 求解上述微分方程得：
 
-![](https://latex.csdn.net/eq?y%5Cleft%28t%5Cright%29%3DD%5Cast%5C%20e%5E%7B-K1%5Cast%20t%7D)
+![](./XJTUSE-数学建模-homework3.assets/image-003-0c82c77c4a.png)
 
 2.人体内的药物会随时间流逝，药物流逝的速率与体内药物的数量(浓度)成正比，记比例系数为K2。满足下面公式：
 
-![](https://latex.csdn.net/eq?%5Cfrac%7Bdx%7D%7Bdt%7D+K2%5Cast%20x%3DK1%5Cast%5C%20D%5Cast%5C%20e%5E%7B-K1%5Cast%20t%7D)
+![](./XJTUSE-数学建模-homework3.assets/image-004-255f3c9d0d.png)
 
-![](https://latex.csdn.net/eq?x%5Cleft%280%5Cright%29%3D0)
+![](./XJTUSE-数学建模-homework3.assets/image-005-42a17b9089.png)
 
 解得：
 
-![](https://latex.csdn.net/eq?x%5Cleft%28t%5Cright%29%3D%5Cleft%28K1%5Cast%20D%5Cright%29/%5Cleft%28K1-K2%5Cright%29%5Cleft%28e%5E%7B%5Cleft%28-K2%5Cast%20t%5Cright%29%7D-e%5E%7B%5Cleft%28-K1%5Cast%20t%5Cright%29%7D%5Cright%29)
+![](./XJTUSE-数学建模-homework3.assets/image-006-7dc67bcafa.png)
 
 3.把药物数量减少至原先一半的时间，称之为半衰期。该问题药物的半衰期难以直接确定。
 
@@ -71,7 +71,7 @@ order: 53
 
 得到下图：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/d7711ce9a11bede0b461b1a426ce777b.png)
+![](./XJTUSE-数学建模-homework3.assets/image-007-5d1198ccc9.png)
 
 ## 3 模型分析及改进
 
@@ -91,19 +91,19 @@ order: 53
 
 周期性处理，每次过了服药间隔T时，计算未被吸收剩余量D‘，体内剩余量E，时间归零重新开始计时。
 
-![](https://latex.csdn.net/eq?y%5Cleft%280%5Cright%29%3DA+D%27%3DD)
+![](./XJTUSE-数学建模-homework3.assets/image-008-16ce55fce4.png)
 
-![](https://latex.csdn.net/eq?x%5Cleft%280%5Cright%29%3DE)
+![](./XJTUSE-数学建模-homework3.assets/image-009-980bdb6b19.png)
 
 其余公式不变，解得：
 
-![](https://latex.csdn.net/eq?x%5Cleft%28t%5Cright%29%3D%5C%20%5Cfrac%7BK1%5Cast%20D%7D%7BK1-K2%7D%5C%20%5Cleft%28e%5E%7B-K2%5Cast%20t%7D-%5C%20e%5E%7B-K1%5Cast%20t%7D%5Cright%29+E%5Cast%20e%5E%7B-K2%5Cast%20t%7D)
+![](./XJTUSE-数学建模-homework3.assets/image-010-cf84da42b8.png)
 
 根据实际服药次数的情况，不断进行上述迭代即可求解模型。
 
 仍带入D=10;K1= 4;K2=3。此时假设服药间隔为1h，一共进行两次服药，得到下图：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/cbd3a4e68be513f44f4adf66eb7ef71e.png)
+![](./XJTUSE-数学建模-homework3.assets/image-011-53117168d6.png)
 
 函数图像是连续的，这说明身体吸收不存在突然增加。
 

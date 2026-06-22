@@ -2,7 +2,7 @@
 title: "VMware配置Linux虚拟机配置过程及遇见的问题"
 date: 2023-12-21 :38
 tags:
-- Linux实验
+- Linux 实验
 category: 本科课程笔记
 order: 1
 ---
@@ -47,7 +47,7 @@ order: 1
 
 解决办法：需要修改一下镜像源。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/82c7a35e7464381d65ad9265c5273239.png)
+![](./VMware配置Linux虚拟机配置过程及遇见的问题.assets/image-001-eb3e4795e7.png)
 
 #### 问题5
 没有网络？无法与主机联系？
@@ -56,10 +56,10 @@ order: 1
 
 1.设置桥接模式(桥接就是把一台机器上的若干个网络接口“连接”起来。其结果是，其中一个网口收到的报文会被复制给其他网口并发送出去。以使得网口之间的报文能够互相转发。)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/d289da8c213bad6b6269f192a0116957.png)
+![](./VMware配置Linux虚拟机配置过程及遇见的问题.assets/image-002-1f2ea2d1af.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/6bda6b34df317710e14957c414932835.png)
+![](./VMware配置Linux虚拟机配置过程及遇见的问题.assets/image-003-601c299e1a.png)
 
 2.可以设置CD/DVD
 
-![](https://i-blog.csdnimg.cn/blog_migrate/3eb94e22a57a263036b5589cc11b3920.png)
+![](./VMware配置Linux虚拟机配置过程及遇见的问题.assets/image-004-a6e16aea75.png)

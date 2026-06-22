@@ -4,7 +4,7 @@ date: 2025-04-20 :25
 tags:
 - 操作系统
 category: 本科课程笔记
-order: 46
+order: 6
 ---
 
 # 【XJTU-OS】锁 | java实现

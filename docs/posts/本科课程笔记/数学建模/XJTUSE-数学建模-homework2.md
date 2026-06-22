@@ -4,28 +4,28 @@ date: 2024-06-19 :27
 tags:
 - 数学建模
 category: 本科课程笔记
-order: 52
+order: 2
 ---
 
 # XJTUSE-数学建模-homework2
 
 ## 题目1
 
-题目1：取   A= ![](https://latex.csdn.net/eq?%5Cbegin%7Bbmatrix%7D%201%20%262%20%5C%5C%200%20%26%205%20%5Cend%7Bbmatrix%7D)，用A加密meet，再求其逆矩阵，并对其解密。
+题目1：取   A= ![](./XJTUSE-数学建模-homework2.assets/image-001-0b547f713b.png)，用A加密meet，再求其逆矩阵，并对其解密。
 
 1.1   加密：
 
-步骤1：对字符串“meet”转换为(13 5 5 20)，两个元素为一组，并转化为向量B= ![](https://latex.csdn.net/eq?%5Cbegin%7Bbmatrix%7D%2013%20%26%205%5C%5C%205%20%26%2020%20%5Cend%7Bbmatrix%7D)
+步骤1：对字符串“meet”转换为(13 5 5 20)，两个元素为一组，并转化为向量B= ![](./XJTUSE-数学建模-homework2.assets/image-002-8f7682e486.png)
 
-步骤2：用矩阵A左乘B，为了保障数字在0-25，对所求矩阵模上26，得到C= ![](https://latex.csdn.net/eq?%5Cbegin%7Bbmatrix%7D%2023%20%26%2019%5C%5C%2025%20%26%2022%20%5Cend%7Bbmatrix%7D)
+步骤2：用矩阵A左乘B，为了保障数字在0-25，对所求矩阵模上26，得到C= ![](./XJTUSE-数学建模-homework2.assets/image-003-e9d21781f4.png)
 
 步骤3：对步骤2所得矩阵转化为字符串，加密结果为：“wysv”。
 
 1.2   解密：
 
-步骤1：对A求逆矩阵，detA=5, ![](https://latex.csdn.net/eq?det%5E%7B-1%7D%28A%29%20%3D%2021)，A*= ![](https://latex.csdn.net/eq?%5Cbegin%7Bbmatrix%7D%205%20%26%20-2%5C%5C%200%20%26%201%20%5Cend%7Bbmatrix%7D)，得到![](https://i-blog.csdnimg.cn/blog_migrate/667bca303e5b34a42ec3bb6901d1d098.png)
+步骤1：对A求逆矩阵，detA=5, ![](./XJTUSE-数学建模-homework2.assets/image-004-1f2c10c31f.png)，A*= ![](./XJTUSE-数学建模-homework2.assets/image-005-1abe8021d6.png)，得到![](./XJTUSE-数学建模-homework2.assets/image-006-c2c4eb7a8f.png)
 
-步骤2：用所求的逆矩阵左乘加密矩阵，即![](https://i-blog.csdnimg.cn/blog_migrate/d5ab47349003ee3486f027ab3fbff40e.png)，解密结果就为原来的“meet”。
+步骤2：用所求的逆矩阵左乘加密矩阵，即![](./XJTUSE-数学建模-homework2.assets/image-007-52829008d4.png)，解密结果就为原来的“meet”。
 
 1.3    结果：
 
@@ -80,7 +80,7 @@ print("解密后的数据为：", *origin)
 
 题目2：有密文如下:goqbxcbuglosnfal;根据英文的行文习惯以及获取密码的途径和背景，猜测是两个字母为一组的希尔密码，前四个明文字母是dear，试破译这段秘文。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/1b7bdb32d772ca70a460c146768eb3ff.png)
+![](./XJTUSE-数学建模-homework2.assets/image-008-831cc09817.png)
 
 2.2   结果
 
@@ -145,7 +145,7 @@ print(res)
 
 			第i年城市人数
 
-![](https://i-blog.csdnimg.cn/blog_migrate/8c6979a2f02b4807484572ddfb93eb41.png)
+![](./XJTUSE-数学建模-homework2.assets/image-009-55933203ae.png)
 
 3.4   问题求解：
 
@@ -159,7 +159,7 @@ print(res)
 
 下面是几组不同A,B值，农村、城市人口变化的表格。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/f1dfb370ba84e570e4da09f8578ce9a0.png)
+![](./XJTUSE-数学建模-homework2.assets/image-010-4dafd1a891.png)
 
 注：数据存在部分误差，这是由于小数转化为整数丢失导致的。
 

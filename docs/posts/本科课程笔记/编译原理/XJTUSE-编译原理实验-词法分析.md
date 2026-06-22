@@ -4,7 +4,7 @@ date: 2024-08-24 :26
 tags:
 - 编译原理
 category: 本科课程笔记
-order: 102
+order: 6
 ---
 
 # XJTUSE-编译原理实验-词法分析
@@ -91,15 +91,15 @@ program begin end var integer if then else do while
 
   常数
 
- ![](https://i-blog.csdnimg.cn/direct/f5740b793433405d832f1bb89d544085.png) 标识符
+ ![](./XJTUSE-编译原理实验-词法分析.assets/image-001-e6d7ed0d5e.png) 标识符
 
- ![](https://i-blog.csdnimg.cn/direct/1ae2621c05014eaab242e90e56cdb8b1.png) 无意义的空格&tab
+ ![](./XJTUSE-编译原理实验-词法分析.assets/image-002-ba13983d34.png) 无意义的空格&tab
 
- ![](https://i-blog.csdnimg.cn/direct/d4585fbb6bb042e8a9348995f5a85b3f.png)
+ ![](./XJTUSE-编译原理实验-词法分析.assets/image-003-d04af6fe0a.png)
 ### 状态转换图
 下面是总的状态转换图！
 
-![](https://i-blog.csdnimg.cn/direct/1bc7643a8bca4093a5ac511dac46eda0.png)
+![](./XJTUSE-编译原理实验-词法分析.assets/image-004-0177bd3b67.png)
 
 ## RE 库 & 识别词代码
 ### RE 库

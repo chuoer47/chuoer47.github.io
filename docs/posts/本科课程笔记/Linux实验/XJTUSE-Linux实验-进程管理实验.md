@@ -2,9 +2,9 @@
 title: "XJTUSE-Linux实验-进程管理实验"
 date: 2023-12-22 :41
 tags:
-- Linux实验
+- Linux 实验
 category: 本科课程笔记
-order: 5
+order: 3
 ---
 
 # XJTUSE-Linux实验-进程管理实验
@@ -62,9 +62,9 @@ Child process 2 is sending a message!
  有关一些Linux命令讲解我回头再写一篇blog
 
 ### 展示
-![](https://i-blog.csdnimg.cn/blog_migrate/c21694c6ae328f4c1c54e43efd33fe85.png)![](https://i-blog.csdnimg.cn/blog_migrate/6cabf9e23df3ea9416c3e4d52dd89f67.png)
+![](./XJTUSE-Linux实验-进程管理实验.assets/image-001-2a0cecafd3.png)![](./XJTUSE-Linux实验-进程管理实验.assets/image-002-ed4a2a4f43.png)
 
-![](https://i-blog.csdnimg.cn/blog_migrate/953043129b0ce824528867ddf96fe8c2.png)
+![](./XJTUSE-Linux实验-进程管理实验.assets/image-003-fca67aa013.png)
 
 ## 任务二
 ### 设计思路
@@ -73,7 +73,7 @@ Child process 2 is sending a message!
 2.验证修改用户是否有权限
 
 ### 展示
-![](https://i-blog.csdnimg.cn/blog_migrate/17b16d317ed5b51fc2d5771a94777954.png)![](https://i-blog.csdnimg.cn/blog_migrate/355f46de79e6a0713182d1cb6f70723a.png)
+![](./XJTUSE-Linux实验-进程管理实验.assets/image-004-2dbd654511.png)![](./XJTUSE-Linux实验-进程管理实验.assets/image-005-224c34b416.png)
 
 ## 任务三
 ### 设计思路
@@ -85,13 +85,13 @@ Child process 2 is sending a message!
 
  不过在创建前要新建/home/user1的文件夹，不然备份失败
 
-![](https://i-blog.csdnimg.cn/blog_migrate/fa41f3d229ac0240bb604173c0aa1d77.png)![](https://i-blog.csdnimg.cn/blog_migrate/b852dbc75a39a59e1c3e102c63ba0fac.png)
+![](./XJTUSE-Linux实验-进程管理实验.assets/image-006-efedc3e0f9.png)![](./XJTUSE-Linux实验-进程管理实验.assets/image-007-e5c23bf11e.png)
 
  这里为了方便展示，没有按照题目设计时间，大家自行修改时间
 
  使用mail命令时候，需要下载。
 
-![](https://i-blog.csdnimg.cn/blog_migrate/ee217e878463496d4075f043a61c6221.png)
+![](./XJTUSE-Linux实验-进程管理实验.assets/image-008-abb2d3ba20.png)
 
 收到邮箱，验证成功！
 
@@ -178,7 +178,7 @@ int main() {
     return 0;
 }
 ```
-![](https://i-blog.csdnimg.cn/blog_migrate/ef564e12535afea74c8e931c11754d71.png)
+![](./XJTUSE-Linux实验-进程管理实验.assets/image-009-d835526337.png)
 
 ## 任务五
 ### 设计思路
@@ -226,6 +226,6 @@ main(){
 }
 ```
 ### 展示
-![](https://i-blog.csdnimg.cn/blog_migrate/50697d66a010ba9e79d74a87e7445a23.png)
+![](./XJTUSE-Linux实验-进程管理实验.assets/image-010-549f2fd09a.png)
 
  注意：需要等一会！！！

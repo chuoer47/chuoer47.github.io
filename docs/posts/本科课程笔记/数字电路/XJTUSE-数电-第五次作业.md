@@ -4,7 +4,7 @@ date: 2024-06-25 :37
 tags:
 - 数字电路
 category: 本科课程笔记
-order: 49
+order: 3
 ---
 
 # XJTUSE-数电-第五次作业
@@ -33,7 +33,7 @@ CORDIC为Coordinate rotation digital computer的缩写，来自于J.E.Volder发�
 
 在极坐标中，任何一点X均可以表示为：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/55ae8c006b58099705ceb351424275e1.png)
+![](./XJTUSE-数电-第五次作业.assets/image-001-67c0977ffc.png)
 
 其中p为极径，theta为极角。
 
@@ -41,44 +41,44 @@ CORDIC为Coordinate rotation digital computer的缩写，来自于J.E.Volder发�
 
 以上图为例，如果只在逆时针方向旋转角度theta，图中两点p1 =(x1,y1)旋转至p2 = (x2,y2)的关系为：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/d0b7203d6394bd26e788328ee9c70482.png)
+![](./XJTUSE-数电-第五次作业.assets/image-002-03d412ef59.png)
 
 这两点又可以表示为：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/1f0b17c4932097af1a21c71d786b8850.png)
+![](./XJTUSE-数电-第五次作业.assets/image-003-981573cf75.png)
 
 将以上关系式子带入p2和p1的关系式中，化简得到：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/83ef1979c2a2b9527eb64c555a9bbcc9.png)
+![](./XJTUSE-数电-第五次作业.assets/image-004-1bca4aa954.png)
 
 提取cos theta得：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/45bdc593703935eadd2d2d547b1100bb.png)
+![](./XJTUSE-数电-第五次作业.assets/image-005-7889ab3025.png)
 
 如果将以上点p2再旋转到p3，p4…等等，对于第i次旋转，重新记为如下，每次角度变化记为z(旋转模式下的角度变化)：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/fc72d92dbf3ca76f2742aa95eb1ee485.png)
+![](./XJTUSE-数电-第五次作业.assets/image-006-897645e2f8.png)
 
 现在我们求点p2的模也就是p2的极径，即：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/7866d1a919826637c84cbe67c395d60e.png)
+![](./XJTUSE-数电-第五次作业.assets/image-007-8c9550aa6b.png)
  由此可见，每次旋转后点的模与旋转前点的模相同，也就是说极径相同。
 
 如果忽略每次旋转cos theta的影响，实际旋转后的极径又如何呢？
 
 P2的模重新记为：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/3690dba35bf430964c95120c9bf37324.png)
+![](./XJTUSE-数电-第五次作业.assets/image-008-ac4bc5c37b.png)
 
 实际中变化的模值缩放值为K=sqrt(1+tan^theta)=1/(cos theta)，忽略cos theta，第i+1次的坐标变换重新表示为：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/17e6aaaeec550a59ab64436096ae1c09.png)
+![](./XJTUSE-数电-第五次作业.assets/image-009-ead9e19c8d.png)
 
 第i+1次旋转模值少乘了一个1/(cos theta)，且(1/cos theta)与sqrt(1+tan^theta)相等，所以点的模值在不断变化。为了恢复原模值的影响，我们需要将每一次模值变化的系数重新乘回去。
 
 根据极坐标的性质，经过M次旋转后，第M次点的左边与初始点(x,y)关系为：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/19d995779e9ef7e42dbc8e25c4c11ae8.png)
+![](./XJTUSE-数电-第五次作业.assets/image-010-d4f644617a.png)
 
 第i次迭代记为Ki，在CORDIC的计算中，经过迭代次数为24时，K=1.646760255。K值为常数，也就是缩放因子。
 
@@ -86,15 +86,15 @@ P2的模重新记为：
 
 其实每一次点的角度x，y轴和角度变化, 在第一节末尾的基本的迭代公式中已经给出，但是每一次转多少度才能求出p1的角度z，目前为止我们还不知道，并且tan theta与x和y相乘不易，如果有更好的办法比如只是移位操作，问题将会变得更加简单，所以CORDIC算法的迭代公式中引入如下简化使得：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/f5e98683c0d9c923a7895b6701293073.png)
+![](./XJTUSE-数电-第五次作业.assets/image-011-8b865bf81a.png)
 
 所以CORDIC迭代公式如下，模值常量K统一处理：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/961e289cb3a068b4fc9b034c40b4d501.png)
+![](./XJTUSE-数电-第五次作业.assets/image-012-761266d6f7.png)
 
 经过如上艺术化的处理，不得不惊叹祖师爷鬼斧神工般的灵感。可以看出每次迭代，x和y只需要i比特的移位器2个，并且x和y坐标变化量和角度的累计一共只需要3个加法器，其中角度的累计还需要将每次 tan^-1(2^-i)求出，当然已经存储在如下表中：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/3c036b2d106526aac4789a1ae394efc4.png)
+![](./XJTUSE-数电-第五次作业.assets/image-013-19cfd62b41.png)
 
 所以它的结构总结起来口诀为朗朗上口的“123”：
 
@@ -106,7 +106,7 @@ P2的模重新记为：
 
 它的运算单元如下：
 
-![](https://i-blog.csdnimg.cn/blog_migrate/401ad088579b0094a49277fe45a12627.png)
+![](./XJTUSE-数电-第五次作业.assets/image-014-0d29765719.png)
 
 至此，该算法的理论部分和电路设计讲解完毕。
 
@@ -117,13 +117,13 @@ P2的模重新记为：
 
  先设计状态表，状态表如下：
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/112c20b897a1f752b22531c54ebcb944.png)
+ ![](./XJTUSE-数电-第五次作业.assets/image-015-92c8200e1b.png)
 
- ![](https://latex.csdn.net/eq?y%5E%7Bn+1%7D/Z)
+ ![](./XJTUSE-数电-第五次作业.assets/image-016-db282416a9-02.png)
 
         根据状态表设计状态图如下：
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/5fb7358fd9fe8f87de5a04a19cc938a5.png)
+ ![](./XJTUSE-数电-第五次作业.assets/image-017-4364e31ec1.png)
 
  为了画图方便，自环没有画出。
 
@@ -131,13 +131,13 @@ P2的模重新记为：
 
  先设计状态表，状态表如下：
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/2f2410e3e62c49973295d54897a7d10d.png)
+ ![](./XJTUSE-数电-第五次作业.assets/image-018-d8b2cf63b7.png)
 
- ![](https://latex.csdn.net/eq?y%5E%7Bn+1%7D/Z)
+ ![](./XJTUSE-数电-第五次作业.assets/image-016-db282416a9-02.png)
 
        根据状态表设计状态图如下：
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/86c23e6d19aff5f7ae4dd0eef855d43d.png)
+ ![](./XJTUSE-数电-第五次作业.assets/image-020-c60e86e49c.png)
 
  为了画图方便，自环没有画出。
 
@@ -146,7 +146,7 @@ P2的模重新记为：
 
  1.画隐含表格：
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/f6da1f09e92a82e9d1e085166e425bb3.png)
+ ![](./XJTUSE-数电-第五次作业.assets/image-021-8bdf5ef781.png)
 
  2.合并关联项:
 
@@ -158,13 +158,13 @@ P2的模重新记为：
 
  3.得到化简后的状态表:
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/a590cac20dc0210b1b76ffeb44c9589c.png)
+ ![](./XJTUSE-数电-第五次作业.assets/image-022-3cfed76a42.png)
 
  (b) 化简过程如下：
 
  1.画隐含表格：
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/3bf1e23067bdeb14fd369e767ccfc67a.png)
+ ![](./XJTUSE-数电-第五次作业.assets/image-023-cb2339ccb9.png)
 
  2.合并关联项
 
@@ -176,7 +176,7 @@ P2的模重新记为：
 
  3.得到化简后的状态表
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/9d42f1d4948c54282e5575d725df2495.png)
+ ![](./XJTUSE-数电-第五次作业.assets/image-024-a714aa9595.png)
 
  ####
  #### 5.5   题目省略
@@ -184,7 +184,7 @@ P2的模重新记为：
 
  1.画隐含表：
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/be408b88f2096f80e4fe2a3dace0f50d.png)
+ ![](./XJTUSE-数电-第五次作业.assets/image-025-b80a7f5c20.png)
 
  2.合并关联项:
 
@@ -194,7 +194,7 @@ P2的模重新记为：
 
  (A,E),(B,C),(C,D),(C,E)
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/c34eaf86af2554a863023b71ccc194f7.png)
+ ![](./XJTUSE-数电-第五次作业.assets/image-026-0f89d8e26b.png)
 
  3.求相容类集合：
 
@@ -206,13 +206,13 @@ P2的模重新记为：
 
  4.化简状态表：
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/c349aa6b3bcb0a9abbfea286cfc541ff.png)
+ ![](./XJTUSE-数电-第五次作业.assets/image-027-86b1c6e4fa.png)
 
  (b)步骤如下：
 
  1.画隐含表：
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/2a52b1490c4c1645544bbfeab700455c.png)
+ ![](./XJTUSE-数电-第五次作业.assets/image-028-5b91417d05.png)
 
  2.合并关联项:
 
@@ -222,7 +222,7 @@ P2的模重新记为：
 
  (1,2,3,4),(2,5,6)
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/a96cf5af5893d7550d0e99a303f8c62c.png)
+ ![](./XJTUSE-数电-第五次作业.assets/image-029-d2c216430f.png)
 
  3.求相容类集合：
 
@@ -230,10 +230,10 @@ P2的模重新记为：
 
  2= 256
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/8893e897a3c5ba1dec7bd20b7b03564e.png)
+ ![](./XJTUSE-数电-第五次作业.assets/image-030-e119445815.png)
 
  4.化简状态表：
 
- ![](https://i-blog.csdnimg.cn/blog_migrate/a33e903328b20f57d318983607c07db8.png)
+ ![](./XJTUSE-数电-第五次作业.assets/image-031-9c4fc9bcbe.png)
 
   [[1]](#_ftnref1) 内容来源知乎

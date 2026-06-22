@@ -4,7 +4,7 @@ date: 2024-06-20 :46
 tags:
 - 编译原理
 category: 本科课程笔记
-order: 100
+order: 2
 ---
 
 # XJTUSE-编译原理-第四章-homework
@@ -13,7 +13,7 @@ order: 100
 
 ### 问题描述
 
-![](https://i-blog.csdnimg.cn/blog_migrate/56d5736cd3b9607d93a8a4baf1ab7981.png)
+![](./XJTUSE-编译原理-第四章-homework.assets/image-001-fc67c74d04.png)
 
 ### 第一问
 
@@ -43,7 +43,7 @@ P→union
 
 ### 第二问
 
-只有S→PuTS'![](https://i-blog.csdnimg.cn/blog_migrate/26b6a06849b811ff32df25af6490fb74.png)需要 P 的 First 集，剩下的非终结符可以得到：
+只有S→PuTS'![](./XJTUSE-编译原理-第四章-homework.assets/image-002-d2a7a6b882.png)需要 P 的 First 集，剩下的非终结符可以得到：
 
 			非终结符
 
@@ -193,7 +193,7 @@ P→union
 
 ### 问题描述
 
-![](https://i-blog.csdnimg.cn/blog_migrate/e87ac542825ae78aa4993f8b18e9995a.png)
+![](./XJTUSE-编译原理-第四章-homework.assets/image-003-2b513d20fb.png)
 
 ### 第一问
 

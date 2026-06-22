@@ -4,7 +4,7 @@ date: 2024-08-11 :11
 tags:
 - 离散数学
 category: 本科课程笔记
-order: 63
+order: 4
 ---
 
 # XJTUSE-离散数学-谓词演算
@@ -31,7 +31,7 @@ order: 63
 
 约束关系的区分
 
-![](https://i-blog.csdnimg.cn/direct/4eab89add19f4c1bb86472e31977390d.png)
+![](./XJTUSE-离散数学-谓词演算.assets/image-001-d93d57d1b6.png)
 
 ### 指派
 
@@ -39,7 +39,7 @@ order: 63
 
 ## 基本逻辑等价
 
-![](https://i-blog.csdnimg.cn/direct/a6551da3e5a0494e82ded7f69087494d.png)
+![](./XJTUSE-离散数学-谓词演算.assets/image-002-7dc3533194.png)
 
 ### 替换定理
 
@@ -51,33 +51,33 @@ order: 63
 
 #### 自由变元
 
-![](https://i-blog.csdnimg.cn/direct/ccab88db62ef47f392881ab277453d26.png)
+![](./XJTUSE-离散数学-谓词演算.assets/image-003-eefa1c4ef2.png)
 
 ####  命题变元
 
-![](https://i-blog.csdnimg.cn/direct/dae91437b47a4efe84f04b6ca82054c4.png)
+![](./XJTUSE-离散数学-谓词演算.assets/image-004-f9578866f7.png)
 
 #### 谓词变元
 
-![](https://i-blog.csdnimg.cn/direct/51f020a487b34ad7a12db6c761d46d80.png)
+![](./XJTUSE-离散数学-谓词演算.assets/image-005-285864fd86.png)
 
 #### 全称封闭式
 
-![](https://latex.csdn.net/eq?%5Cforall%20x_1%20%5Cforall%20x_2%20....%20%5Cforall%20x_n%20%5Calpha)
+![](./XJTUSE-离散数学-谓词演算.assets/image-006-7f846dc030.png)
 
 ### 前束范式
 
 简单描述即为把全称量词和存在量词全部提到最前面的式子。
 
-![](https://i-blog.csdnimg.cn/direct/54492279820242a797163715e2b85e33.png)
+![](./XJTUSE-离散数学-谓词演算.assets/image-007-cee43dec18.png)
 
 ## 逻辑蕴含关系
 
 ### 基本逻辑蕴含式
 
-![](https://i-blog.csdnimg.cn/direct/3ecf0013b4ad490db23cc1f21978ffbc.png)
+![](./XJTUSE-离散数学-谓词演算.assets/image-008-d6bffc83e2.png)
 
-![](https://i-blog.csdnimg.cn/direct/2f8238f490994516a175e367e4758844.png)
+![](./XJTUSE-离散数学-谓词演算.assets/image-009-7e76485051.png)
 
 ## 谓词演算的形式推理
 

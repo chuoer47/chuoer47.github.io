@@ -4,7 +4,7 @@ date: 2024-08-09 :19
 tags:
 - 离散数学
 category: 本科课程笔记
-order: 60
+order: 2
 ---
 
 # XJTUSE-离散数学-关系
@@ -17,13 +17,13 @@ order: 60
 
 m元组
 
-![](https://latex.csdn.net/eq?A%5Ctimes%20B%20%3D%20%5C%7B%20%28a%2Cb%29%20%7C%20a%5Cin%20A%2C%20b%20%5Cin%20B%20%5C%7D)
+![](./XJTUSE-离散数学-关系.assets/image-001-c799aa6d60-02.png)
 
 叉积的结合律、交换律
 
 ## 关系
 
-R 是 ![](https://latex.csdn.net/eq?A%5Ctimes%20B%20%3D%20%5C%7B%20%28a%2Cb%29%20%7C%20a%5Cin%20A%2C%20b%20%5Cin%20B%20%5C%7D) 的子集，称为一个二元关系
+R 是 ![](./XJTUSE-离散数学-关系.assets/image-001-c799aa6d60-02.png) 的子集，称为一个二元关系
 
 前域，后域的概念
 
@@ -35,19 +35,19 @@ R 是 ![](https://latex.csdn.net/eq?A%5Ctimes%20B%20%3D%20%5C%7B%20%28a%2Cb%29%
 
 ### 关系的运算
 
-逆运算: ![](https://latex.csdn.net/eq?%5Chat%7BR%7D%3D%20%5C%7B%20%28b%2Ca%29%20%7C%20a%5Cin%20A%2C%20b%20%5Cin%20B%20%2C%28a%2Cb%29%5Cin%20R%5C%7D)
+逆运算: ![](./XJTUSE-离散数学-关系.assets/image-003-2b5e005c38.png)
 
 逆运算的一些定理
 
 复合关系 and 闭包运算
 
-复合关系 ： ![](https://latex.csdn.net/eq?R%20%5Ccdot%20S)
+复合关系 ： ![](./XJTUSE-离散数学-关系.assets/image-004-420dab01eb.png)
 
-幂运算![](https://latex.csdn.net/eq?R%5Ek)
+幂运算![](./XJTUSE-离散数学-关系.assets/image-005-e91513245f.png)
 
-闭包运算 ： ![](https://latex.csdn.net/eq?R%5E+%20%3D%20%5Cbigcup_%7Bk%3D1%7D%5E%7B%5Cinf%7D%20R%5Ek)
+闭包运算 ： ![](./XJTUSE-离散数学-关系.assets/image-006-1934f1c3ef.png)
 
-星包：![](https://latex.csdn.net/eq?R%5E*%20%3D%20%5Cbigcup_%7Bk%3D0%7D%5E%7B%5Cinf%7D%20R%5Ek)
+星包：![](./XJTUSE-离散数学-关系.assets/image-007-ce00f6903e.png)
 
 ### 关系的矩阵表示法
 
@@ -67,7 +67,7 @@ R 是 ![](https://latex.csdn.net/eq?A%5Ctimes%20B%20%3D%20%5C%7B%20%28a%2Cb%29%
 
 几大重要性质
 
-- 自反性：每个x，![](https://latex.csdn.net/eq?%28x%2Cx%29%20%5Cin%20R)- 反自反：每个x ， ![](https://latex.csdn.net/eq?)(x,x) 不属于 R (与非自反区分)- 对称性 ： ![](https://latex.csdn.net/eq?%28x%2Cy%29%20%5Cin%20R%20%3D%3E%20%28y%2Cx%29%20%5Cin%20R)- 反对称：![](https://latex.csdn.net/eq?%28x%2Cy%29%20%5Cin%20R%20%5C%26%20%28y%2Cx%29%20%5Cin%20R%20%3D%3E%20x%3Dy)    即只有对角线为1，其他对称地方至多一个1- 传递关系： ![](https://latex.csdn.net/eq?%28x%2Cy%29%20%5Cin%20R%20%5C%26%20%28y%2Cz%29%20%5Cin%20R%20%3D%3E%20%28x%2Cz%29%20%5Cin%20R)## 等价类
+- 自反性：每个x，![](./XJTUSE-离散数学-关系.assets/image-008-72a7761113.png)- 反自反：每个x ，(x,x) 不属于 R (与非自反区分)- 对称性 ： ![](./XJTUSE-离散数学-关系.assets/image-010-0123d87dd8.png)- 反对称：![](./XJTUSE-离散数学-关系.assets/image-011-969e12679d.png)    即只有对角线为1，其他对称地方至多一个1- 传递关系： ![](./XJTUSE-离散数学-关系.assets/image-012-39aa4eaa23.png)## 等价类
 
 自反的，对称的，传递的
 
@@ -93,21 +93,21 @@ R 是 ![](https://latex.csdn.net/eq?A%5Ctimes%20B%20%3D%20%5C%7B%20%28a%2Cb%29%
 
 ### 最大元素 and 最小元素
 
-![](https://latex.csdn.net/eq?%28A%2C%5Cpreceq%20%29) 为半序集
+![](./XJTUSE-离散数学-关系.assets/image-013-5f66e684e5-02.png) 为半序集
 
-最大元素： ![](https://latex.csdn.net/eq?%28%5Cexists%20x_0%20%5Cin%20A%29%28%5Cforall%20a%20%5Cin%20A%29%28a%20%5Cpreceq%20x_0%29)  x0 为最大元素
+最大元素： ![](./XJTUSE-离散数学-关系.assets/image-014-9720636275.png)  x0 为最大元素
 
 最小元素对称即可。
 
 ### 极大元 and 极小元
 
-极大元 ： 任意x0属于A ，不存在a属于A，使得 ![](https://latex.csdn.net/eq?x_0%20%5Cpreceq%20a%20%2C%20x%20_0%20%5Cneq%20a)
+极大元 ： 任意x0属于A ，不存在a属于A，使得 ![](./XJTUSE-离散数学-关系.assets/image-015-259d868551.png)
 
 极小元对称即可。
 
 ### 上/下界 and 上/下确界
 
-![](https://latex.csdn.net/eq?%28A%2C%5Cpreceq%20%29) 为半序集，B是A的子集
+![](./XJTUSE-离散数学-关系.assets/image-013-5f66e684e5-02.png) 为半序集，B是A的子集
 
 存在属于A元素的一个元素，该元素对集合B任意的元素都有偏序关系，那么就称这个元素是一个上界元素
 
