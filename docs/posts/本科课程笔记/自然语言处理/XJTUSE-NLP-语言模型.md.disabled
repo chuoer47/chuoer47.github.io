@@ -1,0 +1,162 @@
+---
+title: "XJTUSE-NLP-语言模型"
+date: 2024-04-25 14:58:35
+tags:
+- 自然语言处理
+category: 本科课程笔记
+---
+
+# XJTUSE-NLP-语言模型
+
+概率语言模型
+
+目标：给定词串
+
+`W=w1,w2,w3,...,wn`
+
+计算概率 P(W)
+
+语言模型定义：广义上讲，用于计算 p(W)或 p(wn|w1 ， ， wn-1 ) 的模型均可以称为语言模型
+
+链式法则：
+
+p(w1,w2,w3,..,wn)=p(w1)p(w2,w3,...,wnw1)p(w_1,w_2,w_3,..,w_n) = p(w_1)*p(w_2,w_3,...,w_n|w_1)p(w1,w2,w3,..,wn)=p(w1)p(w2,w3,...,wnw1)
+
+求概率的方式：MLE：极大似然估计
+
+公式如下：
+
+p(wmw1,..wm1)=C(w1,...,wm)C(w1,...,wm1)p(w_m|w_1,..w_{m-1}) = \frac{C(w_1,...,w_m)}{C(w_1,...,w_{m-1})}p(wmw1,..wm1)=C(w1,...,wm1)C(w1,...,wm)
+
+n-gram 模型
+
+马尔可夫假设：位于某个特定状态的概率取决于前 n-1 个状态。
+
+1-gram 语言模型(unigram)
+
+p(w1,w2,w3,..,wn)=p(w1)p(w2)...p(wn)p(w1,w2,w3,..,w_n) = p(w1)p(w2)...p(w_n)p(w1,w2,w3,..,wn)=p(w1)p(w2)...p(wn)
+
+2-gram 语言模型(bigrams):
+
+p(w1,w2,w3,...,wn)p(w1)p(w2w1)p(w3w2)...p(wnwn1)p(w1 ,w2 ,w3 , ...,w_n )  p(w1 ) p(w2|w1 ) p(w3|w2 ) ...p(w_n|w_{n-1} )p(w1,w2,w3,...,wn)p(w1)p(w2w1)p(w3w2)...p(wnwn1)
+
+3-gram 语言模型(trigrams):
+
+p(w1,w2,w3,...,wn)p(w1)p(w2w1)p(w3w1,w2)...p(wnwn2,wn1)p(w1, w2 ,w3 , ...,w_n )  p(w1 ) p(w2|w1 ) p(w3|w1 , w2 )...p(w_n|w_{n-2} , w_{n-1} )p(w1,w2,w3,...,wn)p(w1)p(w2w1)p(w3w1,w2)...p(wnwn2,wn1)
+
+应用(PPT 例题)
+
+应用 -1：音字转换问题
+
+CString = {踏实研究生物的， 他实验救生物的，他是 研究生物的， 他使烟酒生雾的， }
+
+如果使用 2-gram：
+
+p(CString1) =p(踏实|)p(研究|踏实)  p(生物|研究)p(的|生物)p(|的)
+
+p(CString2) =p(他|)p(实验|他)p(救|实验)  p(生物|救)p(的|生物)p(|的)
+
+
+
+最大概率的字串就是音字转化的字符串。
+
+应用 -2：汉语分词问题
+
+给定汉字串：他是研究生物的。
+
+可能的汉字串：
+
+- 他|是|研究生|物|的- 他|是|研究|生物|的
+
+如果采用 2 元文法：
+
+p(Seg1) =p(他|)p(是|他)p(研究生|是)  p(物|研究生)p(的|物)p(|的)
+
+p(Seg2) = p(他|)p(是|他)p(研究|是)  p(生物|研究)p(的|生物)  p(|的)
+
+
+
+数据稀疏及平滑
+
+数据稀疏：- 一些词 or 词组高频/低频- 一些词 or 词组在 dataset 中未知
+
+解决办法：- 扩大训练语料- 平滑- 回退(不考)
+
+平滑
+
+重新估计零概率及低值概率， 赋予它们一个非零值
+
+Add-one (Laplace Smoothing)
+
+公式如下：
+
+P(wiw1...wi1)=c(w1...wi)+c(w1..wi1)+VP(w_i|w_1...w_{i-1}) = \frac{c(w_1...w_i)+\delta}{c(w1..w_{i-1})+|V|\delta}P(wiw1...wi1)=c(w1..wi1)+Vc(w1...wi)+
+
+其中 c()为在语料出现的次数，|V|为词表大小
+
+当 \delta = 1 时，即为 Laplace 平滑，下面举例说明：
+
+unigram:
+
+PLaplace(wi)=c(wi)+1N+VP_{Laplace}(w_i) = \frac{c(w_i)+1}{N+|V|}PLaplace(wi)=N+Vc(wi)+1
+
+bigram:
+
+P(wiwi1)=c(wi1wi)+1c(wi1)+VP(w_i|w_{i-1}) = \frac{c(w_{i-1}w_i)+1}{c(w_{i-1})+|V|}P(wiwi1)=c(wi1)+Vc(wi1wi)+1
+
+Good-Turing
+
+根据仅出现一次的 unigram 的个数，来确定那些未见 unigram 的概率，公式如下：
+
+Nc=w.count(w)=c1N_c = \sum_{w.count(w)=c}1 Nc=w.count(w)=c1
+
+pc=(c+1)Nc+1NcNp_c = \frac{(c+1)N_{c+1}}{N_cN}pc=NcN(c+1)Nc+1
+
+c 表示：出现 c 次；
+
+模型质量评估
+
+困惑度(Perplexity PP)
+
+P(W)的几何平均值的倒数：
+
+以 bigram 为例：
+
+PP(W)=P(W)1N=[i=1NP(wiwi1)]1NPP(W)= P(W)^{-\frac{1}{N}} = [\prod \limits^N_{i=1} P(w_i|w_{i-1})]^{-\frac{1}{N}}PP(W)=P(W)N1=[i=1NP(wiwi1)]N1
+
+PP 值越小，LM 越好：- 若 W 中都是正确的句子，则 P(W)应该具有较高 的概率(较小的 PP 值)- 直观上来讲：PP 指在每次预测时可能的候选词 的平均个数  PP 越大，则表明该语言的不可预测性越高
+
+信息熵
+
+一个词串 W=w1，w2，，wn 的消息熵为：
+
+H(W)=q(w1..wn)log2q(w1...wn)H(W) = - \sum q(w1..wn)log_2q(w1...wn)H(W)=q(w1..wn)log2q(w1...wn)
+
+平均信息熵：
+
+H(W)=1Nq(w1..wn)log2q(w1...wn)H(W) = - \frac{1}{N}\sum q(w1..wn)log_2q(w1...wn)H(W)=N1q(w1..wn)log2q(w1...wn)
+
+在 n-gram 模型中，用 p(w1wn)代替 q()，得到如下公式：
+
+H(W)=1Nlog2p(w1...wn)H(W) = - \frac{1}{N}\sum log_2p(w1...wn)H(W)=N1log2p(w1...wn)
+
+则 PP 和平均信息熵的关系为：
+
+PP(W)=2H(W)PP(W) = 2^{H(W)}PP(W)=2H(W)
+
+神经网络
+
+前向传播网络
+
+![](https://i-blog.csdnimg.cn/blog_migrate/990223929e454caa916f00b114b8d24b.png)
+
+h=g(Vx+v)h = g(Vx+v)h=g(Vx+v)
+
+y^=Wh+b\hat{y} = Wh + by^=Wh+b
+
+模拟一个 bnigram 模型的神经网络
+
+![](https://i-blog.csdnimg.cn/blog_migrate/78195a669594ad1863877f53d49be818.png)
+模拟一个 trigram 模型的神经网络：
+
+![](https://i-blog.csdnimg.cn/blog_migrate/54c33ee096b86bf4afbe823d1fcc0990.png)
