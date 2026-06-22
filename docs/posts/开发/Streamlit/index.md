@@ -1,5 +1,6 @@
 ---
 title: Streamlit
+order: 40
 ---
 
 # Streamlit 开发笔记

@@ -1,5 +1,6 @@
 ---
 title: MySQL
+order: 20
 ---
 
 # MySQL 学习笔记

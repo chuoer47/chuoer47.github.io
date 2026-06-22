@@ -1,5 +1,6 @@
 ---
 title: Redis
+order: 30
 ---
 
 # Redis 学习笔记
