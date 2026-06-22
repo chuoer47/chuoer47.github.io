@@ -66,13 +66,13 @@ function scanDir(dir: string): SidebarItem[] {
     const bPath = path.join(dir, b);
     const aIsDir = fs.statSync(aPath).isDirectory();
     const bIsDir = fs.statSync(bPath).isDirectory();
+    const aOrder = getEntryOrder(dir, a);
+    const bOrder = getEntryOrder(dir, b);
+
+    if (aOrder !== bOrder) return aOrder - bOrder;
 
     if (aIsDir && !bIsDir) return -1;
     if (!aIsDir && bIsDir) return 1;
-
-    const aOrder = getEntryOrder(dir, a);
-    const bOrder = getEntryOrder(dir, b);
-    if (aOrder !== bOrder) return aOrder - bOrder;
 
     return a.localeCompare(b, "zh-CN");
   });
@@ -132,13 +132,13 @@ export default defineConfig({
     nav: [
       { text: "首页", link: "/" },
       { text: "文章", link: "/posts/" },
-      { text: "本科课程笔记", link: "/posts/本科课程笔记/" },
-      { text: "后端", link: "/posts/后端/" },
+      { text: "八股", link: "/posts/八股/" },
       { text: "开发", link: "/posts/开发/" },
+      { text: "本科课程笔记", link: "/posts/本科课程笔记/" },
+      { text: "工具", link: "/posts/工具/" },
       { text: "算法", link: "/posts/算法/" },
       { text: "项目", link: "/posts/项目/" },
-      { text: "工具", link: "/posts/工具/" },
-      { text: "八股", link: "/posts/八股/" },
+      { text: "AI", link: "/posts/AI/" },
     ],
 
     sidebar: {
