@@ -1,15 +1,14 @@
 ---
-title: Git
-date: 2024-05-22 16:32:00
-tags: code
-category: 工具
-description: Git的使用指南
-order: 3
+title: "Git 使用手册与学习资料"
+date: 2024-11-19
+tags:
+- git
+category:
+- 工具
+order: 4
 ---
 
-<!--more--->
-
-# Git
+# Git 使用手册与学习资料
 
 ## 1、全局配置
 
@@ -160,3 +159,26 @@ git merge 被合并的分支名  //合并分支
 
 **c**,重新提交
 
+## 学习资料
+
+3h 快速入门视频：
+
+[尚硅谷新版 Git 快速入门](https://www.bilibili.com/video/BV1wm4y1z7Dg)
+
+在线书籍：
+
+[Pro Git 第二版 简体中文](https://bingohuang.gitbooks.io/progit2/content/)
+
+## 速查表
+
+[Git 速查表 - 在线手册](https://cheatsheet.wang/)
+
+[Git 常用命令速查表](https://www.cnblogs.com/kenshinobiy/p/4543976.html)
+
+## 练习网站
+
+[Learn Git Branching](https://learngitbranching.js.org/)
+
+## 拓展内容
+
+[一文讲透 Git 底层数据结构和原理](https://zhuanlan.zhihu.com/p/142289703)

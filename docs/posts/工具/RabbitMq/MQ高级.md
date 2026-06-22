@@ -22,7 +22,7 @@ order: 7
 # 1.发送者的可靠性
 首先，我们一起分析一下消息丢失的可能性有哪些。
 消息从发送者发送消息，到消费者处理消息，需要经过的流程是这样的：
-![](https://cdn.nlark.com/yuque/0/2023/jpeg/27967491/1687334552247-cab38ab5-ae63-4f06-9ece-e9f244e3c170.jpeg)
+![](./MQ高级.assets/image-001-450041e6c6.jpg)
 消息从生产者到消费者的每一步都可能导致消息丢失：
 
 - 发送消息时丢失：
@@ -83,7 +83,7 @@ docker stop mq
 
 针对上述情况，RabbitMQ提供了生产者消息确认机制，包括`Publisher Confirm`和`Publisher Return`两种。在开启确认机制的情况下，当生产者发送消息给MQ后，MQ会根据消息处理的情况返回不同的**回执**。
 具体如图所示：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1690366611659-d5c7f355-7ab1-4eb8-8488-13e1d98843ce.png#averageHue=%23faf7f7&clientId=ucb403171-cc9e-4&from=paste&height=376&id=ue3c6e070&originHeight=466&originWidth=1434&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=81765&status=done&style=none&taskId=ue6af669a-1775-4a0f-ad77-cd9bc059880&title=&width=1156.8402990504578)
+![image.png](./MQ高级.assets/image-002-1e7e0ac6c4.png)
 总结如下：
 
 - 当消息投递到MQ，但是路由失败时，通过**Publisher Return**返回异常信息，同时返回ack的确认信息，代表投递成功
@@ -114,7 +114,7 @@ spring:
 
 ### 1.3.2.定义ReturnCallback
 每个`RabbitTemplate`只能配置一个`ReturnCallback`，因此我们可以在配置类中统一设置。我们在publisher模块定义一个配置类：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687341529298-150b401d-67f9-4958-acdb-0d3147b0532b.png#averageHue=%23f9fbf8&clientId=ue4302575-73b6-4&from=paste&height=278&id=u6d09b8df&originHeight=345&originWidth=808&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=33987&status=done&style=none&taskId=uf816a0ec-4ff4-4c09-bffc-766884fb5e7&title=&width=651.8319118778032)
+![image.png](./MQ高级.assets/image-003-ad9a8de7cc.png)
 内容如下：
 ```java
 package com.itheima.publisher.config;
@@ -152,14 +152,14 @@ public class MqConfig {
 
 ### 1.3.3.定义ConfirmCallback
 由于每个消息发送时的处理逻辑不一定相同，因此ConfirmCallback需要在每次发消息时定义。具体来说，是在调用RabbitTemplate中的convertAndSend方法时，多传递一个参数：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687348187394-21a3698a-277a-478b-8cb8-2ee5bc79207f.png#averageHue=%23f1efed&clientId=ue4302575-73b6-4&from=paste&height=167&id=ubbb0d508&originHeight=207&originWidth=939&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=26725&status=done&style=none&taskId=u0ffba104-eb55-4f79-be54-f249333680d&title=&width=757.5125807589818)
+![image.png](./MQ高级.assets/image-004-712a8c6af7.png)
 这里的CorrelationData中包含两个核心的东西：
 
 - `id`：消息的唯一标示，MQ对不同的消息的回执以此做判断，避免混淆
 - `SettableListenableFuture`：回执结果的Future对象
 
 将来MQ的回执就会通过这个`Future`来返回，我们可以提前给`CorrelationData`中的`Future`添加回调函数来处理消息回执：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687348449866-dee08277-6bc9-4463-9cb8-95013e05a6a2.png#averageHue=%23f3f2f0&clientId=ue4302575-73b6-4&from=paste&height=194&id=u536cb2c1&originHeight=241&originWidth=940&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=26129&status=done&style=none&taskId=u1d347aea-f7e9-43e2-875e-773b69e1bdf&title=&width=758.3193034221969)
+![image.png](./MQ高级.assets/image-005-f0607bac49.png)
 
 我们新建一个测试，向系统自带的交换机发送消息，并且添加`ConfirmCallback`：
 ```java
@@ -189,7 +189,7 @@ void testPublisherConfirm() {
 }
 ```
 执行结果如下：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687351726363-c27337c1-cd6e-497e-96ad-ac55fe4cb9e4.png#averageHue=%23f9f6df&clientId=ue4302575-73b6-4&from=paste&height=321&id=u37548b33&originHeight=398&originWidth=1657&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=224878&status=done&style=none&taskId=u5b86f40b-a7f8-4c5f-8fae-4edb9ab2cee&title=&width=1336.7394529474257)
+![image.png](./MQ高级.assets/image-006-2cb2ceae12.png)
 可以看到，由于传递的`RoutingKey`是错误的，路由失败后，触发了`return callback`，同时也收到了ack。
 当我们修改为正确的`RoutingKey`以后，就不会触发`return callback`了，只收到ack。
 而如果连交换机都是错误的，则只会收到nack。
@@ -215,17 +215,17 @@ void testPublisherConfirm() {
 我们以控制台界面为例来说明。
 ### 2.1.1.交换机持久化
 在控制台的`Exchanges`页面，添加交换机时可以配置交换机的`Durability`参数：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687353601905-9b09c0df-1b03-49e1-95c8-437ef9f3cd81.png#averageHue=%23f9f8f8&clientId=ue4302575-73b6-4&from=paste&height=281&id=Kve5K&originHeight=348&originWidth=922&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=22552&status=done&style=none&taskId=u9ff1f541-056b-4c91-a4e3-ce6890f4d00&title=&width=743.798295484325)
+![image.png](./MQ高级.assets/image-007-3b46edb91b.png)
 设置为`Durable`就是持久化模式，`Transient`就是临时模式。
 
 ### 2.1.2.队列持久化
 在控制台的Queues页面，添加队列时，同样可以配置队列的`Durability`参数：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687353771968-5c560b86-a1ae-4649-8597-c7ebfeffa9a5.png#averageHue=%23f8f7f6&clientId=ue4302575-73b6-4&from=paste&height=295&id=I03Rh&originHeight=366&originWidth=1130&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=30872&status=done&style=none&taskId=u7425f64c-6c68-4b86-a558-9c10f825f3f&title=&width=911.5966094330664)
+![image.png](./MQ高级.assets/image-008-9eb58dc8ca.png)
 除了持久化以外，你可以看到队列还有很多其它参数，有一些我们会在后期学习。
 
 ### 2.1.3.消息持久化
 在控制台发送消息的时候，可以添加很多参数，而消息的持久化是要配置一个`properties`：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687354083723-84971642-712d-42bc-ba65-6e3b3b33758c.png#averageHue=%23faf8f8&clientId=ue4302575-73b6-4&from=paste&height=423&id=T4xqJ&originHeight=524&originWidth=995&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=17663&status=done&style=none&taskId=u75d6c2e2-1770-43f8-9a9f-9bc5f480099&title=&width=802.6890498990275)
+![image.png](./MQ高级.assets/image-009-e34639e585.png)
 
 :::warning
 **说明**：在开启持久化机制以后，如果同时还开启了生产者确认，那么MQ会在消息持久化以后才发送ACK回执，进一步确保消息的可靠性。
@@ -251,7 +251,7 @@ void testPublisherConfirm() {
 
 ### 2.2.1.控制台配置Lazy模式
 在添加队列的时候，添加`x-queue-mod=lazy`参数即可设置队列为Lazy模式：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687421366634-1dfca4a6-2407-43c2-8e65-fd7ba9e660dc.png#averageHue=%23f8f6f5&clientId=ud69cf815-2833-4&from=paste&height=361&id=auTfj&originHeight=447&originWidth=1127&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=34943&status=done&style=none&taskId=ue22630f9-97c2-47c9-989b-e1963580eb6&title=&width=909.1764414434211)
+![image.png](./MQ高级.assets/image-010-f0e32b2dec.png)
 
 ### 2.2.2.代码配置Lazy模式
 在利用SpringAMQP声明队列的时候，添加`x-queue-mod=lazy`参数也可设置队列为Lazy模式：
@@ -265,7 +265,7 @@ public Queue lazyQueue(){
 }
 ```
 这里是通过`QueueBuilder`的`lazy()`函数配置Lazy模式，底层源码如下：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687421880071-2a21369f-00b3-481d-a9bb-ce69a346ccc3.png#averageHue=%23f4f6ed&clientId=ud69cf815-2833-4&from=paste&height=192&id=dCe61&originHeight=238&originWidth=908&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=32577&status=done&style=none&taskId=u17fb9e40-01c9-4605-bc5a-eb906237b36&title=&width=732.5041781993135)
+![image.png](./MQ高级.assets/image-011-93e8d33ca0.png)
 
 当然，我们也可以基于注解来声明队列并设置为Lazy模式：
 ```java
@@ -295,7 +295,7 @@ rabbitmqctl set_policy Lazy "^lazy-queue$" '{"queue-mode":"lazy"}' --apply-to qu
 - `--apply-to queues`：策略的作用对象，是所有的队列
 
 当然，也可以在控制台配置policy，进入在控制台的`Admin`页面，点击`Policies`，即可添加配置：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687422619364-b0e414b9-55fc-49f2-b7b5-de52b72a9f56.png#averageHue=%23f7f6f5&clientId=ud69cf815-2833-4&from=paste&height=682&id=pcraA&originHeight=846&originWidth=1365&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=83823&status=done&style=none&taskId=u10b50f65-9311-4fb6-9f0b-ac0bbe2c3c9&title=&width=1101.1764352886157)
+![image.png](./MQ高级.assets/image-012-ea3ec9f70b.png)
 
 # 3.消费者的可靠性
 当RabbitMQ向消费者投递消息以后，需要知道消费者的处理状态如何。因为消息投递给消费者并不代表就一定被正确消费了，可能出现的故障有很多，比如：
@@ -370,9 +370,9 @@ spring:
 ```
 
 在异常位置打断点，再次发送消息，程序卡在断点时，可以发现此时消息状态为`unacked`（未确定状态）：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687489262801-36725872-cc98-470a-ab6b-85cfd9c1b0ce.png#averageHue=%23f5f3f3&clientId=uaa251f98-ecdc-4&from=paste&height=194&id=u0edc5b71&originHeight=241&originWidth=1100&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=24869&status=done&style=none&taskId=ufc5a8f88-61f6-4518-ad83-77d7037cd6b&title=&width=887.3949295366134)
+![image.png](./MQ高级.assets/image-013-95109d902f-02.png)
 放行以后，由于抛出的是**消息转换异常**，因此Spring会自动返回`reject`，所以消息依然会被删除：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687490335196-66d14c99-45c2-4113-8a36-94e33c3ce7d5.png#averageHue=%23f3f3f2&clientId=uaa251f98-ecdc-4&from=paste&height=231&id=u0977f925&originHeight=286&originWidth=1099&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=28753&status=done&style=none&taskId=u60974200-bef2-4eca-a9e8-1b91ce70eb9&title=&width=886.5882068733982)
+![image.png](./MQ高级.assets/image-014-9c5c642dd7.png)
 
 我们将异常改为RuntimeException类型：
 ```java
@@ -386,14 +386,14 @@ public void listenSimpleQueueMessage(String msg) throws InterruptedException {
 }
 ```
 在异常位置打断点，然后再次发送消息测试，程序卡在断点时，可以发现此时消息状态为`unacked`（未确定状态）：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687489262801-36725872-cc98-470a-ab6b-85cfd9c1b0ce.png#averageHue=%23f5f3f3&clientId=uaa251f98-ecdc-4&from=paste&height=194&id=WusVn&originHeight=241&originWidth=1100&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=24869&status=done&style=none&taskId=ufc5a8f88-61f6-4518-ad83-77d7037cd6b&title=&width=887.3949295366134)放行以后，由于抛出的是业务异常，所以Spring返回`ack`，最终消息恢复至`Ready`状态，并且没有被RabbitMQ删除：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687490819965-f638194b-f956-4ad3-8cd4-2e03f5e43674.png#averageHue=%23f4f3f2&clientId=uaa251f98-ecdc-4&from=paste&height=237&id=u0f1b8e0c&originHeight=294&originWidth=1110&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=29088&status=done&style=none&taskId=ue0e6353b-c435-43f2-9520-32a58e71098&title=&width=895.4621561687644)
+![image.png](./MQ高级.assets/image-013-95109d902f-02.png)放行以后，由于抛出的是业务异常，所以Spring返回`ack`，最终消息恢复至`Ready`状态，并且没有被RabbitMQ删除：
+![image.png](./MQ高级.assets/image-016-d3126b5f45.png)
 当我们把配置改为`auto`时，消息处理失败后，会回到RabbitMQ，并重新投递到消费者。
 
 ## 2.2.失败重试机制
 当消费者出现异常后，消息会不断requeue（重入队）到队列，再重新发送给消费者。如果消费者再次执行依然出错，消息会再次requeue到队列，再次投递，直到消息处理成功为止。
 极端情况就是消费者一直无法执行成功，那么消息requeue就会无限循环，导致mq的消息处理飙升，带来不必要的压力：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687490923673-6eca30c4-4cd0-4a92-b6d4-2766c0ad1746.png#averageHue=%23f2f1f1&clientId=uaa251f98-ecdc-4&from=paste&height=131&id=ue26e64ed&originHeight=162&originWidth=988&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=56569&status=done&style=none&taskId=u63e3277a-cb8f-4fd8-bdff-fc1dcc685e9&title=&width=797.0419912565218)
+![image.png](./MQ高级.assets/image-017-1d19afda63.png)
 
 当然，上述极端情况发生的概率还是非常低的，不过不怕一万就怕万一。为了应对上述情况Spring又提供了消费者失败重试机制：在消费者出现异常时利用本地重试，而不是无限制的requeue到mq队列。
 
@@ -600,7 +600,7 @@ UPDATE `order` SET status = ? , pay_time = ? WHERE id = ? AND status = 1
 
 其实思想很简单：既然MQ通知不一定发送到交易服务，那么交易服务就必须自己**主动去查询**支付状态。这样即便支付服务的MQ通知失败，我们依然能通过主动查询来保证订单状态的一致。
 流程如下：
-![](https://cdn.nlark.com/yuque/0/2023/jpeg/27967491/1687521150465-25b54b36-b64a-4b2d-90b7-8dff12fb075b.jpeg)
+![](./MQ高级.assets/image-018-8cff5bff5b.jpg)
 
 图中黄色线圈起来的部分就是MQ通知失败后的兜底处理方案，由交易服务自己主动去查询支付状态。
 
@@ -662,20 +662,20 @@ UPDATE `order` SET status = ? , pay_time = ? WHERE id = ? AND status = 1
 
 而最后一种场景，大家设想一下这样的场景：
 如图，有一组绑定的交换机（`ttl.fanout`）和队列（`ttl.queue`）。但是`ttl.queue`没有消费者监听，而是设定了死信交换机`hmall.direct`，而队列`direct.queue1`则与死信交换机绑定，RoutingKey是blue：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687573175803-41a1c870-93bc-4307-974f-891de1b5a42d.png#averageHue=%23faf3f2&clientId=u76b62a19-f8dc-4&from=paste&height=340&id=u380f1403&originHeight=422&originWidth=1301&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=59423&status=done&style=none&taskId=ucbcde27e-d210-43e8-8e35-7557d121729&title=&width=1049.546184842849)
+![image.png](./MQ高级.assets/image-019-0f34222a79.png)
 
 假如我们现在发送一条消息到`ttl.fanout`，RoutingKey为blue，并设置消息的**有效期**为5000毫秒：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687573506181-f0af9da1-0b0b-4cfb-afca-f5febb306cdf.png#averageHue=%23faf4f4&clientId=u76b62a19-f8dc-4&from=paste&height=349&id=u9604efe2&originHeight=432&originWidth=1421&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=60694&status=done&style=none&taskId=u7e667f84-8779-47db-af73-7598ea5759e&title=&width=1146.3529044286615)
+![image.png](./MQ高级.assets/image-020-55941c3f09.png)
 :::warning
 **注意**：尽管这里的`ttl.fanout`不需要RoutingKey，但是当消息变为死信并投递到死信交换机时，会沿用之前的RoutingKey，这样`hmall.direct`才能正确路由消息。
 :::
 
 消息肯定会被投递到`ttl.queue`之后，由于没有消费者，因此消息无人消费。5秒之后，消息的有效期到期，成为死信：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687573747592-4d95dbb1-3f4d-4174-af24-124cb1346a81.png#averageHue=%23faf4f4&clientId=u76b62a19-f8dc-4&from=paste&height=341&id=u616ad2d4&originHeight=423&originWidth=1502&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=71956&status=done&style=none&taskId=uf4c990b8-e00b-42c0-842d-efdd5485d43&title=&width=1211.6974401490847)
+![image.png](./MQ高级.assets/image-021-a74c0b1314.png)
 死信被再次投递到死信交换机`hmall.direct`，并沿用之前的RoutingKey，也就是`blue`：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687573874094-ebf781c1-6273-474b-b0ed-17243d8370ae.png#averageHue=%23faf4f4&clientId=u76b62a19-f8dc-4&from=paste&height=348&id=u53622578&originHeight=431&originWidth=1421&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=63699&status=done&style=none&taskId=u610a5adf-e615-4fa5-9c50-597a1be139a&title=&width=1146.3529044286615)
+![image.png](./MQ高级.assets/image-022-92fbcd76ab.png)
 由于`direct.queue1`与`hmall.direct`绑定的key是blue，因此最终消息被成功路由到`direct.queue1`，如果此时有消费者与`direct.queue1`绑定， 也就能成功消费消息了。但此时已经是5秒钟以后了：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687574086294-106fe14b-6652-4783-a6c3-3d722d1f5232.png#averageHue=%23fbf5f5&clientId=u76b62a19-f8dc-4&from=paste&height=373&id=ub429262c&originHeight=462&originWidth=1633&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=81718&status=done&style=none&taskId=u244f2a30-7d51-48a2-969b-b880a7f2442&title=&width=1317.3781090302632)
+![image.png](./MQ高级.assets/image-023-d4b0ea67b7.png)
 也就是说，publisher发送了一条消息，但最终consumer在5秒后才收到消息。我们成功实现了**延迟消息**。
 
 ### 4.1.3.总结
@@ -694,9 +694,9 @@ RabbitMQ的消息过期是基于追溯方式来实现的，也就是说当一个
 插件下载地址：
 [GitHub - rabbitmq/rabbitmq-delayed-message-exchange: Delayed Messaging for RabbitMQ](https://github.com/rabbitmq/rabbitmq-delayed-message-exchange)
 由于我们安装的MQ是`3.8`版本，因此这里下载`3.8.17`版本：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687576610561-71355772-460c-4b7a-bf71-904b40bccdf9.png#averageHue=%23fdfdfd&clientId=u76b62a19-f8dc-4&from=paste&height=722&id=u54276885&originHeight=895&originWidth=1183&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=88481&status=done&style=none&taskId=u3b769aca-ef34-4a2c-be13-6729ea0e832&title=&width=954.352910583467)
+![image.png](./MQ高级.assets/image-024-3965df5a4e.png)
 当然，也可以直接使用课前资料提供好的插件：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687611117405-f30b7216-cbef-44fc-a8a9-b62c50ef2a06.png#averageHue=%23f8f8f7&clientId=ua8cb106d-b05e-4&from=paste&height=131&id=u601c044f&originHeight=163&originWidth=855&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=15305&status=done&style=none&taskId=uaae26ad5-bd00-4347-bc5c-5a16a006ef3&title=&width=689.7478770489131)
+![image.png](./MQ高级.assets/image-025-8ec5cacdb1.png)
 
 ### 4.2.2.安装
 因为我们是基于Docker安装，所以需要先查看RabbitMQ的插件目录对应的数据卷。
@@ -725,7 +725,7 @@ docker volume inspect mq-plugins
 docker exec -it mq rabbitmq-plugins enable rabbitmq_delayed_message_exchange
 ```
 运行结果如下：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687576988700-43b5d4ad-a77c-4463-bea4-4f3c0888ebe5.png#averageHue=%23031f33&clientId=u76b62a19-f8dc-4&from=paste&height=428&id=u46bbc0d8&originHeight=530&originWidth=1456&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=64423&status=done&style=none&taskId=uecc0751f-db71-4d55-86a5-c859569b939&title=&width=1174.58819764119)
+![image.png](./MQ高级.assets/image-026-a45816c491.png)
 ### 4.2.3.声明延迟交换机
 基于注解方式：
 ```java
@@ -802,7 +802,7 @@ void testPublisherDelayMessage() {
 
 ## 4.5.订单状态同步问题
 接下来，我们就在交易服务中利用延迟消息实现订单支付状态的同步。其大概思路如下：
-![](https://cdn.nlark.com/yuque/0/2023/jpeg/27967491/1690343275577-b0f99b4a-40e2-40cf-8da2-11f0dfbd7d7c.jpeg)
+![](./MQ高级.assets/image-027-34619b5482.jpg)
 
 假如订单超时支付时间为30分钟，理论上说我们应该在下单时发送一条延迟消息，延迟时间为30分钟。这样就可以在接收到消息时检验订单支付状态，关闭未支付订单。
 但是大多数情况下用户支付都会在1分钟内完成，我们发送的消息却要在MQ中停留30分钟，额外消耗了MQ的资源。因此，我们最好多检测几次订单支付状态，而不是在最后第30分钟才检测。
@@ -810,10 +810,10 @@ void testPublisherDelayMessage() {
 这样就可以有效避免对MQ资源的浪费了。
 
 优化后的实现思路如下：
-![](https://cdn.nlark.com/yuque/0/2023/jpeg/27967491/1687593452790-58e296b7-0761-40f6-b4be-9c19bff9cd3e.jpeg)
+![](./MQ高级.assets/image-028-0674705da0.jpg)
 
 由于我们要多次发送延迟消息，因此需要先定义一个记录消息延迟时间的消息体，处于通用性考虑，我们将其定义到`hm-common`模块下：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687593306116-2a41b7c0-064c-463f-b109-fa05db8609e8.png#averageHue=%23f9fbf8&clientId=u76b62a19-f8dc-4&from=paste&height=402&id=ueaa6d986&originHeight=498&originWidth=944&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=48824&status=done&style=none&taskId=u025bcf5a-23cc-4146-8ecc-1f6a7126c60&title=&width=761.5461940750573)
+![image.png](./MQ高级.assets/image-029-432dc6018f.png)
 代码如下：
 ```java
 package com.hmall.common.domain;
@@ -863,7 +863,7 @@ public class MultiDelayMessage<T> {
 
 ### 4.5.1.定义常量
 无论是消息发送还是接收都是在交易服务完成，因此我们在`trade-service`中定义一个常量类，用于记录交换机、队列、RoutingKey等常量：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687593919687-52eb9aa6-6f80-4b49-ba32-bb608018e333.png#averageHue=%23f9fbf8&clientId=u76b62a19-f8dc-4&from=paste&height=328&id=ufb3e5a13&originHeight=406&originWidth=913&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=38538&status=done&style=none&taskId=u54275307-b948-433e-b531-bdf3fc84fac&title=&width=736.5377915153891)
+![image.png](./MQ高级.assets/image-030-d11ac43fc8.png)
 内容如下：
 ```java
 package com.hmall.trade.constants;
@@ -893,7 +893,7 @@ spring:
 这里只添加一些基础配置，至于生产者确认，消费者确认配置则由微服务根据业务自己决定。
 
 在`trade-service`模块添加共享配置：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687595291593-378450c1-ef00-4cbf-9be8-235d1eea8e7c.png#averageHue=%23f6f9f5&clientId=u76b62a19-f8dc-4&from=paste&height=515&id=uc4ebf7e5&originHeight=638&originWidth=952&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=129257&status=done&style=none&taskId=uc6221e28-aa92-49da-bc73-1ff8258fda5&title=&width=767.9999753807781)
+![image.png](./MQ高级.assets/image-031-9f0286ca6c.png)
 
 ### 4.5.3.改造下单业务
 接下来，我们改造下单业务，在下单完成后，发送延迟消息，查询支付状态。
@@ -910,12 +910,12 @@ spring:
 
 2）改造下单业务
 修改`trade-service`模块的`com.hmall.trade.service.impl.OrderServiceImpl`类的`createOrder`方法，添加消息发送的代码：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1687595921876-005c46d9-4278-411b-bfc1-c5e545949cd5.png#averageHue=%23f6f8f4&clientId=u76b62a19-f8dc-4&from=paste&height=496&id=u29260a5b&originHeight=615&originWidth=1668&originalType=binary&ratio=1.2395833730697632&rotation=0&showTitle=false&size=182037&status=done&style=none&taskId=udb3ccb23-163c-406d-9d8c-bc7087da8f1&title=&width=1345.6134022427918)
+![image.png](./MQ高级.assets/image-032-92a5824966.png)
 
 ### 4.5.4.编写查询支付状态接口
 由于MQ消息处理时需要查询支付状态，因此我们要在pay-service模块定义一个这样的接口，并提供对应的FeignClient.
 首先，在hm-api模块定义三个类：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1690352506454-23b445b7-3a34-458e-bba2-47528a06ea65.png#averageHue=%23f9fbf7&clientId=u835b609d-4d58-4&from=paste&height=562&id=ud6c48d2c&originHeight=627&originWidth=875&originalType=binary&ratio=1.115625023841858&rotation=0&showTitle=false&size=63061&status=done&style=none&taskId=u8487842b-c38a-48a4-9a27-3ed9692d7d8&title=&width=784.3137087287431)
+![image.png](./MQ高级.assets/image-033-42bbfffdab.png)
 说明：
 
 - PayOrderDTO：支付单的数据传输实体
@@ -1032,7 +1032,7 @@ public PayOrderDTO queryPayOrderByBizOrderNo(@PathVariable("id") Long id){
 
 ### 4.5.5.消息监听
 接下来，我们在trader-service编写一个监听器，监听延迟消息，查询订单支付状态：
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/27967491/1690343618777-60200e66-3734-439b-91fe-db8ea3eba148.png#averageHue=%23f9fbf8&clientId=u8e4bad19-60cd-4&from=paste&height=473&id=u1b34de9f&originHeight=528&originWidth=775&originalType=binary&ratio=1.115625023841858&rotation=0&showTitle=false&size=50673&status=done&style=none&taskId=u3f7707e8-1cb4-4f00-9175-570265974eb&title=&width=694.677856302601)
+![image.png](./MQ高级.assets/image-034-07d80a6441.png)
 代码如下：
 ```java
 package com.hmall.trade.listener;
