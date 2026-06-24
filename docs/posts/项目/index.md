@@ -14,3 +14,4 @@ order: 60
 - [Hmall Monolith](./Hmall-Monolith/Hmall-Monolith)
 - [JavaWeb AI Tlias](./JavaWeb-AI-Tlias/JavaWeb-AI-Tlias)
 - [RuoYi DKD](./RuoYi-DKD/RuoYi-DKD)
+- [LeetCode Agent Lab](./Leetcode-coder-Agent/)
