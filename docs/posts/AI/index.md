@@ -9,3 +9,4 @@ order: 70
 
 - [NumPy](./numpy/)
 - [PyTorch](./torch/)
+- [Triton](./triton/)
