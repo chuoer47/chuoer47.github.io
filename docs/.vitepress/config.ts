@@ -131,14 +131,14 @@ export default defineConfig({
     },
     nav: [
       { text: "首页", link: "/" },
-      { text: "文章", link: "/posts/" },
-      { text: "八股", link: "/posts/八股/" },
-      { text: "开发", link: "/posts/开发/" },
-      { text: "本科课程笔记", link: "/posts/本科课程笔记/" },
-      { text: "工具", link: "/posts/工具/" },
+      { text: "课程笔记", link: "/posts/课程笔记/" },
       { text: "算法", link: "/posts/算法/" },
+      { text: "前后端", link: "/posts/前后端/" },
       { text: "项目", link: "/posts/项目/" },
-      { text: "AI", link: "/posts/AI/" },
+      { text: "LLM 基础", link: "/posts/LLM基础/" },
+      { text: "Agent", link: "/posts/Agent/" },
+      { text: "AI Infra", link: "/posts/AI%20Infra/" },
+      { text: "工具", link: "/posts/工具/" },
     ],
 
     sidebar: {
