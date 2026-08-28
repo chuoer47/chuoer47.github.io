@@ -1,17 +1,22 @@
 ---
 title: 项目
-order: 60
+order: 40
 ---
 
 # 项目
 
-这里整理项目复盘、技术亮点和实现细节。
+项目复盘、技术亮点和实现细节。
 
-- [InterX](./InterX/)
-- [黑马商城](./hmall/)
-- [苍穹外卖](./SkyTakeOut/SkyTakeOut)
-- [黑马点评](./heimadianping/heimadianping)
-- [Hmall Monolith](./Hmall-Monolith/Hmall-Monolith)
-- [JavaWeb AI Tlias](./JavaWeb-AI-Tlias/JavaWeb-AI-Tlias)
-- [RuoYi DKD](./RuoYi-DKD/RuoYi-DKD)
-- [LeetCode Agent Lab](./Leetcode-coder-Agent/)
+## Java 项目
+
+- [黑马点评](./Java/heimadianping/)
+- [黑马商城](./Java/hmall/)
+- [Hmall Monolith](./Java/Hmall-Monolith/)
+- [苍穹外卖](./Java/SkyTakeOut/)
+- [JavaWeb AI Tlias](./Java/JavaWeb-AI-Tlias/)
+- [RuoYi DKD](./Java/RuoYi-DKD/)
+
+## Agent 项目
+
+- [InterX](./Agent/InterX/)
+- [LeetCode Agent Lab](./Agent/Leetcode-coder-Agent/)
