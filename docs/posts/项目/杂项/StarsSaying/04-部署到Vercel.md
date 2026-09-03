@@ -1,6 +1,6 @@
 ---
 title: 部署到 Vercel
-order: 4
+order: 3
 ---
 
 # 部署到 Vercel
@@ -62,16 +62,13 @@ npx -y -p node@20 -p vercel@latest vercel --prod --yes
 | `KAFU_LLM_API_KEY` | 可选 | 阿里云 DashScope API Key(首选 provider) |
 | `KAFU_LLM_BASE_URL` | 可选 | DashScope 兼容端点,默认 `https://dashscope.aliyuncs.com/compatible-mode/v1` |
 | `KAFU_CHAT_MODEL` | 可选 | 聊天模型,默认 `qwen3-max` |
-| `KAFU_EMBEDDING_MODEL` | 可选 | `text-embedding-v4` |
-| `KAFU_VISION_MODEL` | 可选 | `qwen3.6-plus` |
-| `KAFU_RERANK_MODEL` | 可选 | `qwen3-rerank` |
 | `OPENAI_API_KEY` | 可选 | OpenAI 兼容兜底 Key |
 | `OPENAI_BASE_URL` | 可选 | 任意 OpenAI 兼容端点 |
 | `OPENAI_MODEL` | 可选 | 默认 `gpt-4o-mini` |
 | `NASA_API_KEY` | 可选 | NASA API Key,未配置时用 `DEMO_KEY`(限流较严,建议申请) |
 | `SETTINGS_PASSWORD` | **强烈建议** | `/admin` 管理后台密码,不设则设置区无法解锁 |
 
-provider 的选择逻辑见[技术架构](./02-技术架构.md)一文:有 KAFU Key 用 KAFU,否则看 OPENAI,都没有则纯本地兜底运行。
+provider 的选择是自动的:有 DashScope Key 用 DashScope,否则看 OpenAI,都没有则纯本地兜底运行。
 
 ## 部署后检查清单
 
@@ -84,7 +81,7 @@ provider 的选择逻辑见[技术架构](./02-技术架构.md)一文:有 KAFU K
 
 - **不要把 `.env` 提交进仓库**。如果不小心把密钥 push 到了公开位置,立即去平台轮换 Key
 - 公开部署前**必须**设置非默认的 `SETTINGS_PASSWORD`
-- 模型和 NASA API 调用保持在服务端(本项目所有相关代码都标了 `import "server-only"`),确认密钥不会出现在客户端 JavaScript bundle 里
+- 模型和 NASA API 调用保持在服务端,确认密钥不会出现在客户端 JavaScript bundle 里
 
 ## 停止服务
 

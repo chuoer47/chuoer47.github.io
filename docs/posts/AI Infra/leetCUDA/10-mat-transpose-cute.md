@@ -31,22 +31,86 @@ make_layout(make_shape(M, N), GenColMajor{})  // Stride<(M,1)>: 第1维连续(co
 // GenRowMajor/GenColMajor 说的都是"第 0 维是不是 stride=1 那个维"
 ```
 
-三个核心原语（本篇全部 kernel 只用这几个）：
+三个核心原语（本篇全部 kernel 只用这几个）。初学最大的障碍是"它们返回的东西到底是什么"——答案是：**全是视图，一层套一层**。用一组贯穿的数字走一遍：设矩阵 `x` 是 1024×1024，block 切 16×16 的 tile，当前 block 是 `(bx=3, by=5)`，当前线程编号 `tx=100`。
+
+---
+
+**原语 1：`make_tensor` —— 指针 + layout = 可索引的视图**
 
 ```c++
-// 1. make_tensor: 指针 + layout = 可索引的"张量视图"
-auto mA = make_tensor(make_gmem_ptr(pA), make_layout(make_shape(M, N), GenRowMajor{}));
-mA(i, j);                          // 直接二维索引, 地址由 layout 算出
-
-// 2. local_tile: 从大张量切出一个 block 负责的子块 (不搬数据, 只是个视图)
-auto gA = local_tile(mA, make_shape(Int<16>{}, Int<16>{}), make_coord(bx, by));
-// mA 的第 (bx, by) 块 16x16 tile, gA(i,j) 索引的是 tile 内坐标
-
-// 3. local_partition: 把 tile 按线程 layout 切给各线程 (每个线程一个视图)
-auto tAgA = local_partition(gA, tA, tx);
-// tA 描述"256 个线程怎么摆成 16x16", tx 是本线程编号
-// tAgA 是本线程分到的元素集合 (通常 1 个或几个)
+auto mA = make_tensor(make_gmem_ptr(pA),
+                      make_layout(make_shape(M, N), GenRowMajor{}));
+mA(i, j);   // 地址 = pA + i*1 + j*1024, 由 layout 算出
 ```
+
+它**不搬任何数据**，只是造了一个"带形状的指针"。`mA(i,j)` 等价于手写 `pA[i + j*1024]`（注意 CuTe 维度顺序：i 是行内偏移、j 是行号）。到这里为止，它相比裸指针只多做了一件事：**把"这块内存长什么样"记在了类型里**。
+
+---
+
+**原语 2：`local_tile` —— 从大张量里切出"我这个 block 管的那一块"**
+
+```c++
+auto gA = local_tile(mA, make_shape(Int<16>{}, Int<16>{}), make_coord(bx, by));
+```
+
+三个参数：从 `mA` 切；切成 16×16 的块；取第 `(bx, by)` 块。还是**纯视图**，地址运算而已。关键是 `gA(i,j)` 的坐标含义变了——**从"全矩阵坐标"变成"tile 内坐标"**。算一下 `gA(i,j)` 实际指向哪：
+
+```
+mA 的第 (bx, by) 块 tile 覆盖全矩阵的:
+  行内偏移: [bx*16, bx*16+16) = [48, 64)
+  行号:     [by*16, by*16+16) = [80, 96)
+
+所以:  gA(i, j)  (i,j ∈ [0,16))
+    =  mA(bx*16 + i, by*16 + j)      ← tile 内坐标 + 块起点偏移
+    =  pA[(bx*16 + i) + (by*16 + j)*1024]
+```
+
+对照 09 手写版的 `global_x = blockIdx.x * blockDim.x + threadIdx.x`——**local_tile 干的就是这个"block 起点偏移"**，只是它把结果做成一个新视图，后续代码直接用 tile 内坐标 (i,j)，不用再背着 block 偏移。
+
+---
+
+**原语 3：`local_partition` —— 把 tile 按线程再切，切出"我这个线程管的元素"**
+
+```c++
+auto tAgA = local_partition(gA, tA, tx);
+```
+
+三个参数：切 `gA`；按**线程布局** `tA` 切；返回第 `tx` 号线程的那一份。先解释 `tA`——它本身也是一个 layout：
+
+```c++
+auto tA = make_layout(make_shape(Int<16>{}, Int<16>{}), GenColMajor{});
+// 含义: 256 个线程摆成 16×16 的"线程方阵", 编号优先沿第 0 维排
+```
+
+`local_partition(gA, tA, tx)` 做的事：**把 gA 的 256 个元素按 tA 的摆法分配给 256 个线程，返回属于 tx 的那一两个元素的视图**。算一下 tx=100 分到哪个格子：
+
+```
+tA 是 ColMajor: tx = 100 → (i = 100 % 16, j = 100 / 16) = (4, 6)
+即: 100 号线程站在"线程方阵"的第 (4, 6) 格
+它分到 gA 的元素: tAgA() = gA(4, 6)
+    = pA[48+4 + (80+6)*1024]        (接着上面 block(3,5) 的例子)
+```
+
+本篇的 kernel 里每线程只管 1 个元素，所以 `tAgA()` 是个**零维张量**（直接 `tAgA()` 取值，没有下标）；向量化版本每线程管 4 个，`tAgA(0..3)` 是一维的。
+
+对照 09：`local_partition` 干的就是 `threadIdx.x/threadIdx.y → tile 内 (local_x, local_y)` 的换算——09 里 `local_y = tid / 16, local_x = tid % 16` 那一行，在这里是 tA 的 `GenColMajor` 一个词。
+
+---
+
+**三层视图叠起来的完整图景**：
+
+```
+mA  (全矩阵视图, 全矩阵坐标)
+ └─ local_tile(mA, 16×16, (bx,by)) → gA   (block 的 tile 视图, tile 内坐标)
+     └─ local_partition(gA, tA, tx) → tAgA (线程的元素视图, 直接取值)
+
+手写版对应物:
+  mA        ↔ 裸指针 pA + "形状是 M*N" 的心智模型
+  gA        ↔ blockIdx*16 + threadIdx 的 block 偏移换算
+  tAgA      ↔ threadIdx → (local_x, local_y) 的除法/取模
+```
+
+**手写版把这三层换算揉在同一个下标公式里**（`y[global_y*row + global_x]` 一行里同时有 block 偏移、线程坐标、地址乘加）；**CuTe 把它们拆成三层显式的视图**——每层做一件小事，最后 `copy_if(tApA, tAgA, tBgB)` 里源和目标已经是"本线程的源、本线程的目标"，copy 只剩纯搬运。**CuTe 抽象掉的不是计算，是"层次"**。
 
 **和 09 手写的对照**：
 
