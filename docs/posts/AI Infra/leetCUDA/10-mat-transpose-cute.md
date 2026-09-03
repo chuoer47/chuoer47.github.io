@@ -16,11 +16,19 @@ order: 10
 CuTe 的世界观：**一切数据布局 = Layout（Shape + Stride）**，一切数据搬运 = 对 Tensor（指针 + Layout）的 `copy`。
 
 ```c++
-// Shape: 每个维度多大;  Stride: 每个维度走一步地址跳多少
+// Shape: 每个维度多大;  Stride: 沿该维度走一步, 地址跳多少
 make_layout(make_shape(1024, 1024), GenRowMajor{})
 // = Shape<(1024,1024), Stride<(1,1024)>>
-// 含义: 二维 (M,N) 矩阵, 行主序 —— m(i,j) 的地址 = i*1 + j*1024?
-// 不对, 是地址 = i + j*1024? 记法: 沿 shape 的第 0 维走 1 步地址 +stride[0]
+// 即: m(i, j) 的地址 = i*1 + j*1024
+```
+
+**一个必须先说的坑：CuTe 的维度顺序和 C 语言是反的。** C 里 `x[r][c]` 第一维是行号（stride 大），第二维是列（stride=1，行内连续）；CuTe 的 `m(i,j)` 里 **stride=1 的那一维排在第 0 位**——`m(i,j)` 的 i 是"行内偏移"、j 是"行号"。同样是 row-major 存储，C 是 `(行, 列)`，CuTe 是 `(行内位置, 行)`。本篇所有 `mA(i, j)` 都按 CuTe 的顺序理解；对应到 09 的手写记号 `x[row][col]` 时要转一下：`mA(col, row)`。
+
+```c++
+// 对照示例: 同一块内存的两种"读法"
+make_layout(make_shape(M, N), GenRowMajor{})  // Stride<(1,N)>: 第0维连续(row-major)
+make_layout(make_shape(M, N), GenColMajor{})  // Stride<(M,1)>: 第1维连续(col-major)
+// GenRowMajor/GenColMajor 说的都是"第 0 维是不是 stride=1 那个维"
 ```
 
 三个核心原语（本篇全部 kernel 只用这几个）：
