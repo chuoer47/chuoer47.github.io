@@ -20,3 +20,7 @@ order: 40
 
 - [InterX](./Agent/InterX/)
 - [LeetCode Agent Lab](./Agent/Leetcode-coder-Agent/)
+
+## LLM 项目
+
+- [Qwen3.5 复现](./LLM/) — 从零读懂 Qwen3.5 架构到自己手写 vLLM 推理引擎
