@@ -23,4 +23,4 @@ order: 40
 
 ## LLM 项目
 
-- [Qwen3.5 复现](./LLM/) — 从零读懂 Qwen3.5 架构到自己手写 vLLM 推理引擎
+- [LinkQwen](./LLM/LinkQwen/) — Qwen3.5 复现:从零读懂架构到自己手写 vLLM 推理引擎
