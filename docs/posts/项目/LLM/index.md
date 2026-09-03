@@ -7,8 +7,6 @@ order: 1
 
 个人可读、可跑、可对照的 Qwen3.5 完整教程，从 MLP、归一化、位置编码、注意力等基础组件，到 MiniQwen 组装、预训练、权重适配、后训练（SFT/DPO/GRPO/PPO）、再到自己手写 vLLM 推理引擎。配套代码在 [chuoer47/LinkQwen3.5](https://github.com/chuoer47/LinkQwen3.5)。
 
-> 注：原作者为 [灵茶山艾府（endlesscheng）](https://leetcode.cn/u/endlesscheng/) 在 [qwen35-reproduce](https://github.com/...) 的教程。本博客转载。
-
 ## 目录
 
 - [00 - 前言](./00-前言.md) — 教程介绍与 Qwen3.5 简介
