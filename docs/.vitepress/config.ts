@@ -96,7 +96,7 @@ function scanDir(dir: string): SidebarItem[] {
       items.push({
         text: directoryIndex ? getTitle(directoryIndex, file) : file,
         link: directoryIndex ? toLink(directoryIndex) : undefined,
-        collapsed: dir !== postsRoot,
+        collapsed: true,
         items: children,
       });
     } else if (file.endsWith(".md") && file !== "index.md" && file !== "README.md") {
