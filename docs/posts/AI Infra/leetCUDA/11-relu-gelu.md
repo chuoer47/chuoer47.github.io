@@ -307,7 +307,7 @@ __inline__ __device__ half gelu_tanh_approximate(half x) {
 CUDA 的 half 数学函数库**没有 tanh/sinh/cosh**（只有 exp/log/sqrt 等基础款）——所以 tanh 用恒等式 `(e^{2x}-1)/(e^{2x}+1)` 手搓。注意两个工程细节：
 
 - 所有常数都预先 `__float2half` 成 half 字面量（`HALF_1`、`HALF_DIV2`...），避免运行时做 float→half 转换；
-- `HALF_SQRT_2_PI` 特意写成 `√2 · √(2/π)... 不对——是 M_SQRT2 * M_2_SQRTPI * 0.5`（√2×2/√π÷2）**拆成三个 half 常数相乘**，注释说是"to clear the error among self defined gelu and pytorch gelu"——**为了让和 PyTorch 的 f16 GELU 逐位对齐**（PyTorch 内部也是这么拆的，常数组合顺序不同会引入半个 ULP 的差）。追平框架逐位精度时，常数折叠顺序都要复刻——这是对齐工程学的细节。
+- `HALF_SQRT_2_PI` 没有直接写 `__float2half(0.7978845608f)`，而是拆成 `M_SQRT2 * M_2_SQRTPI * 0.5f` **三个常数各自转 half 再相乘**（即 √2 × 2/√π ÷ 2，GELU 论文里的 √(2/π) ≈ 0.797885）。源码注释（"to clear the error among self defined gelu and pytorch gelu"）说明这是为了**和 PyTorch 的 f16 GELU 对齐误差**——half 只有 10 位尾数，常数先转 half 再乘、和先乘再转 half，最后一位会差出来。追平框架精度时，连常数的折叠顺序都要复刻——这是对齐工程学的细节。
 
 **③ 反直觉实测：f32 手写输给 torch**
 
