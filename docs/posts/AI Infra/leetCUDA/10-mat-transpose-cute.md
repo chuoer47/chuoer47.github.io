@@ -515,118 +515,204 @@ void mat_transpose_cute_row_rvectorized_swizzled_optimized(torch::Tensor x,
 
 ## 逐版本剖析
 
-### 版本 1：reg 版 —— "切法"变成参数
+五个版本是一条递进链，每个版本只引入一个新东西。三要素（make_tensor/local_tile/local_partition）上节已拆透，本节引用不重讲。
+
+### 版本 1：reg 版 —— "选边"变成参数
+
+kernel 体（`make_tensor → local_tile → local_partition → copy_if`）上节的三个原语就是照着它讲的，不重复。这里看**增量**——host 侧那两行 ThreadLayout：
 
 ```c++
+// row2col 版的 host:
 auto tA = make_layout(make_shape(Int<BM>{}, Int<BN>{}), GenColMajor{});
 auto tB = make_layout(make_shape(Int<BN>{}, Int<BM>{}), GenRowMajor{});
+// col2row 版的 host: tA 换 GenRowMajor, tB 换 GenColMajor —— 仅此而已
 ```
 
-09 里 col2row/row2col 是**两个 kernel**（读公式写公式都不同）；CuTe 里是**同一个 kernel、两份 ThreadLayout 参数**——`tA` 描述"线程在读端 tile 里怎么摆"（ColMajor = 线程编号先走列方向）、`tB` 描述写端摆法。**col2row vs row2col 的选择，从"改代码"变成"传不同的 layout 对象"**——这就是 DSL 的威力：结构差异被参数化了。
+09 里 col2row/row2col 是**两个 kernel**（读写公式都不同）；这里是**同一个 kernel 传不同参数**。tA/tB 决定"同一个 tx 在读端 tile 和写端 tile 里各站哪格"。拿 tx=100（BM=BN=16）代入：
 
-kernel 体的流程固定：`make_tensor`（gmem 视图）→ `local_tile`（切出本 block 的 tile）→ `local_partition`（切出本线程的片）→ `copy_if`（带边界 mask 的搬运）。**没有任何手写下标**——`copy_if(tApA, tAgA, tBgB)` 一行 = 09 的"算 (row,col) → 算 y 地址 → 越界判断 → 赋值"四件事。
+```
+row2col:  tA ColMajor → 读端站 (100%16, 100/16) = (4, 6)
+          tB RowMajor → 写端站 (100/16, 100%16) = (6, 4)   ← 互为转置!
+col2row:  tA RowMajor → 读端站 (6, 4)
+          tB ColMajor → 写端站 (4, 6)
+```
 
-实测 row2col_reg = 0.0043ms，col2row_reg = 0.0110ms——**row2col 依然快一倍**，09 的"保写端"法则在 CuTe 里原样复现（因为法则由访存物理决定，跟表达方式无关）。
+**线程号在两端站的位置互为转置**——数据要转置，搬运它的"工人编制"也要转置。09 的"选哪边连续"在这里变成"GenRowMajor/GenColMajor 填在哪格"。
 
-### 版本 2：smem 版 —— staging 的"两次切法"
-
-smem 版多了一个角色：**同一块 smem，两份布局**。
+kernel 里还有一个前面没见过的东西——**越界 mask 的做法**：
 
 ```c++
-__shared__ T smem[BLK_M * BLK_N];
-auto sA = make_tensor(make_smem_ptr(smem), sA_layout);  // 同一块内存的 (BM,BN) 视图
-auto sB = make_tensor(make_smem_ptr(smem), sB_layout);  // 同一块内存的 (BN,BM) 视图
+auto cA = local_tile(make_identity_tensor(mA.shape()), ...);  // "坐标本身"的张量
+Tensor tAcA = local_partition(cA, tA, tx);
+Tensor tApA = make_tensor<bool>(tAcA.shape(), tAcA.stride()); // bool mask
+CUTE_UNROLL
+for (int i = 0; i < size<0>(tApA); i++)
+  for (int j = 0; j < size<1>(tApA); j++)
+    tApA(i, j) = get<0>(tAcA(i, j)) < M && get<1>(tAcA(i, j)) < N;
+copy_if(tApA, tAgA, tBgB);
 ```
 
-`sA_layout` 是行主序 `(BM,BN)`，`sB_layout` 是**列主序** `(BN,BM)`——**同一块内存、两种读法**。存的时候按 A 的坐标写进 sA，取的时候按 B 的坐标读 sB，"转置"就发生在这两个 layout 的夹角里。09 手写版的 `tile[r][c]` 存、`tile[c][r]` 取，在这里是**两个 view 天然完成**，下标体操一行都没有：
+`make_identity_tensor` 造一个特殊的张量：**它的"值"就是坐标本身**（`cA(i,j)` 返回坐标对 `(i,j)`，不是内存里的数）。partition 之后，每个线程能拿到"我的元素的全局坐标"，于是 mask 判断 `坐标 < (M,N)` 就是越界检查——**替代手写的 `if (idx < N)`**。整段编译后等价于：每个元素先查坐标、合法才搬。这是 CuTe 处理非整除 tile 的标准姿势（09 手写版的边界 if，被统一成 mask 数组的构造）。
+
+**模板签名的一个细节**：`ThreadLayoutA tA` 是 kernel 参数，但 layout 的 Shape/Stride 信息在**类型**里，所以模板参数必须写 `typename ThreadLayoutA`——`make_layout` 返回什么类型，kernel 就实例化什么类型。layout 对象本身是空壳（零运行时开销），**信息全在类型、实例只为让编译器推导**。这是 CuTe 的固定模式：layout 既能当"值"构造（host 侧），又能当"类型"传递（模板参数）。
+
+实测 row2col_reg = 0.0043ms，col2row_reg = 0.0110ms——**row2col 快一倍**，09 的"保写端"法则原样复现（法则由访存物理决定，跟表达方式无关）。
+
+### 版本 2：smem 版 —— 同一块内存的两个视图
+
+对照 reg 版，kernel 只多了一块 smem 和两行视图；讲增量：**同一块物理内存，两个 layout 看**。
+
+```c++
+__shared__ T smem[BLK_M * BLK_N];          // 256 个 float, 裸内存
+auto sA = make_tensor(make_smem_ptr(smem), sA_layout);   // 看成 (BM,BN)
+auto sB = make_tensor(make_smem_ptr(smem), sB_layout);   // 看成 (BN,BM)
+// host 侧:
+auto sA_layout = make_layout(make_shape(Int<BM>{}, Int<BN>{}), GenRowMajor{});
+auto sB_layout = make_layout(make_shape(Int<BN>{}, Int<BM>{}), GenColMajor{});
+```
+
+**用数字证明这两个视图真的指向同一块内存**（BM=BN=16）：
 
 ```
-copy_if(tApA, tAgA, tAsA);   // gmem --(A 视角)--> smem
+sA 是 (16,16) RowMajor → Stride<(1,16)>
+    sA(i, j) 的物理位置 = i*1 + j*16
+sB 是 (16,16) ColMajor → Stride<(16,1)>
+    sB(i, j) 的物理位置 = i*16 + j*1
+
+线程 P 存: sA(3, 5) → 位置 3 + 5*16 = 83
+线程 Q 取: sB(5, 3) → 位置 5*16 + 3 = 83   ← 同一个格子!
+```
+
+**(3,5) 存进去、(5,3) 取出来——转置就是这两个 layout 的 stride 差**。09 手写版"存 tile[r][c]、取 tile[c][r]"的两套下标，在这里是两个 view 的 Stride<(1,16)> vs Stride<(16,1)>，编译器算地址、下标体操零行。
+
+两次搬运和栅栏（栅栏时序 03/09 讲过，这里只看布局流向）：
+
+```c++
+copy_if(tApA, tAgA, tAsA);   // ① gmem → smem, 走 A 视角 (存)
 __syncthreads();
-copy_if(tBpB, tBsB, tBgB);   // smem --(B 视角)--> gmem
+copy_if(tBpB, tBsB, tBgB);   // ② smem → gmem, 走 B 视角 (取)
 ```
 
-09 的"横着进、竖着取"在 CuTe 里是"存进 sA 视图、从 sB 视图取"——**转置 = 同一块内存的两个正交视图**。这是本篇最值得带走的一句话。
+注意 ① 的目标是 `tAsA`（A 视角的切片）、② 的源是 `tBsB`（B 视角的切片）——**同一个 tA/tB 的 partition 切的是不同的 view**，存取两端各用各的。mask 也从一份变两份（cA/cB 各自判断越界），因为存取两端的 tile 边界可能落在不同的非整除格子上。
 
 实测 col_smem = 0.0064ms、row_smem = 0.0043ms。
 
 ### 版本 3：swizzle 版 —— padding 的优雅替代
 
-09 的 padding（行宽 64→65）解决了 bank conflict，代价是破坏 16B 对齐。CuTe 的 `Swizzle` 是更聪明的解法：
+09 的 padding（行宽 64→65）消 bank conflict 但破坏 16B 对齐。CuTe 用 `composition` 复合一个 swizzle 函数：
 
 ```c++
 const int S = log2(BM);               // BM=16 → S=4
 auto swizzle_func = Swizzle<S, 0, S>{};
-auto sA_layout = composition(swizzle_func,
-                             make_layout(...));   // swizzle ∘ layout 复合
+auto sA_layout = composition(swizzle_func, make_layout(...));
 ```
 
-**Swizzle 是什么**：一个**比特级的地址重排函数**。`Swizzle<B,M,S>` 的含义：把地址的第 `[M+S, M+S+B)` 位（一段 B 个比特）与第 `[M, M+B)` 位**异或**。落到这个场景：`Swizzle<4, 0, 4>` 把地址的低 8 位里的高 4 位（行号）异或进低 4 位（列号）——**效果 = 列号 ^= 行号 % 16**。
+**`composition(f, layout)` 是函数复合**：先按 layout 算出"逻辑地址"，再过一遍 f 的比特重排得到"物理地址"。**逻辑坐标完全不变**——你写的还是 `sA(i,j)`，只是它背后落在 smem 的哪个格子被换过了。
 
-用 09 的数字算一遍（tile 16×16，行主序，`tile[r][c]` 地址 = r*16+c）：
+`Swizzle<B, M, S>` 的语义：把地址的第 `[M+S, M+S+B)` 位与第 `[M, M+B)` 位**异或**。本例 `Swizzle<4,0,4>`：低 8 位里的高 4 位（行号）异或进低 4 位——**效果 = 物理列 ^= 行号**。代入（tile 16×16，逻辑地址 = r*16+c）：
 
 ```
-原地址:  tile[0][c] → c        (bank = c % 32... 16 个 float 半个 bank 周期)
-         tile[1][c] → 16+c     (bank 与 tile[0] 错开 16, 撞一半)
-swizzle 后: tile[r][c] 的物理地址 = r*16 + (c ^ r)
-         tile[0][c] → c ^ 0 = c          (行 0 不动)
-         tile[1][c] → 16 + (c ^ 1)       (行 1 的列 0↔1, 2↔3, ... 成对交换)
-         tile[2][c] → 32 + (c ^ 2)       (行 2 的列 0↔2, 1↔3, ...)
-         ...
-竖取一列 c 时, 第 r 行取的物理列是 c^r —— 不同行取到不同列 → bank 错开 ✓
+行 0: 物理 = r*16 + (c ^ 0) = 不动
+行 1: 物理 = 16 + (c ^ 1)   → 列 0↔1 交换, 2↔3 交换, ...
+行 2: 物理 = 32 + (c ^ 2)   → 列 0↔2, 1↔3 交换, ...
+行 3: 物理 = 48 + (c ^ 3)   → 列 0↔3, 1↔2 交换, ...
 ```
 
-**swizzle 与 padding 的对比**：
+按列取（版本 2 的取法 `sB(c, r)`：同一逻辑列 c、扫 r=0..15）时，各行走的是物理列 `c^r`——r 不同则物理列不同，**bank 错开**（bank 机制 09 第 7 步讲透，不重复）。swizzle 与 padding 的对比：
 
 | | padding (+1) | swizzle (c^r) |
 |---|---|---|
 | 消 bank conflict | ✓（行间 bank 错 1） | ✓（行间取交错列） |
-| 保持 16B 对齐 | ✗（行宽 65，FLOAT4 崩） | ✓（只是重排位置，总大小不变，每行依然 16B 对齐） |
-| 代价 | load 端向量化退化成标量 | "tile[r][c] 的物理位置"不直观，但 copy 由编译器生成，无手写负担 |
-| 思想 | 加空间错位 | 换位置错位（免费） |
+| 保持 16B 对齐 | ✗（行宽 65，FLOAT4 崩） | ✓（只换位置不减宽度） |
+| 代价 | 向量化退化成标量写 | 逻辑坐标 ≠ 物理位置，人脑不可追踪 |
 
-**swizzle 是 GEMM/FA 里 smem 访问的标准姿势**——第二阶段 hgemm 的 `mma_tn_89_swizzle` 系列全是它。这里第一次见，记住形状：`composition(Swizzle, layout)`，"列 ^= 行"。
+最后一行的"代价"在 CuTe 里恰好被消化：**访问全由 copy 生成，人不需要知道物理位置**——这正是 09 说的"swizzle 手写不了、DSL 才能用"的原因：手工维护 `c^r` 的地址映射必然出错，编译器维护则免费。**swizzle 是 GEMM/FA 的 smem 标准姿势**，记住形状 `composition(Swizzle, layout)`、"物理列 ^= 行"。
 
-实测 col_smem_swizzled = 0.0056ms（vs 无 swizzle 0.0064ms，**快 12%**——16×16 tile 的 conflict 本来轻，但 swizzle 免费白拿）。row_smem_swizzled = 0.0042ms。
+实测 col_smem_swizzled = 0.0056ms（vs 无 swizzle 0.0064ms，快 12%，免费白拿）。row_smem_swizzled = 0.0042ms。
 
-### 版本 4：向量化版 —— AutoVectorizingCopy 与"c/r 两个方向"
+### 版本 4：向量化版 —— make_tiled_copy 三参数
 
-09 手写版要显式 `FLOAT4(a[idx])` + `reinterpret_cast` 才有 128bit load；CuTe 用 `Copy_Atom<AutoVectorizingCopy, float>`——**"如果 layout 显示连续且对齐，自动发向量指令"**。对齐检查在 host 侧用 `is_aligned_128` assert（04 的老知识：向量化前提）。
-
-有意思的是"两个向量化方向"的命名（对应 09 的"向量化哪端"）：
+前三个版本的"每线程管几个元素"都由 `local_partition` + 线程 layout 隐式决定（reg 版每线程 1 个）。向量化版引入一个**新原语**把这件事显式化：
 
 ```c++
-// cvectorized (column-vec): 读端向量化
-//   tile_copy_a 的值布局 (4,1) —— 每线程沿列方向连取 4 个(读 x 竖条)
-//   tile_copy_b 的值布局 (1,4) —— 每线程写 y 横条 4 个
-//   BM=64, BN=16: 处理 64×16 tile, 读端是"大边" → 读端向量化
-
-// rvectorized (row-vec): 写端向量化
-//   tile_copy_a 的值布局 (1,4) —— 每线程沿行方向连读 4 个(读 x 横条)
-//   tile_copy_b 的值布局 (4,1) —— 每线程写 y 竖条? 不——镜像过来写端连写
-//   BM=16, BN=64: 处理 16×64 tile, 写端是"大边" → 写端向量化
+auto tile_copy_a = make_tiled_copy(
+    Copy_Atom<AutoVectorizingCopy, float>{},     // ① 搬运指令的"原子单位"
+    make_layout(make_shape(Int<BM/4>{}, Int<BN>{}), GenRowMajor{}),  // ② 线程怎么摆
+    make_layout(make_shape(Int<4>{}, Int<1>{}), GenRowMajor{}));     // ③ 每线程连取几个
 ```
 
-实测印证 09 的结论：**cvectorized 0.0055ms < 无向量化 0.0043ms？不对——0.0055 比 0.0043 慢！** 而 rvectorized 0.0041ms 最快。读端向量化的 cvectorized 反而慢，因为它的值布局 (4,1) 让 warp 的读地址变成"每 4 个一跳"——**向量化错端的惩罚在 CuTe 里同样存在**，这不是表达方式能救的物理规律（09 第 5 步的陷阱，CuTe 也踩，只是数据更直观地摆在这里）。
+三个参数各司其职：
+
+- **② 线程 layout**：`(BM/4, BN)` = (16,16) = 256 线程摆满 tile——和版本 1 的 tA 同概念。
+- **③ 值 layout**：`(4,1)`——**每个线程名下沿第 0 维连着 4 个元素**。这是"向量化发生的位置"：单线程的 4 个元素连续，才有机会合并成一条 128bit 指令。
+- **① Copy_Atom**：搬运指令的选择器。`AutoVectorizingCopy` 的语义："**编译器看了源和目标的 stride/对齐后，能向量化就自动发向量指令，不能就退化成标量**"——04 讲过的"对齐才准向量化"的判断，在这里被自动化（host 侧的 `assert(is_aligned_128)` 是同样前提的人工兜底，04/13 的老知识）。
+
+**② × ③ 合起来才是完整的分工**：16×16 的线程阵 × 每线程 4 连格 = 覆盖 64×16 的 tile。kernel 里用它的方式（对象方法链）：
+
+```c++
+auto thr_copy_a = copy_a.get_slice(tx);      // "tx 号线程的切片器"
+Tensor tAgA = thr_copy_a.partition_S(gA);    // Source: 本线程的源切片
+Tensor tAsA = thr_copy_a.partition_D(sA);    // Dest:   本线程的目标切片
+copy(copy_a, tAgA, tAsA);                    // 按计划搬运 (源切片 → 目标切片)
+```
+
+`make_tiled_copy` 造出的是一个**拷贝计划对象**（TiledCopy）：它记住"线程怎么摆、每人搬几个、用什么指令"，但不绑定具体数据。`get_slice(tx)` 从计划里抽出本线程的那份，`partition_S/partition_D` 分别切源张量和目标张量（S/D = Source/Dest）。最后 `copy(copy_a, src, dst)` 把三者合起来执行——**计划（tiled_copy）+ 视图（partition）+ 执行（copy）三步分离**，比版本 1 的 local_partition 更进一步：连"怎么搬"都对象化了。
+
+**"c/r 两个方向"与 09 的向量化选端**。两个变体参数对照：
+
+```
+cvectorized: BM=64, BN=16 (读端大边)
+             copy_a: 线程(16,16) 值(4,1) → 读端每线程连取 4
+             copy_b: 线程(16,16) 值(1,4) → 写端每线程连写 4
+rvectorized: BM=16, BN=64 (写端大边)
+             copy_a: 线程(16,16) 值(1,4) → 读端每线程连取 4 (沿第1维)
+             copy_b: 线程(16,16) 值(4,1) → 写端每线程连写 4
+```
+
+实测 rvectorized 0.0041ms 最快，**cvectorized 0.0055ms 比不向量化的 0.0043ms 还慢**——为什么？拿真实地址模式算（cvectorized，warp 内 tx=0..31，tile 64×16 行主序 addr = i + j*64）：
+
+```
+读端 (值(4,1) 沿第0维连取):  tx=0 → [0,1,2,3]   tx=1 → [4,5,6,7]  ...
+                             tx=15 → [60..63]    tx=16 → [64..67]  ...
+                             → warp 32 线程覆盖 [0..127] 连续 128 float ✓ 4 条 line 打满
+
+写端 (值(1,4) 沿第1维连写):  tx=0 → [0,16,32,48]  tx=1 → [1,17,33,49] ...
+                             → 每线程的 4 个值散在 4 条 line (stride=16)
+                             → warp 32 线程 × 4 值 = 128 个写地址,
+                               横跨 128 条不同 line, 每条只写 4 字节 ✗✗
+```
+
+**cvectorized 把值布局 (4,1) 给了读端——而读端本来就有 thread layout 保证的连续，向量化白给；写端 (1,4) 反而让每个 warp 的写地址变成 stride=16 的梳子**——32 路散写，每条 line 的利用率 4/32。这就是 09 第 5 步"向量化错端"的 CuTe 复现，且机理更清晰：**值布局必须配合数据的连续方向，(4,1) 和 (1,4) 填错位置就是把梳子访存亲手写进计划里**。
 
 ### 版本 5：optimized 版 —— 转置搬进寄存器
 
-最终版的三段式是个新思路：**smem 只当"写端暂存"，转置本身在寄存器里完成**：
+最终版换了架构：**smem 降级为"写端暂存"，转置本身在寄存器完成**。三段数据流：
 
-```c++
-Tensor tAgA = thr_copy_a.partition_S(gA);
-auto tAsA = make_tensor_like(tAgA);        // ← 寄存器里的张量
-copy(copy_a, tAgA, tAsA_view);             // ① gmem -> 寄存器 (读布局, 连读)
-
-auto tAsB = thr_copy_trans.retile_S(tAsA); // ② 寄存器重排 (转置!)
-copy(copy_trans, tAsB, tBsB_trans);        //    寄存器 -> smem (swizzle 布局)
-
-copy(copy_b, tBsB, tBgB);                  // ③ smem -> gmem (写布局, 连写)
+```
+① gmem → 寄存器     (copy_a: 读布局, 连读 8×16 块)
+② 寄存器 → 寄存器重排 (copy_trans: 转置发生在这里, 不经过 smem!)
+③ 寄存器 → smem     (swizzle 布局) → gmem  (copy_b: 写布局, 连写)
 ```
 
-`make_tensor_like` 造的是**寄存器张量**（数组放本地内存/寄存器），`retile_S` 把同一块寄存器按 B 的视角重新切分——"转置"变成**寄存器数组下标重排**，比经过 smem 的往返更快。加上 `Swizzle<2,3,2>` 的 smem 布局和 8×128 的大 tile（BM=8 让读端 8 行连续一次性进寄存器，BN=128 让写端一次铺 128 宽），实测 **0.0041ms**——CuTe 全家最优。
+代码里的新面孔只有两个：
 
-注意这个 `Swizzle<2,3,2>` 和前面 `Swizzle<4,0,4>` 参数不同（B=2 个比特、M=3 偏移、S=2 步长）——swizzle 的参数要按 tile 形状和访问模式调，没有万能值。这套调参正是 CUTLASS 模板代码里满屏 `Swizzle<3,4,3>` 之类常数的来源。
+```c++
+auto tAsA = make_tensor_like(tAgA);              // 寄存器张量: 形状同 tAgA,
+                                                // 但后端是本地寄存器数组
+copy(copy_a, tAgA, tAsA_view);                   // ① 落脚点不是 smem, 是寄存器
+
+auto tAsB = thr_copy_trans.retile_S(tAsA);       // ② 同一块寄存器, 按 B 的
+                                                //    视角重新切片 (retile)
+copy(copy_trans, tAsB, tBsB_trans);              //    重排即转置
+```
+
+`make_tensor_like(x)`：造一个和 x 同形状的**寄存器张量**（数据在本线程的寄存器/本地存储，不占 smem、不占 gmem）。`retile_S`：把这块寄存器**换个切法看**——版本 2 的"同一块内存两个视图"（smem 版）在寄存器上重演：A 视角存、B 视角取，夹角即转置。**转置从"过一遍 smem"变成"寄存器数组换个下标"**，省掉一次 smem 往返。
+
+形状选择也值得看一眼：`BM=8, BN=128`——读端 8 行短块（8 行连续一次性进寄存器，寄存器装得下），写端 128 宽长条（一次铺满 4 条 line）。tile 形状随"寄存器容量 / line 宽度"调，不是拍脑袋。
+
+`Swizzle<2,3,2>` 与版本 3 的 `<4,0,4>` 参数不同（B/M/S 按 tile 形状和访问模式调，无万能值）——CUTLASS 代码里满屏 `Swizzle<3,4,3>` 的来源。host 侧那两个嵌套 shape（`make_shape(Int<BM>, make_shape(Int<4>, Int<BN/16>))`）是 CuTe 的分层 layout 语法（把值组织成 (4, BN/16) 子结构以匹配 swizzle 粒度），本篇不深入——知道"形状分层、匹配 swizzle"即可。
+
+实测 **0.0041ms**，CuTe 全家最优（与 rvectorized 持平，但架构上多走了寄存器这条路，为 GEMM 的多级流水打样）。
 
 ## 实测数据（4090, M=N=1024，与 09 手写对照）
 

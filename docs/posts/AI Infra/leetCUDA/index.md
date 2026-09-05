@@ -25,3 +25,11 @@ order: 5
 - [12 - Histogram](./12-histogram.md) — 原子操作、竞争强度公式、smem 私有直方图两阶段归并
 - [13 - Embedding](./13-embedding.md) — gather 模式、手动展开≠向量化（翻车实录）
 - [14 - NMS](./14-nms.md) — 顺序敏感算法、数据竞争实测（结果不稳定）、分块并行化
+- [15 - SGEMM](./15-sgemm.md) — tiling 数据复用、thread tile 计算密度、bcf/dbuf、WMMA TF32 Tensor Core
+- [16 - SGEMV](./16-sgemv.md) — 一行一 warp、warp 拆行、访存受限算子、decode 语境
+- [17 - HGEMM (MMA)](./17-hgemm-mma.md) — ldmatrix/mma.sync、cp.async、warp shuffle 收尾、conda 编译 5 坑
+- [18 - HGEMM (Swizzle)](./18-hgemm-swizzle.md) — 128bit 访存 bank conflict、位异或 swizzle、三把刀对照
+- [19 - HGEMM (CuTe)](./19-hgemm-cute.md) — TiledMMA、Swizzle 代数化、block swizzle、296 TFLOPS
+- [20 - FlashAttention 2](./20-flash-attn.md) — online softmax×MMA、split-q vs split-kv、share-qkv、189 vs SDPA 133
+- [21 - Triton](./21-triton.md) — 编译器自动化对照手写、other= 语义边界、num_stages 流水
+- [22 - 系列总结](./22-summary.md) — 知识地图、性能总账、五条铁律、手写 vs 抽象的元结论
