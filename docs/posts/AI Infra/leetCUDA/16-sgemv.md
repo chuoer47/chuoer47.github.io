@@ -38,110 +38,6 @@ y[m] = A 的第 m 行 · x        ← 每个输出 = 一个 K 长度点积（05 
 
 所以 GEMV 的设计空间只有一个轴：**每个点积（每行）分配多少线程，M 行怎么凑满 GPU**。三个 kernel 就是这个轴上的三个刻度：K=32 一行一个 warp、K=128 一行一个 warp 但每人多吃 4 倍、K=16 一个 warp 吃两行。
 
-## Kernel 1：k32——一行一个 warp
-
-（假设 K 是 32 的倍数）
-
-```
-grid(M/4), block(32, 4):  4 个 warp / block, 每个 warp 负责一行
-
-blockIdx.x=0 的 block 内:
-  warp 0 (ty=0) → 行 0     lane 0..31 各算 A[0][lane]*x[lane]
-  warp 1 (ty=1) → 行 1     ...
-  warp 2 (ty=2) → 行 2
-  warp 3 (ty=3) → 行 3
-```
-
-核心代码：
-
-```c++
-int lane = tx % WARP_SIZE;             // 0~31
-int m = bx * blockDim.y + ty;          // 我负责的行号
-float sum = 0.0f;
-int NUM_WARPS = (K + WARP_SIZE - 1) / WARP_SIZE;
-for (int w = 0; w < NUM_WARPS; ++w) {  // K>32 时一行要多个 warp 段
-  int k = w * WARP_SIZE + lane;
-  sum += a[m * K + k] * x[k];          // ← 乘加在寄存器里攒着
-}
-sum = warp_reduce_sum_f32<WARP_SIZE>(sum);   // 03 篇的蝴蝶归约
-if (lane == 0) y[m] = sum;
-```
-
-对照 05 篇的点积：一模一样的骨架（每人攒一段 → `warp_reduce_sum` → lane 0 落盘），只是那篇全 grid 算一个点积，这里**一个 warp 独占一个点积**。K=128 时 NUM_WARPS=4，循环 4 轮，每轮 warp 覆盖 32 个元素。
-
-访存分析（拿具体数字算，09 篇的规矩）：
-- **A 的访问**：warp 内 lane 0~31 读 `a[m*K + w*32 + lane]`——连续 32 个 float，**coalesced** ✓
-- **x 的访问**：所有 warp、所有轮次读的是**同一段 x**——K=128 时 x 总共 128 个 float = 512B，常驻 L1/L2，等于免费 ✓
-- M=1024, K=128 时 grid=256 个 block × 4 warp = 1024 warp，4090 有 128 个 SM，每 SM 摊 8 个 warp——**够喂**。但如果 M 很小（比如 8，decode 早期 batch=1 时 M 就是模型宽度的行数），grid 只有 2 个 block，GPU 大量 SM 闲置——这是 GEMV 的固有困境，也是后面 vLLM 等框架要凑 batch 的原因
-
-## Kernel 2：k128 + Vec4——每线程吃 4 个
-
-（假设 K 是 128 的倍数）
-
-Kernel 1 里 NUM_WARPS=4 时，归约循环转 4 轮。Kernel 2 把"转 4 轮"压成"1 轮、每人拿 4 个"：
-
-```c++
-int k = (w * WARP_SIZE + lane) * 4;    // 注意 *4：lane 0→k0, lane 1→k4...
-float4 reg_x = FLOAT4(x[k]);           // 一条指令读 4 个 x
-float4 reg_a = FLOAT4(a[m * K + k]);   // 一条指令读 4 个 A
-sum += reg_a.x*reg_x.x + reg_a.y*reg_x.y + reg_a.z*reg_x.z + reg_a.w*reg_x.w;
-```
-
-**warp 的覆盖方式变了**：Kernel 1 里 lane 0~31 覆盖连续的 32 个元素；Kernel 2 里 lane 0 读 k 0~3、lane 1 读 k 4~7……32 个线程覆盖 **128 个连续元素**。访存还是 coalesced（128 个 float 连续 = 4 条 128B cache line，一个 warp 事务正好搬完）。
-
-向量化该省的访存指令省了：**load 指令数 /4**。但实测只快了 2%（0.00283→0.00276ms）——**老朋友又来了**：这个 kernel 的问题规模太小（1024×128×4B = 512KB 数据量），总耗时 2.8μs 里 launch 开销占比不小，向量化省下的几百条访存指令根本不在关键路径上。02/09/11/12 反复验证的铁律换个说法：**优化手段既要打在瓶颈上，也要看瓶颈占总耗时的比例**——分母太小，分子优化没意义。
-
-**为什么手写比 torch.matmul 快 2.7 倍**？torch.matmul 对 (1024,128)×(128,1) 这个形状会走通用 GEMM 路径（cuBLAS gemv 或退化 kernel），它要为任意 N 准备分块逻辑；而这里的 kernel 是**为"K 是 32/128 倍数的 GEMV"特化的**——没有 N 维逻辑、没有边界检查、launch 配置直接压到最小。shape 越小越特化，框架的通用性税越显眼。
-
-## Kernel 3：k16——一个 warp 吃两行
-
-（假设 K=16）反向问题来了：K < 32，一个 warp 32 个线程只有 16 个元素可算，一半线程闲着。
-
-解法：**一个 warp 同时算 2 行**，16 个线程一行：
-
-```
-K_WARP_SIZE = 32 / 2 = 16     ← 每行的"点积宽度"
-lane 的分解: k   = lane % 16   ← 我算哪一列
-             行  = lane / 16   ← 我算哪一行 (0 或 1)
-
-warp 内布局 (K=16):
-  lane 0~15  → 行 m+0 的 k=0~15
-  lane 16~31 → 行 m+1 的 k=0~15
-```
-
-```c++
-int k = lane % K_WARP_SIZE;                              // 0~15
-int m = (blockDim.y * bx + ty) * ROW_PER_WARP + lane / K_WARP_SIZE;  // +0 或 +1
-float sum = A[m * K + k] * x[k];
-sum = warp_reduce_sum_f32<K_WARP_SIZE>(sum);             // ← 注意模板参数是 16!
-if (k == 0) y[m] = sum;                                  // ← 是 k==0, 不是 lane==0
-```
-
-三个细节是本 kernel 的精华：
-
-1. **`warp_reduce_sum_f32<16>`**：03 篇讲过，蝴蝶归约的 mask 序列由模板参数生成——`16>>1=8, 4, 2, 1`，4 轮归约只在各自 16 人小组内进行，两组互不干扰（`__shfl_xor_sync` 的 xor 掩码恰好保证 lane 0~15 只和 0~15 交换、16~31 只和 16~31 交换——可以拿 mask=8 验证：lane 0 ↔ lane 8，都 <16 ✓）。**同一个硬件 warp 里跑着两个独立的归约**，这就是 03 篇"warp 蝴蝶归约可以任意 2 的幂宽度"的实战兑现。
-2. **`k == 0` 而非 `lane == 0`**：两行的结果分别落在 lane 0 和 lane 16——两个小组各自的"lane 0"。判 k==0 自动选中两个组长。
-3. **访存亏了**：A 的访问从 lane 看，lane 0~15 读行 m 连续 16 个、lane 16~31 读行 m+1 连续 16 个——两行在内存里不相邻（隔 K 个 float），warp 一次访存跨 2 条 cache line，各用一半。**K<32 时 coalesced 注定不完美**，这是问题形状的物理约束，不是实现失误。
-
-## 三 kernel 的设计空间总结
-
-把三个 kernel 摆在"行×线程"的分配矩阵里：
-
-| kernel | K 假设 | 1 行用几个线程 | 1 warp 几行 | 备注 |
-|---|---|---|---|---|
-| k32 | K % 32 == 0 | 32（K>32 转轮） | 1 | 基准形态 |
-| k128f32x4 | K % 128 == 0 | 32×4 元素 | 1 | 向量化压轮次 |
-| k16 | K == 16 | 16 | 2 | 拆 warp 塞小 K |
-
-规律：**每个线程持有的元素数 × 每 warp 的行数 = 32**（warp 大小守恒）。K 大就往"每线程多拿几个"压（k128），K 小就往"每 warp 多拿几行"压（k16），核心都是一条：**别让任何线程闲着**。
-
-GEMV 的三个世界性约束（和 15 篇 GEMM 对照）：
-1. **输出太少**：GEMM 的并行来自 M×N，GEMV 只有 M——M 小时 GPU 喂不饱（batch 解法）
-2. **归约开销**：每行的点积尾上要一次 warp 归约，行数 = 归约次数；GEMM 没有这一层
-3. **算术强度低**：每个 A 元素只参与 1 次乘加（GEMM 里是 N 次）——GEMV 注定是**访存受限**算子，算力再强也用不上，带宽是天花板。这就是为什么 17 篇 hgemm 玩命堆计算密度，而 GEMV 的优化全在访存形态上
-
-LLM decode 语境：batch=1 时每层都是 GEMV（权重 × 单个激活向量），GPU 带宽直接决定 decode 速度——这正是 vLLM/SGLang 拼 KV cache 和 batch 的底层原因之一。
-
 ## 完整代码
 
 ### `sgemv.cu`
@@ -450,6 +346,120 @@ print("-" * 80)
 ```
 
 </details>
+
+
+## Kernel 1：k32——一行一个 warp
+
+（假设 K 是 32 的倍数）
+
+```
+grid(M/4), block(32, 4):  4 个 warp / block, 每个 warp 负责一行
+
+blockIdx.x=0 的 block 内:
+  warp 0 (ty=0) → 行 0     lane 0..31 各算 A[0][lane]*x[lane]
+  warp 1 (ty=1) → 行 1     ...
+  warp 2 (ty=2) → 行 2
+  warp 3 (ty=3) → 行 3
+```
+
+核心代码：
+
+```c++
+int lane = tx % WARP_SIZE;             // 我在 warp 里的 0~31 编号
+int m = bx * blockDim.y + ty;          // 我负责哪一行 M
+float sum = 0.0f;
+int NUM_WARPS = (K + WARP_SIZE - 1) / WARP_SIZE;
+for (int w = 0; w < NUM_WARPS; ++w) {  // K>32 时一行要多个 warp 段
+  int k = w * WARP_SIZE + lane;        // 本轮我读 k 维的哪一列
+  sum += a[m * K + k] * x[k];          // 乘加在寄存器里攒着
+}
+sum = warp_reduce_sum_f32<WARP_SIZE>(sum);   // 03 篇的蝴蝶归约
+if (lane == 0) y[m] = sum;             // lane 0 把汇总值落盘
+```
+
+**4 个魔法点逐行拆**（这块代码每行都有来由）：
+
+1. **lane / m 的坐标分解**——`blockDim = (32, 4)`，tx 是 0~31、ty 是 0~3。每个线程用 `(lane, m)` 双标定："我在哪个 warp 的哪条 lane" + "我算哪一行"。**warp 内 32 线程共享 `m`（同一行），靠 `lane` 分工 K 维的列**——这就是 5 个元素 A·x 计算的"行"在哪
+2. **NUM_WARPS 循环**——K=128 时 `NUM_WARPS = 4`（128/32），每个 warp 一轮吃 32 个 K 元素、需要 4 轮覆盖完整 K 维。K=32 时 `NUM_WARPS=1`，循环只 1 轮
+3. **`warp_reduce_sum`**——32 个 lane 各自攒了"半行 K"的乘加，硬件用 `__shfl_xor_sync` 蝴蝶归约（**原理见 03 篇**，这里只关心它把 32 个 sum 折成 1 个，**全 32 lane 都拿到结果**）
+4. **`if (lane == 0) y[m] = sum`**——**只有 lane 0 写**。不是其他线程"不算了"（蝴蝶归约后 32 lane 都拿到了完整 sum），而是 y 的地址 `y[m]` 全 32 lane 写同一个会冲突——选一个代表写就行。**这个 0 是 warp 内编号不是全局编号**（一个 block 4 个 warp，每个 warp 各自有一个 lane 0 写自己的 m，互不冲突）
+
+**对照 05 篇**（一句话的差异）：05 篇的 `dot_prod` 是"全 grid 算一个点积"——warps 跨 grid 协作；本 kernel 是"一个 warp 算一个点积"——**取消跨 warp 协作，每个点积独立**。这是 GEMV 的设计空间收缩：少了一个点积数 = M 个并行任务，每个任务 32 线程，刚好对应 GEMM 的 M 维并行化但 N 维=1。
+
+访存分析（拿具体数字算，09 篇的规矩）：
+- **A 的访问**：warp 内 lane 0~31 读 `a[m*K + w*32 + lane]`——连续 32 个 float，**coalesced** ✓
+- **x 的访问**：所有 warp、所有轮次读的是**同一段 x**——K=128 时 x 总共 128 个 float = 512B，常驻 L1/L2，等于免费 ✓
+- M=1024, K=128 时 grid = 256 个 block（`M/4 = 1024/4`，每 block 含 4 个 warp），4090 有 128 个 SM—— **256 block 跑在 128 SM 上，每个 SM 摊 2 个 block，**算力全占满——**够喂**。
+- 但如果 M 很小（比如 M=8）：grid = `M/4 = 8/4 = 2` 个 block，只够填 2 个 SM，**剩下 126 个 SM 全摸鱼**。这就是 GEMV 的"小 M 困境"——输出维度决定 block 数，block 数少于 SM 数时部分硬件空转，没法"自动凑并行"。
+
+## Kernel 2：k128 + Vec4——每线程吃 4 个
+
+（假设 K 是 128 的倍数）
+
+Kernel 1 里 NUM_WARPS=4 时，归约循环转 4 轮。Kernel 2 把"转 4 轮"压成"1 轮、每人拿 4 个"：
+
+```c++
+int k = (w * WARP_SIZE + lane) * 4;    // 注意 *4：lane 0→k0, lane 1→k4...
+float4 reg_x = FLOAT4(x[k]);           // 一条指令读 4 个 x
+float4 reg_a = FLOAT4(a[m * K + k]);   // 一条指令读 4 个 A
+sum += reg_a.x*reg_x.x + reg_a.y*reg_x.y + reg_a.z*reg_x.z + reg_a.w*reg_x.w;
+```
+
+**warp 的覆盖方式变了**：Kernel 1 里 lane 0~31 覆盖连续的 32 个元素；Kernel 2 里 lane 0 读 k 0~3、lane 1 读 k 4~7……32 个线程覆盖 **128 个连续元素**。访存还是 coalesced（128 个 float 连续 = 4 条 128B cache line，一个 warp 事务正好搬完）。
+
+向量化该省的访存指令省了：**load 指令数 /4**。但实测只快了 2%（0.00283→0.00276ms）——**老朋友又来了**：这个 kernel 的问题规模太小（1024×128×4B = 512KB 数据量），总耗时 2.8μs 里 launch 开销占比不小，向量化省下的几百条访存指令根本不在关键路径上。02/09/11/12 反复验证的铁律换个说法：**优化手段既要打在瓶颈上，也要看瓶颈占总耗时的比例**——分母太小，分子优化没意义。
+
+**为什么手写比 torch.matmul 快 2.7 倍**？torch.matmul 对 (1024,128)×(128,1) 这个形状会走通用 GEMM 路径（cuBLAS gemv 或退化 kernel），它要为任意 N 准备分块逻辑；而这里的 kernel 是**为"K 是 32/128 倍数的 GEMV"特化的**——没有 N 维逻辑、没有边界检查、launch 配置直接压到最小。shape 越小越特化，框架的通用性税越显眼。
+
+## Kernel 3：k16——一个 warp 吃两行
+
+（假设 K=16）反向问题来了：K < 32，一个 warp 32 个线程只有 16 个元素可算，一半线程闲着。
+
+解法：**一个 warp 同时算 2 行**，16 个线程一行：
+
+```
+K_WARP_SIZE = 32 / 2 = 16     ← 每行的"点积宽度"
+lane 的分解: k   = lane % 16   ← 我算哪一列
+             行  = lane / 16   ← 我算哪一行 (0 或 1)
+
+warp 内布局 (K=16):
+  lane 0~15  → 行 m+0 的 k=0~15
+  lane 16~31 → 行 m+1 的 k=0~15
+```
+
+```c++
+int k = lane % K_WARP_SIZE;                              // 0~15
+int m = (blockDim.y * bx + ty) * ROW_PER_WARP + lane / K_WARP_SIZE;  // +0 或 +1
+float sum = A[m * K + k] * x[k];
+sum = warp_reduce_sum_f32<K_WARP_SIZE>(sum);             // ← 注意模板参数是 16!
+if (k == 0) y[m] = sum;                                  // ← 是 k==0, 不是 lane==0
+```
+
+三个细节是本 kernel 的精华：
+
+1. **`warp_reduce_sum_f32<16>`**：03 篇讲过，蝴蝶归约的 mask 序列由模板参数生成——`16>>1=8, 4, 2, 1`，4 轮归约只在各自 16 人小组内进行，两组互不干扰（`__shfl_xor_sync` 的 xor 掩码恰好保证 lane 0~15 只和 0~15 交换、16~31 只和 16~31 交换——可以拿 mask=8 验证：lane 0 ↔ lane 8，都 <16 ✓）。**同一个硬件 warp 里跑着两个独立的归约**，这就是 03 篇"warp 蝴蝶归约可以任意 2 的幂宽度"的实战兑现。
+2. **`k == 0` 而非 `lane == 0`**：两行的结果分别落在 lane 0 和 lane 16——两个小组各自的"lane 0"。判 k==0 自动选中两个组长。
+3. **访存亏了**：A 的访问从 lane 看，lane 0~15 读行 m 连续 16 个、lane 16~31 读行 m+1 连续 16 个——两行在内存里不相邻（隔 K 个 float），warp 一次访存跨 2 条 cache line，各用一半。**K<32 时 coalesced 注定不完美**，这是问题形状的物理约束，不是实现失误。
+
+## 三 kernel 的设计空间总结
+
+把三个 kernel 摆在"行×线程"的分配矩阵里：
+
+| kernel | K 假设 | 1 行用几个线程 | 1 warp 几行 | 备注 |
+|---|---|---|---|---|
+| k32 | K % 32 == 0 | 32（K>32 转轮） | 1 | 基准形态 |
+| k128f32x4 | K % 128 == 0 | 32×4 元素 | 1 | 向量化压轮次 |
+| k16 | K == 16 | 16 | 2 | 拆 warp 塞小 K |
+
+规律：**每个线程持有的元素数 × 每 warp 的行数 = 32**（warp 大小守恒）。K 大就往"每线程多拿几个"压（k128），K 小就往"每 warp 多拿几行"压（k16），核心都是一条：**别让任何线程闲着**。
+
+GEMV 的三个世界性约束（和 15 篇 GEMM 对照）：
+1. **输出太少**：GEMM 的并行来自 M×N，GEMV 只有 M——M 小时 GPU 喂不饱
+2. **归约开销**：每行的点积尾上要一次 warp 归约，行数 = 归约次数；GEMM 没有这一层
+3. **算术强度低**：每个 A 元素只参与 1 次乘加（GEMM 里是 N 次）——GEMV 注定是**访存受限**算子，算力再强也用不上，带宽是天花板。这就是为什么 17 篇 hgemm 玩命堆计算密度，而 GEMV 的优化全在访存形态上
+
+LLM decode 语境：batch=1 时每层都是 GEMV（权重 × 单个激活向量），GPU 带宽直接决定 decode 速度——这正是 vLLM/SGLang 拼 KV cache 和 batch 的底层原因之一。
+
 
 ## 本篇小结
 

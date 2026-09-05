@@ -2042,6 +2042,10 @@ Block 128×128 ← grid 切
 
 ## 第 6 步：cuBLAS 差距盘点
 
+**cuBLAS 是什么**（先讲明白是什么再列差距）：NVIDIA 官方闭源 BLAS 库，PyTorch `torch.matmul` 底层就是它——业内所有 GPU 算子库的"事实天花板"。它和手写版走的是**同一条硬件路径**（同样用 4090 的 Tensor Core，同样 mma.sync 指令），区别是 NVIDIA 自己写、最优调参、闭源 SASS 手排——我们拿它的 TF32 数字当"硬件极限"基线。
+
+**TF32 模式**：cuBLAS 默认走的是"math mode = CUBLAS_TF32_TENSOR_OP_MATH"——和 15 篇手写 TF32 是同一条 mma 路径，只是 cuBLAS 把 tile 大小、stage 数、swizzle 都按形状动态调优。74.3 TFLOPS 不是 "cuBLAS 神奇", 是它把同样的 mma.sync 排得更紧。
+
 最终表（8192×8192×4096）：
 
 | 配置 | TFLOPS | 说明 |
@@ -2049,7 +2053,7 @@ Block 128×128 ← grid 切
 | t8x8sk → bcf → dbuf | 36.6 → 39.6 → 41.9 | CUDA Core 手写全链路 |
 | WMMA stage2 | 59.4 | Tensor Core 入门版 |
 | WMMA stage2+swizzle | **60.0** | 手写最优 |
-| cuBLAS TF32 | **74.3** | 差距 24% |
+| **cuBLAS TF32** | **74.3** | **差距 24%**（同硬件, 闭源 SASS 手排） |
 
 还差的 24% 在哪（诚实盘点，不装懂）：
 1. **调度与调参**：cuBLAS 对每个形状会选不同 tile 配置/流水级数，手写版是固定模板——8192 和 4096 的最优 (BM,BN,BK,stage) 不一样
