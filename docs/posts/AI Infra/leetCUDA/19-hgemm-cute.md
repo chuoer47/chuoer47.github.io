@@ -40,6 +40,15 @@ using SmemLayoutA = decltype(tile_to_shape(
 
 三行浓缩了 18 篇的全部手工推导：`composition(Swizzle<3,3,3>, layout)` 就是 18 篇那个 `((j>>3)^(i>>2))` 位异或的**代数化**（B=3 位、M=3 位起点、S=3 位步长——8×16 half 的 atom 恰好 1024 字节，源码注释：`(2^3)*(2^3)*(2^3)=512 values=1024 bytes`）；`tile_to_shape` 把 atom 平铺到 BM×BK×stage——**swizzle 的粒度、smem 的三维（含流水级）全部在类型里**，不用在装载循环里逐地址换算。
 
+**这 3 个声明是一条流水线，不是 3 个独立操作**——按"做出什么"顺序读:
+
+1. **`Int<128>{}` 等**——把数字升级成**编译期类型**（`Int<N>` 是 `cute::Int<N>{}` 的 C++ 模板包装），好处是 `make_layout(Int<8>{}, ...)` 的所有运算**编译期算完**, 0 运行时开销
+2. **`make_layout(make_shape(...), make_stride(...))`**——造出 8×16 的 smem atom, **底层是 (Shape, Stride) 二元组**; 你可以理解成 09 篇的 `s_a[BM][BK]` 但 Stride 自动算出 (8 行 × stride 16, 16 列 × stride 1)
+3. **`composition(Swizzle<3,3,3>{}, layout)`**——把 Swizzle **套在** 上面那个 layout 上, 18 篇那个位异或现在就是这里的一个代数对象; **关键: composition 不复制数据, 只生成"用 Swizzle 算地址"的视图**——这是 10 篇转置"composition 是视图套视图"的复用
+4. **`tile_to_shape(atom, make_shape(BM, BK, KStage))`**——把 8×16 的 atom 平铺到 128×32×2 的三维 smem 块, **swizzle 自动跟着平铺**; KStage=2 这一维是流水线级 (15/17 篇 dbuf 的 cp.async 流水用)
+
+**结果**——下游 `make_tensor(make_smem_ptr(Ashm), SmemLayoutA{})` 拿到的是一个**类型**, 后面所有 gmem→smem、smem→reg、smem→gmem 的 copy 都从这个类型构造, swizzle 自动继承 (18 篇"写端读端都要插函数"的侵入负担, 类型系统消化了)
+
 10 篇讲过 composition 是"视图套视图"，当时只用于转置的读写两端。这里的用法升级：**swizzle 进了 layout 类型，后续所有 copy 对象都从这个类型构造**——装载、计算、回写全自动继承 swizzle 后的地址换算，18 篇"写端读端都要插同一个函数"的侵入式负担，在类型系统里消失。
 
 ## 第 2 步：TiledMMA——分形结构的类型化
@@ -63,7 +72,29 @@ using MMA = decltype(make_tiled_mma(mma_atom{}, MMA_EU_RepeatT{}, MMA_P_T{}));
 | `MMA_TILE_M/N=2/4, WARP_TILE_M/N=4/4` 连乘 | `MMA_EU_RepeatT`（warp 内重复）+ `MMA_P_T`（warp 间拼图） |
 | 手推 ldmatrix 的 lane↔smem 映射 | `thr_mma.partition_A/B/C` 自动给出 |
 
+**`SM80_16x8x16_F16F16F16F16_TN` 名字怎么读**（名字自带全部信息, 不神秘）——拆 4 段:
+
+- `SM80` = sm_80 起的硬件指令 (4090 sm_89 向后兼容, 所以能用)
+- `16x8x16` = m × n × k = 一次 mma.sync 算的尺寸 (和 17 篇 HMMA16816 一样)
+- `F16.F16.F16.F16` = 4 个尾缀分别对应 **A 类型 / B 类型 / 累加器入参 / 累加器出参**——和 17 篇 PTX `mma.sync.aligned.m16n8k16.row.col.f16.f16.f16.f16` 是一一对应的 4 个 f16
+- `_TN` = 和 17 篇 `mma_tn` 含义相同
+
 **关键收益**：`thr_mma.partition_fragment_C(gD)` 直接给每个线程算好"我负责 C 的哪些 fragment"——17 篇手写 `RC[4][4][2]` 的布局和收尾 shuffle（322~358 行那 30 行手工体操），这里一行 `tCrD = thr_mma.partition_fragment_C(gD)` 拿到，且**和 ldmatrix/copy atom 的布局自动对齐**（atom 间布局契约由 traits 保证，不靠人肉保证）。这就是 BN 能开到 256 的底气：布局维度翻倍后，手写的地址推导量平方增长，类型的推导量不变。
+
+**`MMA_EU_RepeatT` 和 `MMA_P_T` 怎么算**（拆数字账, 17 篇的手算对应到这里的类型参数）——源码 L380-396 注释原文:
+
+```c++
+static constexpr int kMmaEURepeatM = 2;  // MMA repeat 2 times across M
+static constexpr int kMmaEURepeatN = 2;  // MMA repeat 2 times across N
+static constexpr int kMmaEURepeatK = 1;  // MMA no repeat across K
+// 1*2*16=32  kMmaPM = 1 * kMmaEURepeatM * get<0>(mma_atom_shape{})
+// 2*2*8=32   kMmaPN = 2 * kMmaEURepeatN * get<1>(mma_atom_shape{})
+// 1*1*16=16  kMmaPK = 1 * kMmaEURepeatK * get<2>(mma_atom_shape{})
+```
+
+`MMA_EU_RepeatT = Layout<2,2,1>` 是 **"warp 内沿 m/n 各重复 2 次, k 重复 1 次"**——一个 warp 算 2×2 个 m16n8 , 对比 17 篇的 1×1 atom , 这里是更"宽"的 warp tile (输出多了 1.5x).
+
+`MMA_P_T = Tile<32, 32, 16>` = **"warp 间拼图"**——4 个 warp (32 threads × 4 = 128) 在 m/n 维各拼 32×32, 沿 k 不扩展, 完整 tile 64×32×16 = 1 个 mma.sync × 4 次重复 (k=16 是 mma atom 一次能吃的 K). 
 
 ## 第 3 步：copy 的三段式——和手写版逐环节对上
 
@@ -76,7 +107,49 @@ using MMA = decltype(make_tiled_mma(mma_atom{}, MMA_EU_RepeatT{}, MMA_P_T{}));
 | 计算 | `HMMA16816` 宏循环 | `cute::gemm(tiled_mma, tCrA, tCrB, tCrD)` |
 | 回写 | 30 行 `__shfl_sync` 收尾体操 | copy atom（`SM80_16x8x8_32x32x8_...` 的 store 分解）自动 coalesce |
 
-`cute::gemm(tiled_mma, ...)` 是全篇的点睛——它不是"调用库"，是把 17 篇手写的三层 unroll 循环（K 块 × warp tile × mma tile）**编译期展开**：tiled_mma 的类型里带着全部重复结构，gemm 函数沿布局走一遍，生成的指令流和手写 unroll 相同。10 篇说"CuTe 抽象掉下标体操"，在 GEMM 这里兑现成：**17 篇的 400 行 kernel 缩成约 200 行，且每个环节的优化（128bit copy、swizzle、多 stage）都还在**——不是黑盒换白盒，是声明换推导。
+**`cute::gemm(tiled_mma, ...)` 是全篇的点睛**——它不是"调用库"，是把 17 篇手写的三层 unroll 循环（K 块 × warp tile × mma tile）**编译期展开**：tiled_mma 的类型里带着全部重复结构，gemm 函数沿布局走一遍，生成的指令流和手写 unroll 相同。10 篇说"CuTe 抽象掉下标体操"，在 GEMM 这里兑现成：**17 篇的 400 行 kernel 缩成约 200 行，且每个环节的优化（128bit copy、swizzle、多 stage）都还在**——不是黑盒换白盒，是声明换推导。
+
+**打开源码**（`<details>` 里的 `hgemm_mma_stage_tn_cute.cu`），主循环 L248-293 是 CuTe 版的"流水"——**和 17 篇 dbuf 三段式一一对照**, 每个 `cute::copy` 都有手写版对应:
+
+```c++
+// PREFETCH 阶段 (L232-241): 预载 kStage-1 块, 走 g2s copy atom
+for (int istage = 0; istage < kStage - 1; ++istage) {
+  cute::copy(g2s_tiled_copy_a, tAgA_copy(_, _, _, istage),
+             tAsA_copy(_, _, _, istage));
+  cute::copy(g2s_tiled_copy_b, tBgB_copy(_, _, _, istage),
+             tBsB_copy(_, _, _, istage));
+  cp_async_fence();
+  ...
+}
+cp_async_wait<kStage - 2>();  // 等 kStage-2 组, 留 1 组在路上
+__syncthreads();
+
+// 主循环 (L256-293): 4 段嵌套按 dbuf 模板走
+for (int itile = 0; itile < ntile; ++itile) {       // K 块外层
+  for (int ik = 0; ik < nk; ++ik) {                 // K 块内 mma 重复
+    // ① ik=0 发起下一个 g2s (预载, 不等)
+    if (ik == 0) { ... cp_async_fence(); }
+    // ② ik=last 时等当前 g2s 完成
+    if (ik == nk - 1) { cp_async_wait<kStage-2>(); __syncthreads(); ... }
+    // ③ 装下一片 K 到 reg
+    cute::copy(s2r_tiled_copy_a, tAsA(_, _, ik_next, ismem_read), tCrA_view(_, _, ik_next));
+    cute::copy(s2r_tiled_copy_b, tBsB(_, _, ik_next, ismem_read), tCrB_view(_, _, ik_next));
+    // ④ 算当前 ik 的 mma
+    cute::gemm(tiled_mma, tCrD, tCrA(_, _, ik), tCrB(_, _, ik), tCrD);
+  }
+}
+```
+
+**和 17 篇的逐行对照**——4 个 `cute::copy/gemm` 对应 17 篇的 4 步:
+
+| CuTe 源码 | 17 篇手写 | 含义 |
+|---|---|---|
+| `cute::copy(g2s_tiled_copy_a, tAgA, tAsA)` | `CP_ASYNC_CG(smem, gmem, 16)` | gmem → smem |
+| `cute::copy(s2r_tiled_copy_a, tAsA, tCrA_view)` | `LDMATRIX_X4(RA, smem)` | smem → reg, 装成 mma 期望布局 |
+| `cute::gemm(tiled_mma, tCrD, tCrA, tCrB, tCrD)` | `HMMA16816(RC, RA, RB, RC)` | mma 算, **tCrD 是 in-out accum** |
+| 收尾 `cute::copy(r2s_tiled_copy_c, t, tCsC_r2s)` + `s2g_tiled_copy_c` | `__shfl_sync` + `LDST128BITS` | reg → smem → gmem (R2S + S2G 两段, C 的 smem 复用 A 的) |
+
+**关键观察**——17 篇要 4 个独立的原子宏 (CP_ASYNC_CG, LDMATRIX_X4, HMMA16816, LDST128BITS) 加 30 行 shfl 收尾; CuTe 版每个环节**只有 1 个 `cute::copy(atom, src, dst)`**——atom 是什么 (CP_ASYNC / LDSM / mma / UniversalCopy) 编译器看参数类型知道, 你不用选指令. **这是"声明换推导"的兑现**——你写的是"我想把 A 从这里搬到那里", 编译器生成具体 PTX.
 
 ## 第 4 步：block swizzle——L2 层的调度重排（补 15 篇的欠账）
 
@@ -92,6 +165,26 @@ bx0 bx1 bx2 ... bx63  (by=1)    bx16 ... bx31      (换下一段 B, A 行全在 
 ```
 
 swizzle 后**同时驻留的 block 全在读同一批 A 行块**（128 行 × K 的一半宽度），A 留在 L2；B 沿列轮换也保持局部性。实现一行：`ix = blockIdx.z * gridDim.x + blockIdx.x`（grid 加一维 z 当"组号"）——15 篇 sgemm WMMA 版同一个公式。**它是调度层优化**：kernel 内计算不变，改的是"哪些 block 倾向于同时跑"。
+
+**`swizzle_stride = 2048` 的数字账**（为什么是 2048 不是 1024 不是 4096）——源码 L548 写死:
+
+```
+BN = 256
+stride = 2048 = 8 × BN = "N 维每 8 个 block 分一组"
+```
+
+- **8 这个数** = 一次同时驻留 SM 的 block 数 × 资源约束估算. 4090 的 128 SM × 每 SM 跑 ~2 block ≈ 250 block 同时在飞, **N 维方向 250 ÷ 32 (M 维) ≈ 8**. 选 8 让"同一组的 8 个 block 沿 N 切"大约是 1 个 wave 的规模——A 在 L2 留住的窗口约 1 个 wave 长度
+- **2048 = 8 × 256** 是 N 维覆盖范围, 8192³ 时 bx=32, 分 4 组 (z 维 0~3), 每组 8 block, 物理意义清晰
+- 选 4096 / 1024 也行, 但太小 (单组 block 数不够 1 wave) 或太大 (A 块在 L2 留不住那么久). **这是一个手调参数, 不是数学最优**——CUTLASS 内部有 heuristic 自动选, LeetCUDA 这版写死了 2048
+
+**block swizzle vs bank swizzle (18 篇) 数字量级完全不同**——容易混, 写下来:
+
+| 优化 | 作用层 | 资源容量 | 调度单位 |
+|---|---|---|---|
+| smem swizzle (18/19 篇) | shared memory | 96KB / block | 32 banks × 4B = 128B |
+| block swizzle (15/19 篇) | L2 cache | 72MB 全局 | 2048 列一组 (≈ 256KB A 块) |
+
+block swizzle 是**全局调度**——它在"哪些 block 一起跑"这层干预, 改变的是 L2 的命中率; bank swizzle 是**指令级**——在 smem 装/读地址的位级重排. 一个是"调块儿的顺序", 一个是"调位的顺序", **数字量级差 5 个数量级**.
 
 至此三层 swizzle 集齐（容易混，最终对照）：
 

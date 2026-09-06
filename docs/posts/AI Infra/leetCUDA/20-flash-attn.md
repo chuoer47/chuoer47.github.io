@@ -42,7 +42,7 @@ FA 的釜底抽薪：**S 和 P 根本不落显存，在 smem/寄存器里分块�
   ⑤ O = exp(m_old - m)·O_old + P·V             ← O 同样 rescale
 ```
 
-③④⑤ 就是 04 篇 `warp_reduce_md_op`（MD 蝴蝶归约）的矩阵版。源码注释里还有个彩蛋（`flash_attn_mma_split_q.cu:583`）：**FA2 论文的 rescale 公式写错了**——O 的 rescale 因子是 `exp(m_old - m_new)`，论文里误写成取倒数（`1/(m_old-m_new)`），照抄会算出错误结果。学习论文也要带验证意识。
+③④⑤ 就是 04 篇 `warp_reduce_md_op`（MD 蝴蝶归约）的矩阵版。
 
 ## 第 2 步：分块的两个方向——split-kv 为什么输给 split-q
 
@@ -50,10 +50,10 @@ FA 的釜底抽薪：**S 和 P 根本不落显存，在 smem/寄存器里分块�
 
 ```
 split-kv:  warp 各管一段 KV 列          split-q:  warp 各管一段 Q 行
-|  64x64   | w0 | w1 | w2 | w3 |        |  64x64   |      KV (全部 warp 共享) |
-|   Q      |    |    |    |    |        | Q 行 w0  | w0 独立算完一行  |
-                     ↓ 归并             | Q 行 w1  | w1 ...            |
-              跨 warp MD 归并 ✗          | ...     | 互不干扰 ✓        |
+|  64x64   | w0 | w1 | w2 | w3 |        |  64x64   | KV-全部 warp 共享  | 
+|   Q      |    |    |    |    |        | Q 行 w0  | w0 独立算完一行     |
+                                        | Q 行 w1  | w1 ...             |
+              跨 warp MD 归并 ✗                    互不干扰 ✓     
 ```
 
 split-q 的洞察：**Q 行之间本来就没有数据依赖**（softmax 是行独立的！）——沿 Q 切，每 warp 一条完整的 `(m,l,O)` 线，**零跨 warp 通信**；K/V 大家共享同一份 smem（每 warp 都要读全部 KV，但 smem 是 block 共享的，免费）。实测 96→165 TFLOPS，**+72% 纯粹来自切分方向的改变**——这个对比是 FA2 论文的核心贡献之一，也是"并行性设计 > 微调"的最佳教学案例。
@@ -945,7 +945,7 @@ void flash_attn_mma_stages_split_q(torch::Tensor Q, torch::Tensor K,
 ## 本篇小结
 
 1. **unfused 慢 9.4 倍的根源**：N×N 的 S/P 矩阵 O(N²) 显存流量——FA 让它们只活在寄存器/smem，按块算完就扔
-2. **online softmax 的矩阵版**：行级 (m,l) 跨块在线合并，O 也要 rescale——04 篇 MD 结构 × D 维输出；FA2 论文的 rescale 公式有笔误（源码注释修正），学习要带验证
+2. **online softmax 的矩阵版**：行级 (m,l) 跨块在线合并，O 也要 rescale
 3. **split-kv → split-q = +72%**：softmax 行独立 ⇒ 沿 Q 切分 warp 零通信；K/V 共享 smem 免费——**切分方向这种"零成本"设计决策的收益碾压一切微调**
 4. **softmax 在 mma 操作数寄存器上就地发生**——裸 MMA 布局受控的兑现；m16n8k16 的 C 布局与行归约幸运对齐
 5. **share-qkv**：Q 常驻 smem + KV 双缓冲流水，smem 预算账 40KB/64KB
