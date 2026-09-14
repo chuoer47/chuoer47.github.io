@@ -32,4 +32,10 @@ order: 5
 - [19 - HGEMM (CuTe)](./19-hgemm-cute.md) — TiledMMA、Swizzle 代数化、block swizzle、296 TFLOPS
 - [20 - FlashAttention 2](./20-flash-attn.md) — online softmax×MMA、split-q vs split-kv、share-qkv、189 vs SDPA 133
 - [21 - Triton](./21-triton.md) — 编译器自动化对照手写、other= 语义边界、num_stages 流水
-- [22 - 系列总结](./22-summary.md) — 知识地图、性能总账、五条铁律、手写 vs 抽象的元结论
+- [22 - HGEMV](./22-hgemv.md) — FP16 GEMV、CuTe 三连（TiledCopy/换 CopyAtom 向量化/MMA Atom）、Tensor Core 做 GEMV 是负优化
+- [23 - 激活函数补遗](./23-activations.md) — Sigmoid/ELU/Swish/HardSwish/HardShrink、exp 定义域 clamp、大 shape 全员贴带宽峰值
+- [24 - Swizzle 专题](./24-swizzle.md) — swizzle 三件套、padding vs XOR 对照、bank 分布可视化、ZigZag 宽 tile 布局
+- [25 - Warp Specialization HGEMM](./25-ws-hgemm.md) — 生产者/消费者分工、cuda::pipeline 四原语、内环寄存器流水、smem 复用、204 TFLOPS
+- [26 - CUTLASS CuTe DSL](./26-cutlass-cute-dsl.md) — Python 写 CUDA kernel、0.1s JIT、三档抽象爬坡、layout 调试体验
+- [27 - Nsight Profiling](./27-nsight-profiling.md) — nsys 时间线 vs ncu 解剖、ERR_NVGPUCTRPERM 权限坑、按指令分桶查 bank conflict、SASS 检视
+- [28 - 系列总结（终）](./28-summary.md) — 性能数字总账、知识地图依赖图、手写 vs 抽象的元结论

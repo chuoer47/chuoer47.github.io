@@ -1,13 +1,13 @@
 ---
 title: 系列总结 (Interview Notes)
-order: 22
+order: 28
 ---
 
-# LeetCUDA 系列总结
+# LeetCUDA 系列总结（终）
 
 > 本人学习笔记，AI总结
 
-21 篇走完：从第一个 elementwise kernel 到 FlashAttention-2 和 Triton。本篇不引入新代码——把全程的知识地图、性能数字总账、以及"如果重来一遍会怎么学"整理成一篇，也作为后面继续（wgmma/TMA on Hopper、 CUTLASS 深入）的路标。
+28 篇走完：从第一个 elementwise kernel 到 FlashAttention-2、Triton，再到 Warp Specialization 与 CUTLASS Python DSL（其中 22~27 是后期补全的六篇支线）。本篇不引入新代码——把全程的知识地图、性能数字总账、以及"如果重来一遍会怎么学"整理成一篇，也作为后面继续（wgmma/TMA on Hopper、CUTLASS 深入）的路标。
 
 ## 性能数字总账（全部 4090 实测）
 
@@ -25,6 +25,10 @@ order: 22
 | hgemm (CuTe) | **296.6 TFLOPS** | 峰值 90%，手写版 +92% | 19 |
 | flash-attn (share-qkv) | **189.4 TFLOPS** | **SDPA 133 的 1.42x** | 20 |
 | triton vector-add | 944 GB/s | 峰值 94% | 21 |
+| hgemv (k128 f16x4) | 0.00293 ms，快 torch 2.6x | torch.matmul | 22 |
+| activations (大 shape) | 全员 0.1418ms，~940 GB/s | 峰值 94%，含 exp 与否无差 | 23 |
+| ws-hgemm (naive 架构) | 204 TFLOPS | 峰值 62%，打平 17 篇手写调优版 | 25 |
+| cute-dsl sgemm (MMA) | 21.1 TFLOPS | torch 的 47%，布局验证台定位 | 26 |
 
 ## 知识地图：一张依赖图
 
@@ -49,6 +53,14 @@ order: 22
 [20 flash-attn]  online softmax × mma × 流水线 = 大合体
    │
 [21 triton]      从抽象层回望全部手艺
+
+支线（2026-09 补全篇）：
+[22 hgemv]       Tensor Core 做 GEMV 是负优化——问题形状决定引擎
+[23 activations] exp 定义域 clamp、大 shape 全员贴带宽峰值
+[24 swizzle]     padding vs XOR、bank 分布可视化、ZigZag 宽 tile
+[25 ws-hgemm]    生产者/消费者分工——Hopper 前的最后一课
+[26 cute-dsl]    Python 写 CUDA，0.1s JIT 的布局验证台
+[27 nsight]      先 nsys 后 ncu——优化不是猜的，是测出来的
 ```
 
 ## 手写 vs 抽象：本系列最重要的元结论
