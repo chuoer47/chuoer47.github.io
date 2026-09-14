@@ -1,6 +1,6 @@
 ---
 title: C++
-order: 6
+order: 5
 ---
 
 # C++ 学习资源导航

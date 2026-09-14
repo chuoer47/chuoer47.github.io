@@ -1,6 +1,6 @@
 ---
 title: NumPy
-order: 1
+order: 10
 ---
 
 # NumPy

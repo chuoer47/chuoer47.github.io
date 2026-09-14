@@ -1,6 +1,6 @@
 ---
 title: LeetCode 刷题指南
-order: 5
+order: 30
 ---
 
 # LeetCode 刷题指南

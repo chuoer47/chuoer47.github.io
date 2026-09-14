@@ -1,6 +1,6 @@
 ---
 title: LangChain
-order: 50
+order: 20
 ---
 
 # LangChain 教程

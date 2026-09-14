@@ -1,6 +1,6 @@
 ---
 title: CrewAI
-order: 70
+order: 40
 ---
 
 # CrewAI 多智能体框架教程

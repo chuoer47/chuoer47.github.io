@@ -4,7 +4,7 @@ date: 2025-06-22
 tags: [Python, LangGraph, Agent, AI]
 category: 开发
 description: LangGraph 从入门到精通的完整教程系列
-order: 60
+order: 30
 ---
 
 # LangGraph 教程

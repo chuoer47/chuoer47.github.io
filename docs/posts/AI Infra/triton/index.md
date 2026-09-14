@@ -1,6 +1,6 @@
 ---
 title: Triton
-order: 20
+order: 8
 ---
 
 # Triton 内核教程
