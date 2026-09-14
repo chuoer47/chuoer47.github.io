@@ -13,11 +13,11 @@ order: 8
 
 - [01 - 什么是 Triton](./01-什么是Triton.md)
 - [02 - GPU 架构基础](./02-GPU架构基础.md)
-- [04 - 向量加法：第一个 Triton 内核](./04-向量加法.md)
-- [05 - 融合 Softmax：减少内存读写](./05-融合Softmax.md)
-- [06 - 矩阵乘法：自动调优与程序重排](./06-矩阵乘法.md)
-- [07 - Dropout：低内存随机失活](./07-Dropout.md)
-- [08 - LayerNorm：反向传播与原子锁](./08-LayerNorm.md)
-- [09 - Flash Attention：分块注意力](./09-FlashAttention.md)
+- [03 - 向量加法：第一个 Triton 内核](./03-向量加法.md)
+- [04 - 融合 Softmax：减少内存读写](./04-融合Softmax.md)
+- [05 - 矩阵乘法：自动调优与程序重排](./05-矩阵乘法.md)
+- [06 - Dropout：低内存随机失活](./06-Dropout.md)
+- [07 - LayerNorm：反向传播与原子锁](./07-LayerNorm.md)
+- [08 - Flash Attention：分块注意力](./08-FlashAttention.md)
 
 > 每章开头都有可折叠的「本章对应源码」块，点开即看原仓库 Python 源码全文。

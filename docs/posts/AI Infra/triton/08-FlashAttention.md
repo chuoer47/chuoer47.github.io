@@ -1,4 +1,4 @@
-# 第 09 章：Flash Attention——分块注意力
+# 第 08 章：Flash Attention——分块注意力
 
 > 对应原仓库 `09_flash_attention/flash_attention.py`。这是**综合性最强的一章**：它把前 8 章学的几乎一切——融合、分块、在线 softmax、混合精度、子内核、反向、autograd、多轴 grid——全用上，还新增了 `tl.exp2`、LSE、因果掩码分块遍历等花样。学完这章，你就接触过 Triton 的全部核心概念。
 
@@ -1039,7 +1039,7 @@ grid = lambda args: (
 
 ![2D grid 轴序与 SM 共享](pics/fig09_2d_grid_sm_sharing.png)
 
-**为什么序列方向放轴 0？** 因为 PID 按轴 0 优先分配到 SM。把序列相邻的 PID 放同 SM，它们会加载**相同/相邻的 Q、KV 块**，自动复用 SRAM——和[第 06 章 matmul 的 PID 重排](06-矩阵乘法.md)是**同一思想**：让想共享数据的 PID 数值上靠近。
+**为什么序列方向放轴 0？** 因为 PID 按轴 0 优先分配到 SM。把序列相邻的 PID 放同 SM，它们会加载**相同/相邻的 Q、KV 块**，自动复用 SRAM——和[第 05 章 matmul 的 PID 重排](05-矩阵乘法.md)是**同一思想**：让想共享数据的 PID 数值上靠近。
 
 > 原注释的例子：grid=(3,2)、3 个 SM 各塞 2 个 PID，则 `[0,0],[1,0]` 落 SM0，`[2,0],[0,1]` 落 SM1……序列相邻的落到同 SM。
 
@@ -1103,9 +1103,9 @@ for start_KV in range(lo, hi, BLOCK_SIZE_KV):
 
 > **反向就是把前向的三步(`S=QKᵀ` → `P=softmax(S)` → `O=PV`)按矩阵求导"原路转置乘回去"**,中间夹一次"softmax 自己的反向"。前向存了 `O` 和 `LSE`,反向重算 `S/P`(用计算换显存),再算三条梯度。
 
-它和[第 08 章](08-LayerNorm.md)一样是"多内核接力":先在一个预处理内核算公共量 `Delta`,再在主反向内核里分两段循环(Stage)算三条梯度。
+它和[第 07 章](07-LayerNorm.md)一样是"多内核接力":先在一个预处理内核算公共量 `Delta`,再在主反向内核里分两段循环(Stage)算三条梯度。
 
-![多内核接力（对照第 08 章）](pics/fig08_layernorm_two_kernels.png)
+![多内核接力（对照第 07 章）](pics/fig08_layernorm_two_kernels.png)
 
 反向由**两个内核**组成:`attn_backward_preprocess`(预处理)+ `attn_backward`(主反向)。后者内部又分 Stage 1(算 dLdK/dLdV)和 Stage 2(算 dLdQ)——注意 Stage 是同一内核里的两段循环,**不是**两个独立内核。每段又把"对角块"和"普通块"分开(因为有/无三角掩码)。
 

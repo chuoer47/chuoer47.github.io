@@ -1,4 +1,4 @@
-# 第 07 章：Dropout——低内存随机失活
+# 第 06 章：Dropout——低内存随机失活
 
 > 对应原仓库 `07_dropout/dropout.py`。这是全教程**改动最小**的一章，但演示了一个极其实用的省显存技巧：**让掩码完全在 SRAM 里现场生成，绝不落 DRAM**。
 
@@ -137,4 +137,4 @@ print(x, output1, output2, output3, sep="\n")
 
 ## 小结
 
-这章虽短，但"在 SRAM 里现算、不落 DRAM"的思路和[第 05 章融合 softmax](05-融合Softmax.md) 是一脉相承的——都是**减少 DRAM 读写**。下一章我们终于要碰**反向传播**了：LayerNorm，它还引入了"原子锁"和"两阶段内核"。→ [第 08 章：LayerNorm](08-LayerNorm.md)
+这章虽短，但"在 SRAM 里现算、不落 DRAM"的思路和[第 04 章融合 softmax](04-融合Softmax.md) 是一脉相承的——都是**减少 DRAM 读写**。下一章我们终于要碰**反向传播**了：LayerNorm，它还引入了"原子锁"和"两阶段内核"。→ [第 07 章：LayerNorm](07-LayerNorm.md)

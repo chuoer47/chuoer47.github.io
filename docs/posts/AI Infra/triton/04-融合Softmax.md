@@ -1,4 +1,4 @@
-# 第 05 章：融合 Softmax——减少内存读写
+# 第 04 章：融合 Softmax——减少内存读写
 
 > 对应原仓库 `05_fused_softmax/fused_softmax.py`。这章的核心思想贯穿 Triton 全程：**算子融合（fusion）= 把多步计算揉进一个内核，省掉中间结果在 DRAM 上来回搬运**。
 
@@ -362,7 +362,7 @@ def naive_softmax(x):                 # x 形状 (M, N)
 
 每个 program 处理**一行**：加载该行进 SRAM → 算 softmax → 写回。多行由多 program 并行处理，且**跨步（strided）分配**——不是 program0 处理 0,1,2 行，而是处理 0,4,8... 行（见下文 `row_step`）。
 
-> 限制：本内核**只在整行能塞进一个 block 的 SRAM 时成立**（`BLOCK_SIZE ≥ N`）。行太长装不下时，需要更复杂的"沿 N 分块 + 在线 softmax"——那正是[第 09 章 Flash Attention](09-FlashAttention.md) 的主题。
+> 限制：本内核**只在整行能塞进一个 block 的 SRAM 时成立**（`BLOCK_SIZE ≥ N`）。行太长装不下时，需要更复杂的"沿 N 分块 + 在线 softmax"——那正是[第 08 章 Flash Attention](08-FlashAttention.md) 的主题。
 
 ### 3.1 2 的幂与 padding
 
@@ -535,4 +535,4 @@ gbps = lambda ms: 2 * x.numel() * x.element_size() * 1e-9 / (ms * 1e-3)
 
 ## 小结
 
-到这你已能写"读一次算完写一次"的融合内核，并懂得查硬件规格来配置 grid。但**当一行装不进 SRAM 时怎么办？** Flash Attention 的在线 softmax 会回答。在那之前，接下来讲 GPU 上最重要的算子——矩阵乘，它将引入**自动调优**和**PID 重排**这两个重要概念。→ [第 06 章：矩阵乘法](06-矩阵乘法.md)
+到这你已能写"读一次算完写一次"的融合内核，并懂得查硬件规格来配置 grid。但**当一行装不进 SRAM 时怎么办？** Flash Attention 的在线 softmax 会回答。在那之前，接下来讲 GPU 上最重要的算子——矩阵乘，它将引入**自动调优**和**PID 重排**这两个重要概念。→ [第 05 章：矩阵乘法](05-矩阵乘法.md)

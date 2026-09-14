@@ -1,4 +1,4 @@
-# 第 08 章：LayerNorm——反向传播与原子锁
+# 第 07 章：LayerNorm——反向传播与原子锁
 
 > 对应原仓库 `08_layernorm/layernorm.py`。这章是**第一次接触反向传播（backward）**：内核接入 PyTorch 计算图，能 `.backward()`。为此要学三件新事：`torch.autograd.Function`、**原子锁（atomic lock）**、**两阶段内核**。
 
@@ -559,7 +559,7 @@ def _layernorm_forward(x_ptr, y_ptr, w_ptr, b_ptr, mean_ptr, rstd_ptr,
 
 ### 几个要点
 - **fp16 输入、fp32 累加**：和 matmul 同理，累加 mean/var 要 fp32 保精度。
-- **分块循环算 mean/var**：`for offset in range(0, N, BLOCK_SIZE)`——N 可能大于 SRAM 单块容量，所以要循环。和[第 05 章](05-融合Softmax.md)的"整行装得下"不同，这里更通用。
+- **分块循环算 mean/var**：`for offset in range(0, N, BLOCK_SIZE)`——N 可能大于 SRAM 单块容量，所以要循环。和[第 04 章](04-融合Softmax.md)的"整行装得下"不同，这里更通用。
 - **var 循环里的 mask**：`tl.where(cols < N, x_vals - mean, 0.)`——越界位置填 `0`，这样 `0*0=0` 不影响累加。**不 mask 的话，越界位置会是 `(0 - mean)`，污染方差**。
 - **保存 mean/rstd**：写进 `mean_ptr`、`rstd_ptr`（形状 `(M,)`），给反向用。
 
@@ -759,7 +759,7 @@ def _layernorm_backward_dLdw_dLdb(dLdw_intermediate_ptr, dLdb_intermediate_ptr,
 
 `dLdw/dLdb` 形状 `(N,)`，需要**跨 M 行归约**；而内核①是按行并行（M 个 PID）。把"跨行归约"硬塞进"按行并行"的内核里，要么加大量锁、要么效率低。**用"部分和 + 锁 + 第二个归约内核"接力，比单内核更高效。** 这是 Triton 处理归约类梯度的经典模式。
 
-> [第 09 章 Flash Attention](09-FlashAttention.md) 反向里也会看到"预处理内核 + 主反向内核"的多内核接力思路。
+> [第 08 章 Flash Attention](08-FlashAttention.md) 反向里也会看到"预处理内核 + 主反向内核"的多内核接力思路。
 
 ## 4. 单元测试 & benchmark
 
@@ -794,4 +794,4 @@ torch.testing.assert_close(dLdx_tri, dLdx_ref, atol=1e-2, rtol=0)   # ...
 
 ## 小结
 
-到这你已经能写**带反向**的完整算子，并掌握了"归约型梯度用锁 + 多内核"的范式。下一章是综合性最强的一章：Flash Attention，它把前面所有概念——融合、分块、在线 softmax、子内核、多轴 grid、反向、autograd——全用上，外加因果掩码和 `tl.exp2` 的新花样。→ [第 09 章：Flash Attention](09-FlashAttention.md)
+到这你已经能写**带反向**的完整算子，并掌握了"归约型梯度用锁 + 多内核"的范式。下一章是综合性最强的一章：Flash Attention，它把前面所有概念——融合、分块、在线 softmax、子内核、多轴 grid、反向、autograd——全用上，外加因果掩码和 `tl.exp2` 的新花样。→ [第 08 章：Flash Attention](08-FlashAttention.md)
