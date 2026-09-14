@@ -11,7 +11,8 @@ order: 7
 
 ## 目录
 
-- [Easy Kernel](./Easy-kernel.md) — 入门题：vector add、矩阵乘法（naive 与 shared memory 分块）
+- [Easy Kernel](./Easy-kernel.md) — 18 题 elementwise 全家桶：vector add、矩阵乘法（naive 与 shared memory 分块）、矩阵加法/拷贝、原地反转、图像处理（反色/灰度）、1D 卷积、FNV 哈希、激活函数（ReLU/Leaky ReLU/Sigmoid/SiLU/SwiGLU/GEGLU）、Simple Inference（PyTorch）
+- [Medium Kernel](./Medium-kernel.md) — 金字塔归约 Reduction、online softmax 全局版（含 per-block 翻车实录）、一行一 warp 的 Softmax Attention（FA 教学版）
 
 ## 相关笔记
 
