@@ -121,6 +121,181 @@ aux_loss = aux_loss + sum(p.sum() for p in self.vision_proj.parameters()) * 0  #
 
 01 篇讲过 MoE 的哑梯度：DDP 要求所有 rank 的 backward 触达相同参数集。VLM 的 forward 里如果某个 batch 没有 `pixel_values`，vision_proj 就没有梯度 → DDP all-reduce 挂死。`× 0` 的哑梯度保证它永远在梯度名单里。
 
+::: details 完整源码：model_vlm.py（MiniMind-V 全部 171 行核心）
+```python
+import os, torch, warnings
+from .model_minimind import *
+from typing import Optional, Tuple, List, Union
+from torch import nn
+from transformers import SiglipImageProcessor, SiglipVisionModel
+from transformers.modeling_outputs import MoeCausalLMOutputWithPast
+
+warnings.filterwarnings('ignore')
+
+
+class VLMConfig(MiniMindConfig):
+    model_type = "minimind-v"
+
+    def __init__(self, image_special_token='<|image_pad|>', image_ids=[12], **kwargs):
+        self.image_special_token = image_special_token
+        self.image_ids = image_ids
+        self.image_hidden_size = kwargs.get("image_hidden_size", 768)
+        self.image_token_len = kwargs.get("image_token_len", 64)
+        super().__init__(**kwargs)
+
+class MMVisionProjector(nn.Module):
+    def __init__(self, in_dim, out_dim, source_tokens=64, target_tokens=64):
+        super().__init__()
+        self.mlp = nn.Sequential(
+            nn.LayerNorm(in_dim),
+            nn.Linear(in_dim, out_dim),
+            nn.GELU(),
+            nn.Linear(out_dim, out_dim),
+        )
+    def forward(self, x):
+        return self.mlp(x)
+
+# 继承自语言模型
+class MiniMindVLM(MiniMindForCausalLM):
+    config_class = VLMConfig
+
+    def __init__(self, config: VLMConfig = None, vision_model_path="./model/siglip2-base-p32-256-ve"):
+        self.config = config or VLMConfig()
+        super().__init__(self.config)
+        self.vision_encoder, self.processor = self.__class__.get_vision_model(vision_model_path)
+        self.vision_proj = MMVisionProjector(self.config.image_hidden_size, self.config.hidden_size, target_tokens=self.config.image_token_len)
+
+    @staticmethod
+    def get_vision_model(model_path: str):
+        from transformers import logging as hf_logging
+        hf_logging.set_verbosity_error()
+        if not os.path.exists(model_path):
+            return None, None
+        try:
+            model = SiglipVisionModel.from_pretrained(model_path)
+        except (RuntimeError, ValueError):
+            return None, None
+        processor = SiglipImageProcessor.from_pretrained(model_path)
+        # 冻结 vision_encoder 的所有参数
+        for param in model.parameters():
+            param.requires_grad = False
+        return model.eval(), processor
+
+    @staticmethod
+    def image2tensor(image, processor):
+        if image.mode in ['RGBA', 'LA']: image = image.convert('RGB')
+        inputs = processor(images=image, return_tensors="pt")
+        return inputs
+
+    @staticmethod
+    def get_image_embeddings(image_inputs, vision_model):
+        if hasattr(image_inputs, 'keys'):
+            image_inputs = {k: v.squeeze(1) if v.ndim > 2 and v.shape[1] == 1 else v for k, v in image_inputs.items()}
+        with torch.no_grad():
+            outputs = vision_model(**image_inputs)
+        return outputs.last_hidden_state
+
+    @torch.compiler.disable
+    def count_vision_proj(self, tokens, h, vision_tensors=None, seqlen=512):
+        if vision_tensors is None or not self.config.image_ids:
+            return h
+        marker, vf = self.config.image_ids[0], vision_tensors
+        if vf.dim() == 3:
+            vf = vf.unsqueeze(1)
+        out = []
+        for b in range(h.size(0)):
+            hb, seq, k, i = h[b], tokens[b].tolist(), 0, 0
+            while i < len(seq):
+                if seq[i] == marker:
+                    start = i
+                    while i < len(seq) and seq[i] == marker:
+                        i += 1
+                    if k < vf.size(1):
+                        hb = torch.cat((hb[:start], vf[b][k][:i - start], hb[i:]), dim=0)[:seqlen]
+                        k += 1
+                else:
+                    i += 1
+            out.append(hb)
+        return torch.stack(out)
+
+    def forward(self,
+                input_ids: Optional[torch.Tensor] = None,
+                attention_mask: Optional[torch.Tensor] = None,
+                past_key_values: Optional[List[Tuple[torch.Tensor, torch.Tensor]]] = None,
+                use_cache: bool = False,
+                logits_to_keep: Union[int, torch.Tensor] = 0,
+                labels: Optional[torch.Tensor] = None,
+                pixel_values: Optional[torch.FloatTensor] = None,
+                **args):
+        batch_size, seq_length = input_ids.shape
+        if hasattr(past_key_values, 'layers'): past_key_values = None
+        past_key_values = past_key_values or [None] * len(self.model.layers)
+        start_pos = past_key_values[0][0].shape[1] if past_key_values[0] is not None else 0
+
+        hidden_states = self.model.dropout(self.model.embed_tokens(input_ids))
+
+        if pixel_values is not None and start_pos == 0:
+            if hasattr(pixel_values, 'keys'):
+                sample_val = next(iter(pixel_values.values()))
+                if sample_val.ndim == 5:
+                    bs, num = sample_val.shape[:2]
+                    vision_tensors = self.vision_proj(MiniMindVLM.get_image_embeddings({k: v.flatten(0, 1) for k, v in pixel_values.items()}, self.vision_encoder)).view(bs, num, self.config.image_token_len, -1)
+                else:
+                    vision_tensors = self.vision_proj(MiniMindVLM.get_image_embeddings(pixel_values, self.vision_encoder))
+            else:
+                if len(pixel_values.shape) == 6:
+                    pixel_values = pixel_values.squeeze(2)
+                bs, num, c, im_h, im_w = pixel_values.shape
+                vision_tensors = torch.stack([self.vision_proj(MiniMindVLM.get_image_embeddings(pixel_values[:, i, :, :, :], self.vision_encoder)) for i in range(num)], dim=1)
+            hidden_states = self.count_vision_proj(tokens=input_ids, h=hidden_states, vision_tensors=vision_tensors, seqlen=input_ids.shape[1])
+
+        # Recompute RoPE buffers lost during meta-device init (transformers>=5.x)
+        if self.model.freqs_cos[0, 0] == 0:
+            freqs_cos, freqs_sin = precompute_freqs_cis(dim=self.config.head_dim, end=self.config.max_position_embeddings, rope_base=self.config.rope_theta, rope_scaling=self.config.rope_scaling)
+            self.model.freqs_cos, self.model.freqs_sin = freqs_cos.to(hidden_states.device), freqs_sin.to(hidden_states.device)
+        position_embeddings = (
+            self.model.freqs_cos[start_pos:start_pos + seq_length],
+            self.model.freqs_sin[start_pos:start_pos + seq_length]
+        )
+
+        presents = []
+        for layer_idx, (layer, past_key_value) in enumerate(zip(self.model.layers, past_key_values)):
+            hidden_states, present = layer(
+                hidden_states,
+                position_embeddings,
+                past_key_value=past_key_value,
+                use_cache=use_cache,
+                attention_mask=attention_mask
+            )
+            presents.append(present)
+
+        hidden_states = self.model.norm(hidden_states)
+
+        aux_loss = sum([l.mlp.aux_loss for l in self.model.layers if isinstance(l.mlp, MOEFeedForward)], hidden_states.new_zeros(1).squeeze())
+        aux_loss = aux_loss + sum(p.sum() for p in self.vision_proj.parameters()) * 0  # dummy gradient for DDP
+        slice_indices = slice(-logits_to_keep, None) if isinstance(logits_to_keep, int) else logits_to_keep
+        logits = self.lm_head(hidden_states[:, slice_indices, :])
+
+        loss = None
+        if labels is not None:
+            shift_logits = logits[..., :-1, :].contiguous()
+            shift_labels = labels[..., 1:].contiguous()
+            loss = F.cross_entropy(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1), ignore_index=-100)
+
+        output = MoeCausalLMOutputWithPast(loss=loss, aux_loss=aux_loss, logits=logits, past_key_values=presents, hidden_states=hidden_states)
+        return output
+
+    def generate(self, *args, num_return_sequences=1, **kwargs):
+        if num_return_sequences > 1 and 'pixel_values' in kwargs:
+            pv = kwargs['pixel_values']
+            if hasattr(pv, 'keys'):
+                kwargs['pixel_values'] = {k: v.repeat(num_return_sequences, *([1] * (v.ndim - 1))) for k, v in pv.items()}
+            else:
+                kwargs['pixel_values'] = pv.repeat(num_return_sequences, *([1] * (pv.ndim - 1)))
+        return super().generate(*args, num_return_sequences=num_return_sequences, **kwargs)
+```
+:::
+
 ## 二、MiniMind-O：全模态语音交互
 
 MiniMind-O 的野心更大：不是"LLM+耳朵"或"LLM+嘴"，而是**一个统一序列里同时建模文本推理、语音输入、语音输出**——对标 Qwen-Omni / GLM-4-Voice 的 Thinker-Talker 架构，且不是 ASR→LLM→TTS 的三段式串联，没有级联误差和信息瓶颈。
@@ -194,6 +369,125 @@ Talker 的条件不是 Thinker 的输出层，而是**中间层**（`bridge_laye
 - 中间层已融合上下文与跨模态信息，又还没被输出目标过度压缩，最适合作为"语义条件"交给另一个生成器。
 
 这与特征的 layer-wise 分析结论一致：中间层的表征通用性最强（BERT 时代就发现中层做句向量最好）。
+
+::: details 完整源码：model_omni.py 的 Talker 模块（MTP 共享 head + 混合嵌入）
+```python
+class TalkerHead(nn.Module):
+    def __init__(self, in_features, out_features, num_layers=8, rank=256):
+        super().__init__()
+        self.num_layers = num_layers
+        self.base = nn.Linear(in_features, out_features, bias=False)      # 768→2112 共享主体
+        self.adapters = nn.ModuleList([nn.Sequential(nn.Linear(in_features, rank, bias=False), nn.GELU(), nn.Linear(rank, out_features, bias=False)) for _ in range(num_layers)])
+    def forward(self, x):
+        base_out = self.base(x)
+        return [base_out + adapter(x) for adapter in self.adapters]       # 8 份 logits
+
+
+class TalkerEmbedding(nn.Module):
+    def __init__(self, num_embeddings, embedding_dim, num_layers=8, rank=256):
+        super().__init__()
+        self.num_layers = num_layers
+        self.base = nn.Embedding(num_embeddings, embedding_dim)
+        self.adapters = nn.ModuleList([nn.Sequential(nn.Embedding(num_embeddings, rank), nn.GELU(), nn.Linear(rank, embedding_dim, bias=False)) for _ in range(num_layers)])
+    def forward(self, x):
+        base_out = self.base(x)
+        return sum(base_out[:, i, :] + self.adapters[i](x[:, i, :]) for i in range(len(self.adapters))) / self.num_layers
+
+
+class TalkerModule(nn.Module):
+    def __init__(self, config):
+        super().__init__()
+        self.talker_config = MiniMindConfig(hidden_size=config.talker_hidden_size, use_moe=config.use_moe)
+        self.layers = nn.ModuleList([MiniMindBlock(l, self.talker_config) for l in range(config.num_talker_hidden_layers)])
+        self.norm = RMSNorm(config.talker_hidden_size, eps=config.rms_norm_eps)
+        self.lm_head = TalkerHead(config.talker_hidden_size, config.audio_vocab_size)
+        self.embed_tokens = TalkerEmbedding(config.audio_vocab_size, config.talker_hidden_size)
+        self.codec_proj = nn.Sequential(nn.Linear(config.talker_hidden_size, config.talker_hidden_size), nn.GELU(), nn.Linear(config.talker_hidden_size, config.talker_hidden_size), RMSNorm(config.talker_hidden_size, eps=config.rms_norm_eps))
+        self.embed_proj = nn.Sequential(nn.Linear(config.hidden_size, config.hidden_size), nn.GELU(), nn.Linear(config.hidden_size, config.talker_hidden_size), RMSNorm(config.talker_hidden_size, eps=config.rms_norm_eps))
+        self.text_scale, self.audio_scale = nn.Parameter(torch.tensor(3.0)), nn.Parameter(torch.tensor(1.0))   # 可学习配比
+        self.spk_proj = nn.Linear(config.spk_emb_size, config.talker_hidden_size, bias=False)
+        freqs_cos, freqs_sin = precompute_freqs_cis(dim=self.talker_config.head_dim, end=config.max_position_embeddings, rope_base=config.rope_theta, rope_scaling=config.rope_scaling)
+        self.register_buffer("freqs_cos", freqs_cos, persistent=False)
+        self.register_buffer("freqs_sin", freqs_sin, persistent=False)
+```
+:::
+
+::: details 完整源码：MiniMindOmni.forward（Thinker→bridge→Talker 双路前向）
+```python
+def forward(self, input_ids, attention_mask=None, past_key_values=None, use_cache=False, logits_to_keep=0, audio_inputs=None, audio_lens=None, pixel_values=None, **args):
+    if len(input_ids.shape) == 2:          # 纯文本推理：audio 全填 pad
+        batch_size, seq_length = input_ids.shape
+        text_ids = input_ids
+        audio_ids = torch.full((batch_size, 8, seq_length), self.audio_pad_token, dtype=torch.long, device=input_ids.device)
+    else:                                  # 训练：(B, 9, T)
+        batch_size, _, seq_length = input_ids.shape
+        text_ids, audio_ids = input_ids[:, 8, :], input_ids[:, :8, :]
+    if hasattr(past_key_values, 'layers'): past_key_values = None
+    n_thinker, n_talker = len(self.thinker.layers), len(self.talker.layers)
+    past_key_values = past_key_values or ([None] * (n_thinker + n_talker))
+    start_pos = past_key_values[0][0].shape[1] if past_key_values[0] is not None else 0
+    # Recompute RoPE buffers lost during meta-device init (transformers>=5.x)
+    if self.thinker.freqs_cos[0, 0] == 0:
+        freqs_cos, freqs_sin = precompute_freqs_cis(dim=self.config.head_dim, end=self.config.max_position_embeddings, rope_base=self.config.rope_theta, rope_scaling=self.config.rope_scaling)
+        self.thinker.freqs_cos, self.thinker.freqs_sin = freqs_cos.to(input_ids.device), freqs_sin.to(input_ids.device)
+    if self.talker.freqs_cos[0, 0] == 0:
+        freqs_cos, freqs_sin = precompute_freqs_cis(dim=self.talker.talker_config.head_dim, end=self.config.max_position_embeddings, rope_base=self.config.rope_theta, rope_scaling=self.config.rope_scaling)
+        self.talker.freqs_cos, self.talker.freqs_sin = freqs_cos.to(input_ids.device), freqs_sin.to(input_ids.device)
+    presents = []
+
+    # ======= Thinker: text-only input, output text logits =======
+    hidden_states = self.thinker.dropout(self.thinker.embed_tokens(text_ids))
+    position_embeddings = (self.thinker.freqs_cos[start_pos:start_pos + seq_length], self.thinker.freqs_sin[start_pos:start_pos + seq_length])
+    if audio_inputs is not None and start_pos == 0:
+        audio_features = self.encode_audio_inputs(audio_inputs, audio_lens)
+        hidden_states = self.inject_audio_features(text_ids, hidden_states, audio_features, seq_length)
+    if pixel_values is not None and start_pos == 0:
+        if hasattr(pixel_values, 'keys'):
+            img_emb = self.get_image_embeddings(pixel_values).to(hidden_states.dtype)
+            vision_tensors = self.vision_proj(img_emb)
+        else:
+            if len(pixel_values.shape) == 6:
+                pixel_values = pixel_values.squeeze(2)
+            if len(pixel_values.shape) == 4:
+                pixel_values = pixel_values.unsqueeze(1)
+            bs, num, c, im_h, im_w = pixel_values.shape
+            stack_dim = 1 if bs > 1 else 0
+            vision_tensors = torch.stack([
+                self.encode_image_inputs(pixel_values[:, i, :, :, :])
+                for i in range(num)
+            ], dim=stack_dim)
+        hidden_states = self.count_vision_proj(tokens=text_ids, h=hidden_states, vision_tensors=vision_tensors, seqlen=seq_length)
+    bridge_states = hidden_states                     # bridge 层之前的状态先存下
+    for i, (layer, past_key_value) in enumerate(zip(self.thinker.layers, past_key_values[:n_thinker])):
+        hidden_states, present = layer(hidden_states, position_embeddings, past_key_value=past_key_value, use_cache=use_cache, attention_mask=attention_mask)
+        presents.append(present)
+        if i == self.config.bridge_layer: bridge_states = hidden_states    # 半路截取！
+    h_thinker = self.thinker.norm(hidden_states)
+
+    # ======= Talker: thinker hidden + audio codes, output audio logits =======
+    talker_emb = self.talker.embed_tokens(audio_ids)
+    spk_emb = args.get('spk_emb', None)
+    if spk_emb is not None:
+        spk_mask = (audio_ids[:, 0, :] == self.audio_spk_token).unsqueeze(-1)
+        talker_emb = torch.where(spk_mask, self.talker.spk_proj(spk_emb).unsqueeze(1), talker_emb)   # 音色条件注入
+    hidden_states = self.talker.embed_proj(bridge_states) * self.talker.text_scale + self.talker.codec_proj(talker_emb) * self.talker.audio_scale
+    talker_pos_emb = (self.talker.freqs_cos[start_pos:start_pos + seq_length], self.talker.freqs_sin[start_pos:start_pos + seq_length])
+    for layer, past_key_value in zip(self.talker.layers, past_key_values[n_thinker:]):
+        hidden_states, present = layer(hidden_states, talker_pos_emb, past_key_value=past_key_value, use_cache=use_cache, attention_mask=attention_mask)
+        presents.append(present)
+    h_talker = self.talker.norm(hidden_states)
+
+    slice_indices = slice(-logits_to_keep, None) if isinstance(logits_to_keep, int) else logits_to_keep
+    aux_loss = sum(l.mlp.aux_loss for l in list(self.thinker.layers) + list(self.talker.layers) if isinstance(l.mlp, MOEFeedForward))
+    aux_loss += sum(p.sum() for p in self.audio_proj.parameters()) * 0 + sum(p.sum() for p in self.vision_proj.parameters()) * 0 + sum(p.sum() for p in self.talker.lm_head.adapters.parameters()) * 0 + sum(p.sum() for p in self.talker.spk_proj.parameters()) * 0  # dummy gradient
+    text_logits = self.thinker.lm_head(h_thinker[:, slice_indices, :])
+    audio_logits = self.talker.lm_head(h_talker[:, slice_indices, :])
+
+    out = MoeCausalLMOutputWithPast(aux_loss=aux_loss, logits=text_logits, past_key_values=presents)
+    out.audio_logits = audio_logits
+    return out
+```
+:::
 
 ### 2.4 Talker 的 MTP：8 个码本怎么一起预测
 
@@ -290,6 +584,130 @@ stop token（2050）10 倍加权是音频特有的"学会闭嘴"问题：模型�
 - **Scheduled Sampling**（概率 0.05）：训练时以小概率把 input 里的历史码/文本替换成随机值——模型要学会"从错误历史中恢复"。 teacher forcing 的原罪是训练永远看金标准、推理却要看自己的输出（exposure bias），SS 是最轻量的缓解手段。实现里还特意保护了 image token 的连续性（随机替换会把 64 连发占位符打穿）。
 - **音频增强全家桶**（`augment_wav`）：变速 0.7~1.6x、加高斯白噪、音量 0.8~1.2x、0.25s 时间遮蔽、低通滤波（模拟电话音质）、指数衰减混响、粉红噪声（环境底噪）——七种增强随机叠加，加上 fbank 上的 SpecAugment（频率/时间遮蔽）。文本侧从没有这么重的增强——语音输入的真实世界噪声分布远比文本恶劣。
 
+::: details 完整源码：omni_dataset.py 的 9 路序列构造（__getitem__ 核心）
+```python
+def __getitem__(self, index: int):
+    conversations = json.loads(self.table['conversations'][index].as_py())
+    question_audios = self.table['question_audios'][index].as_py() if 'question_audios' in self.table.column_names else []
+    answer_audios = self.table['answer_audios'][index].as_py() if 'answer_audios' in self.table.column_names else []
+    image_bytes = self.table['image_bytes'][index].as_py() if 'image_bytes' in self.table.column_names else []
+    if image_bytes and not isinstance(image_bytes, list): image_bytes = [image_bytes]
+    ref_audios = self.table['ref_audios'][index].as_py() if 'ref_audios' in self.table.column_names else []
+    spk_emb_raw = self.table['spk_emb'][index].as_py() if 'spk_emb' in self.table.column_names else []
+
+    # 随机截断到某一轮（每轮=user+assistant）
+    asst_indices = [i for i, t in enumerate(conversations) if t['role'] == 'assistant']
+    if len(asst_indices) > 1:
+        rand_idx = random.randint(0, len(asst_indices) - 1)
+        # 从随机轮次开始，向前回退直到长度安全
+        for i in range(rand_idx, -1, -1):
+            conversations = conversations[:asst_indices[i] + 1]
+            test_prompt = self.create_chat_prompt(conversations, 0)
+            if len(self.tokenizer(test_prompt).input_ids) + 100 < self.max_length:
+                break
+
+    # 加载最后一个user的图像（按user轮次索引访问，与audio一致）
+    pixel_values = None
+    if image_bytes and len(image_bytes) > 0 and self.vision_processor:
+        pixel_values = self.load_image_inputs(image_bytes[0])
+
+    # 只加载最后一个user的audio
+    audio_inputs, audio_len, audio_features_length = None, 0, 0
+    user_count = sum(1 for t in conversations if t['role'] == 'user')
+    if question_audios and user_count > 0 and user_count <= len(question_audios) and self.audio_processor:
+        audio_bytes = question_audios[user_count - 1]
+        if audio_bytes:
+            mel, valid_len = self.load_audio_inputs(audio_bytes)
+            if mel is not None:
+                audio_inputs = mel.unsqueeze(0)
+                audio_len = valid_len
+                audio_features_length = valid_len or 1
+
+    # 混合训练时，无音频样本返回dummy tensor保持batch索引尽可能对齐 (SenseVoice: T x 560)
+    if audio_inputs is None and self.audio_processor:
+        audio_inputs = torch.zeros(1, 1, 560)
+        audio_len = 0
+    if pixel_values is None and self.vision_processor:
+        pixel_values = {'pixel_values': torch.zeros(1, 3, 256, 256)}
+
+    # 从answer_audios获取最后一个assistant的音频codes：扁平tokens → 8路
+    last_audio_codes = None
+    asst_count = sum(1 for t in conversations if t['role'] == 'assistant')
+    if answer_audios and asst_count > 0 and asst_count <= len(answer_audios):
+        tokens = answer_audios[asst_count - 1]
+        if tokens:
+            audio_codes_8layers = [[] for _ in range(8)]
+            for i in range(0, len(tokens) - 7, 8):
+                for j in range(8): audio_codes_8layers[j].append(tokens[i + j])
+            for layer in audio_codes_8layers: layer.append(self.audio_stop_token)
+            last_audio_codes = audio_codes_8layers
+
+    # 生成prompt (text input_ids)
+    prompt = self.create_chat_prompt(conversations, audio_features_length)
+    if pixel_values is not None: prompt = prompt.replace('<image>', self.image_token)
+    input_ids = self.tokenizer(prompt).input_ids[:self.max_length]
+
+    # PAD input_ids到max_length
+    input_ids += [self.tokenizer.pad_token_id] * (self.max_length - len(input_ids))
+
+    # 生成labels（只训练最后一个assistant）
+    text_labels, assistant_ranges = self.generate_text_labels(input_ids)
+    for start, end in assistant_ranges[:-1]:
+        mask_end = min(end + len(self.eos_id), self.max_length)
+        text_labels[start:mask_end] = [-100] * (mask_end - start)
+
+    # 生成8层audio targets（只填充最后一个assistant）
+    Y_audio_layers = [[self.audio_pad_token] * self.max_length for _ in range(8)]
+    audio_labels = [[-100] * self.max_length for _ in range(8)]
+    if assistant_ranges and last_audio_codes:
+        assistant_start, assistant_end = assistant_ranges[-1]
+        # 跳过 <think></think> 空壳：思考期不发声
+        for pos in range(assistant_start, min(assistant_end, assistant_start + 50)):
+            if input_ids[pos:pos + len(self.think_end_ids)] == self.think_end_ids:
+                assistant_start = pos + len(self.think_end_ids)
+                break
+        # spk_emb 占位 + ref_codes 右对齐（50% 概率 drop ref_codes，只保留 spk）
+        has_spk = bool(spk_emb_raw)
+        has_ref = bool(ref_audios) and random.random() > 0.5
+        spk_reserve = 1 if has_spk else 0
+        if has_ref:
+            ref_codes = [[] for _ in range(8)]
+            for i in range(0, len(ref_audios) - 7, 8):
+                for j in range(8): ref_codes[j].append(ref_audios[i + j])
+            ref_len = len(ref_codes[0])
+            ref_start = max(spk_reserve, assistant_start - ref_len)
+            for layer_idx in range(8):
+                codes = ref_codes[layer_idx][-(assistant_start - ref_start):] if ref_len > (assistant_start - ref_start) else ref_codes[layer_idx]
+                for i, code in enumerate(codes):
+                    Y_audio_layers[layer_idx][ref_start + i] = code
+        else:
+            ref_start = assistant_start
+        if has_spk and ref_start > 0:
+            spk_pos = ref_start - 1
+            for layer_idx in range(8):
+                Y_audio_layers[layer_idx][spk_pos] = self.audio_spk_token
+        # target codes 填充到 assistant_start 之后（参与 loss）
+        for layer_idx in range(8):
+            codes = last_audio_codes[layer_idx]
+            start_pos = assistant_start + layer_idx + 1        # 码本 i 延迟 i+1 步
+            for i, code in enumerate(codes):
+                if start_pos + i < self.max_length:
+                    Y_audio_layers[layer_idx][start_pos + i] = code
+                    audio_labels[layer_idx][start_pos + i] = code
+
+    # 构造9路输入：input_ids = (9, T) = 8路audio + 1路text
+    X_audio = torch.tensor([layer[:-1] for layer in Y_audio_layers], dtype=torch.long)  # (8, T-1)
+    X_text = torch.tensor(input_ids[:-1], dtype=torch.long)  # (T-1,)
+    input_ids = torch.cat((X_audio, X_text.unsqueeze(0)), dim=0)  # (9, T-1)
+    text_labels = torch.tensor(text_labels[1:], dtype=torch.long)  # (T-1,)
+    audio_labels = torch.tensor([layer[1:] for layer in audio_labels], dtype=torch.long)  # (8, T-1)
+
+    input_ids = self.apply_scheduled_sampling(input_ids, audio_labels, text_labels)
+    spk_emb = torch.tensor(spk_emb_raw, dtype=torch.float32) if spk_emb_raw else torch.zeros(192)
+    return input_ids, text_labels, audio_labels, audio_inputs, audio_len, pixel_values, spk_emb
+```
+:::
+
 训练流程按数据流逐步接入能力（不搞复杂多阶段 pretrain）：
 
 ```text
@@ -301,6 +719,83 @@ freeze 策略同样分级：`all` / `audio_proj`（只对齐音频投影）/ `vi
 ### 2.8 实时交互：VAD 与打断
 
 `model_omni.py` 末尾的 `RealtimeSession` 是与模型零耦合的工程层：Silero VAD（ONNX，CPU）检测语音活动 → `min_speech_ms=128ms` 判定开始说话、`min_silence_ms=800ms` 判定说完 → 用户在模型生成时开口（`generating and speaking`）触发 `interrupt`——**实时打断**。配合流式解码，实现"边听边答、随时打断"的近似双工对话。
+
+::: details 完整源码：stream_generate（文本与 8 路音频的流式解码编排）
+```python
+def stream_generate(self, input_ids, eos_token_id, max_new_tokens, temperature, top_p, rp, use_cache, return_audio_codes=False, **args):
+    start_pos, past_kvs, text_finished, first_finished = input_ids.shape[1], None, False, True
+    audio_codes = [[] for _ in range(8)]
+    audio_stop_pos = [None] * 8
+    audio_buffer = torch.full((1, 8, start_pos), self.audio_pad_token, dtype=torch.long, device=input_ids.device)
+    spk_emb = args.get('spk_emb', None)
+    ref_codes = args.get('ref_codes', None)
+    ref_len = ref_codes.shape[2] if ref_codes is not None else 0
+    spk_reserve = 1 if spk_emb is not None else 0
+    fill_end = start_pos
+    fill_start = max(spk_reserve, start_pos - ref_len)
+    if ref_codes is not None and fill_start < fill_end:      # 参考音频 codes 右对齐贴入
+        audio_buffer[:, :, fill_start:fill_end] = ref_codes[:, :, -(fill_end - fill_start):]
+    if spk_emb is not None and fill_start > 0:
+        audio_buffer[:, :, fill_start - 1] = self.audio_spk_token
+    think_end_step, generated_tokens = None, ([] if args.get('open_thinking', False) else None)
+    while input_ids.shape[1] < start_pos + max_new_tokens:
+        if past_kvs is None or not use_cache:
+            out = self.forward(torch.cat((audio_buffer, input_ids.unsqueeze(1)), dim=1), past_key_values=past_kvs, use_cache=use_cache, **args)
+        else:
+            out = self.forward(torch.cat((audio_buffer[:, :, -1:], input_ids[:, -1:].unsqueeze(1)), dim=1), past_key_values=past_kvs, use_cache=use_cache, **args)
+        past_kvs = out.past_key_values
+
+        # ---- 第一步：采文本 token ----
+        logits = out.logits[0, -1, :].clone() / (temperature + 1e-9)
+        if rp != 1.0:
+            seen = list(set(input_ids[0].tolist())); score = logits[seen]; logits[seen] = torch.where(score > 0, score / rp, score * rp)
+        if top_p and top_p < 1.0:
+            sorted_l, sorted_i = torch.sort(logits, descending=True)
+            mask = torch.cumsum(F.softmax(sorted_l, dim=-1), dim=-1) > top_p
+            mask[1:], mask[0] = mask[:-1].clone(), False
+            logits[sorted_i[mask]] = -float('Inf')
+        text_token = torch.multinomial(F.softmax(logits, dim=-1), 1).item()
+
+        if text_finished:
+            text_token = args.get('enter_token_id', 201) if first_finished else args.get('pad_token_id', 0)
+            first_finished = False
+
+        # ---- 第二步：按延迟调度推进 8 路音频码 ----
+        step = input_ids.shape[1] - start_pos  # 已生成token数（0=首次，此时模型处理prompt末尾token）
+        audio_step = step - 1  # 延迟1步：输出第1个text时无audio，输出第2个text时layer0开始
+        if generated_tokens is not None:
+            generated_tokens.append(text_token)
+            if not think_end_step and generated_tokens[-len(self.config.think_end_ids):] == list(self.config.think_end_ids): think_end_step = step + 2
+            audio_step = (step - think_end_step) if think_end_step else -1    # </think> 之后才出声
+        for i, al in enumerate(out.audio_logits):
+            if audio_step < i:               # 第 i 路码本要再等 i 步（阶梯延迟）
+                audio_codes[i].append(self.audio_pad_token)
+            else:
+                logits_i = al[0, -1, :].clone() / 0.2
+                for prev_code in audio_codes[i][-3:]: score = logits_i[prev_code]; logits_i[prev_code] = torch.where(score > 0, score / 1.05, score * 1.05)
+                top_val, top_idx = logits_i.topk(50)
+                code = top_idx[torch.multinomial(F.softmax(top_val, dim=-1), 1)].item()
+                audio_codes[i].append(code)
+                if audio_stop_pos[i] is None and code >= 2048: audio_stop_pos[i] = len(audio_codes[i]) - 1
+
+        if text_finished and all(audio_stop_pos[i] is not None for i in range(8)): break
+
+        input_ids = torch.cat((input_ids, torch.tensor([[text_token]], device=input_ids.device)), dim=1)
+        audio_buffer = torch.cat((audio_buffer, torch.full((1, 8, 1), self.audio_pad_token, dtype=torch.long, device=input_ids.device)), dim=2)
+        for i in range(min(audio_step + 1, 8)): audio_buffer[0, i, -1] = audio_codes[i][-1]
+
+        audio_frame = None
+        if return_audio_codes and audio_step >= 7:
+            frame = [audio_codes[i][step - 7 + i] for i in range(8)]   # 8 路对齐成一帧
+            active_layers = sum(1 for i in range(8) if audio_stop_pos[i] is None or step - 7 + i < audio_stop_pos[i])
+            if active_layers >= 8: audio_frame = frame
+        if not text_finished:
+            yield input_ids[:, start_pos:], audio_frame
+            if text_token == eos_token_id: text_finished = True
+        else:
+            yield None, audio_frame
+```
+:::
 
 ## 三、V 与 O 的对照
 

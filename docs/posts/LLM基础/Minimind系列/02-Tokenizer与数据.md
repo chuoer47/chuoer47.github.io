@@ -18,6 +18,109 @@ order: 2
 
 ## 一、Tokenizer：6400 词表的 BPE
 
+::: details 完整源码：train_tokenizer.py（BPE 训练 + 特殊 token 注册）
+```python
+# 注：不建议再重复训练tokenizer（"词典"），MiniMind已自带，此脚本仅供学习和参考
+import os, json
+from tokenizers import decoders, models, pre_tokenizers, trainers, Tokenizer
+
+DATA_PATH = '../dataset/sft_t2t_mini.jsonl'
+TOKENIZER_DIR = '../model_learn_tokenizer/'
+VOCAB_SIZE = 6400
+SPECIAL_TOKENS_NUM = 36
+
+def get_texts(data_path):
+    with open(data_path, 'r', encoding='utf-8', errors='ignore') as f:
+        for i, line in enumerate(f):
+            if i >= 10000: break  # 选10000行测试
+            try:
+                data = json.loads(line)
+                contents = [item.get('content') for item in data.get('conversations', []) if item.get('content')]
+                if contents:
+                    yield "\n".join(contents)
+            except json.JSONDecodeError:
+                continue
+
+def train_tokenizer(data_path, tokenizer_dir, vocab_size, special_tokens_num=SPECIAL_TOKENS_NUM):
+    tokenizer = Tokenizer(models.BPE())
+    tokenizer.pre_tokenizer = pre_tokenizers.ByteLevel(add_prefix_space=False)
+
+    special_tokens_list = [
+        "<|endoftext|>", "<|im_start|>", "<|im_end|>",
+        "<|object_ref_start|>", "<|object_ref_end|>", "<|box_start|>", "<|box_end|>", "<|quad_start|>", "<|quad_end|>",
+        "<|vision_start|>", "<|vision_end|>", "<|vision_pad|>", "<|image_pad|>", "<|video_pad|>",
+        "<|audio_start|>", "<|audio_end|>", "<|audio_pad|>", "<tts_pad>", "<tts_text_bos>", "<tts_text_eod>", "<tts_text_bos_single>"
+    ]
+    additional_tokens_list = [
+        "<tool_call>", "</tool_call>",
+        "<tool_response>", "</tool_response>",
+        "<think>", "</think>"
+    ]
+    num_buffer = special_tokens_num - len(special_tokens_list + additional_tokens_list)
+    buffer_tokens = [f"<|buffer{i}|>" for i in range(1, num_buffer + 1)]  # 预留一定数量的token位置
+    all_special_tokens = special_tokens_list + additional_tokens_list + buffer_tokens
+    trainer = trainers.BpeTrainer(
+        vocab_size=vocab_size,
+        show_progress=True,
+        initial_alphabet=pre_tokenizers.ByteLevel.alphabet(),
+        special_tokens=all_special_tokens
+    )
+    texts = get_texts(data_path)
+    tokenizer.train_from_iterator(texts, trainer=trainer)
+    tokenizer.decoder = decoders.ByteLevel()
+    tokenizer.add_special_tokens(special_tokens_list)
+
+    os.makedirs(tokenizer_dir, exist_ok=True)
+    tokenizer.save(os.path.join(tokenizer_dir, "tokenizer.json"))
+    tokenizer.model.save(tokenizer_dir)
+    # 把 non-special 的 added token 的 special 字段改回 False（tokenizer.json 层面）
+    tokenizer_json_path = os.path.join(tokenizer_dir, "tokenizer.json")
+    with open(tokenizer_json_path, 'r', encoding='utf-8') as f:
+        tokenizer_data = json.load(f)
+    for token_info in tokenizer_data.get('added_tokens', []):
+        if token_info['content'] not in special_tokens_list:
+            token_info['special'] = False
+    with open(tokenizer_json_path, 'w', encoding='utf-8') as f:
+        json.dump(tokenizer_data, f, ensure_ascii=False, indent=2)
+
+    added_tokens_decoder = {}
+    for i, token in enumerate(all_special_tokens):
+        idx = tokenizer.token_to_id(token)
+        added_tokens_decoder[str(idx)] = {
+            "content": token, "lstrip": False, "normalized": False,
+            "rstrip": False, "single_word": False,
+            "special": True if token in special_tokens_list else False
+        }
+
+    config = {
+        "add_bos_token": False, "add_eos_token": False, "add_prefix_space": False,
+        "added_tokens_decoder": added_tokens_decoder,
+        "additional_special_tokens": [t for t in special_tokens_list if t not in ["<|endoftext|>"]],
+        "bos_token": "<|im_start|>",
+        "clean_up_tokenization_spaces": False,
+        "eos_token": "<|im_end|>",
+        "legacy": True,
+        "model_max_length": 131072,
+        "pad_token": "<|endoftext|>",
+        "sp_model_kwargs": {},
+        "spaces_between_special_tokens": False,
+        "unk_token": "<|endoftext|>",
+        "image_token": "<|image_pad|>",
+        "audio_token": "<|audio_pad|>",
+        "video_token": "<|video_pad|>",
+        "vision_bos_token": "<|vision_start|>",
+        "vision_eos_token": "<|vision_end|>",
+        "audio_bos_token": "<|audio_start|>",
+        "audio_eos_token": "<|audio_end|>",
+        "chat_template": "..." ,  # Jinja2 模板全文见仓库（约 4000 字符），解析见 1.4 节
+        "tokenizer_class": "PreTrainedTokenizerFast"
+    }
+    with open(os.path.join(tokenizer_dir, "tokenizer_config.json"), "w", encoding="utf-8") as f:
+        json.dump(config, f, ensure_ascii=False, indent=4)
+    print("Tokenizer training completed.")
+```
+:::
+
 ### 1.1 为什么词表这么小
 
 MiniMind 词表只有 6400（Qwen3 约 15 万，Llama 3 约 12.8 万）。词表大小是三难权衡：
@@ -147,6 +250,93 @@ SFT 的 label 构造：默认整条序列都是 -100，然后扫描 token 序列
 
 配套的数据增强（`pre_processing_chat`）：20% 概率给对话随机加一条 system prompt（10 条中英文池子随机选）——让模型对"有没有 system、system 说了什么"都鲁棒，而不是过拟合到"永远没有 system"的分布。
 
+::: details 完整源码：lm_dataset.py 中的 SFTDataset 与数据增强
+```python
+def pre_processing_chat(conversations, add_system_ratio=0.2):
+    # tool use 数据完整保留不做处理
+    if any(conv.get('tools') for conv in conversations): return conversations
+
+    SYSTEM_PROMPTS = [
+        "你是一个知识丰富的AI，尽力为用户提供准确的信息。",
+        "你是minimind，一个小巧但有用的语言模型。",
+        "你是一个专业的AI助手，请提供有价值的回答。",
+        "你是minimind，请尽力帮助用户解决问题。",
+        "你是一个可靠的AI，请给出准确的回答。",
+        "You are a helpful AI assistant.",
+        "You are minimind, a lightweight intelligent assistant.",
+        "You are a friendly chatbot. Please answer the user's questions carefully.",
+        "You are a knowledgeable AI. Try your best to provide accurate information.",
+        "You are minimind, a small but useful language model."
+    ]
+    # 概率性添加system
+    if conversations[0].get('role') != 'system':
+        if random.random() < add_system_ratio:
+            return [{'role': 'system', 'content': random.choice(SYSTEM_PROMPTS)}] + conversations
+    return conversations
+
+def post_processing_chat(prompt_content, empty_think_ratio=0.2):
+    # 以80%概率移除空思考标签
+    if '<think>\n\n</think>\n\n' in prompt_content and random.random() > empty_think_ratio:
+        prompt_content = prompt_content.replace('<think>\n\n</think>\n\n', '')
+    return prompt_content
+
+class SFTDataset(Dataset):
+    def __init__(self, jsonl_path, tokenizer, max_length=1024):
+        super().__init__()
+        self.tokenizer = tokenizer
+        self.max_length = max_length
+        features = Features({'conversations': [{'role': Value('string'), 'content': Value('string'), 'reasoning_content': Value('string'), 'tools': Value('string'), 'tool_calls': Value('string')}]})
+        self.samples = load_dataset('json', data_files=jsonl_path, split='train', features=features)
+        self.bos_id = tokenizer(f'{tokenizer.bos_token}assistant\n', add_special_tokens=False).input_ids
+        self.eos_id = tokenizer(f'{tokenizer.eos_token}\n', add_special_tokens=False).input_ids
+
+    def __len__(self):
+        return len(self.samples)
+
+    def create_chat_prompt(self, conversations):
+        messages = []
+        tools = None
+        for message in conversations:
+            message = dict(message)
+            if message.get("role") == "system" and message.get("tools"):
+                tools = json.loads(message["tools"]) if isinstance(message["tools"], str) else message["tools"]
+            if message.get("tool_calls") and isinstance(message["tool_calls"], str):
+                message["tool_calls"] = json.loads(message["tool_calls"])
+            messages.append(message)
+        return self.tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=False, tools=tools
+        )
+
+    def generate_labels(self, input_ids):
+        labels = [-100] * len(input_ids)
+        i = 0
+        while i < len(input_ids):
+            if input_ids[i:i + len(self.bos_id)] == self.bos_id:
+                start = i + len(self.bos_id)
+                end = start
+                while end < len(input_ids):
+                    if input_ids[end:end + len(self.eos_id)] == self.eos_id:
+                        break
+                    end += 1
+                for j in range(start, min(end + len(self.eos_id), self.max_length)):
+                    labels[j] = input_ids[j]
+                i = end + len(self.eos_id) if end < len(input_ids) else len(input_ids)
+            else:
+                i += 1
+        return labels
+
+    def __getitem__(self, index):
+        sample = self.samples[index]
+        conversations = pre_processing_chat(sample['conversations'])
+        prompt = self.create_chat_prompt(conversations)
+        prompt = post_processing_chat(prompt)
+        input_ids = self.tokenizer(prompt).input_ids[:self.max_length]
+        input_ids += [self.tokenizer.pad_token_id] * (self.max_length - len(input_ids))
+        labels = self.generate_labels(input_ids)
+        return torch.tensor(input_ids, dtype=torch.long), torch.tensor(labels, dtype=torch.long)
+```
+:::
+
 ## 二、Pretrain 数据：学语言规律
 
 `PretrainDataset` 非常直白：
@@ -211,6 +401,75 @@ class DPODataset(Dataset):
 
 注意 DPO 的数据里**每个答案都是完整对话**——不是只给"答案对"，而是"（上文+好回答）"vs"（上文+差回答）"。因为 DPO 需要 log π(y|x) 对整段回答的概率，上下文必须完整。
 
+::: details 完整源码：DPODataset
+```python
+class DPODataset(Dataset):
+    def __init__(self, file_path, tokenizer, max_length=4096):
+        super().__init__()
+        self.tokenizer = tokenizer
+        self.max_length = max_length
+        self.padding = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else 0
+        self.bos_id = tokenizer(f'{tokenizer.bos_token}assistant\n', add_special_tokens=False).input_ids
+        self.eos_id = tokenizer(f'{tokenizer.eos_token}\n', add_special_tokens=False).input_ids
+        self.samples = load_dataset('json', data_files=file_path, split='train')
+
+    def __getitem__(self, index):
+        sample = self.samples[index]
+        chosen = sample['chosen']      # 是一个 list，里面包含若干 {role, content}
+        rejected = sample['rejected']  # 同上
+        chosen_prompt = self.tokenizer.apply_chat_template(
+            chosen, tokenize=False, add_generation_prompt=False
+        )
+        chosen_prompt = post_processing_chat(chosen_prompt)
+
+        rejected_prompt = self.tokenizer.apply_chat_template(
+            rejected, tokenize=False, add_generation_prompt=False
+        )
+        rejected_prompt = post_processing_chat(rejected_prompt)
+        chosen_encoding = self.tokenizer(
+            chosen_prompt, truncation=True, max_length=self.max_length, padding='max_length'
+        )
+        rejected_encoding = self.tokenizer(
+            rejected_prompt, truncation=True, max_length=self.max_length, padding='max_length'
+        )
+
+        chosen_input_ids = chosen_encoding['input_ids']
+        chosen_loss_mask = self.generate_loss_mask(chosen_input_ids)
+
+        rejected_input_ids = rejected_encoding['input_ids']
+        rejected_loss_mask = self.generate_loss_mask(rejected_input_ids)
+        x_chosen = torch.tensor(chosen_input_ids[:-1], dtype=torch.long)
+        y_chosen = torch.tensor(chosen_input_ids[1:], dtype=torch.long)
+        mask_chosen = torch.tensor(chosen_loss_mask[1:], dtype=torch.long)
+        x_rejected = torch.tensor(rejected_input_ids[:-1], dtype=torch.long)
+        y_rejected = torch.tensor(rejected_input_ids[1:], dtype=torch.long)
+        mask_rejected = torch.tensor(rejected_loss_mask[1:], dtype=torch.long)
+
+        return {
+            'x_chosen': x_chosen, 'y_chosen': y_chosen, 'mask_chosen': mask_chosen,
+            'x_rejected': x_rejected, 'y_rejected': y_rejected, 'mask_rejected': mask_rejected
+        }
+
+    def generate_loss_mask(self, input_ids):
+        loss_mask = [0] * len(input_ids)
+        i = 0
+        while i < len(input_ids):
+            if input_ids[i:i + len(self.bos_id)] == self.bos_id:
+                start = i + len(self.bos_id)
+                end = start
+                while end < len(input_ids):
+                    if input_ids[end:end + len(self.eos_id)] == self.eos_id:
+                        break
+                    end += 1
+                for j in range(start, min(end + len(self.eos_id), self.max_length)):
+                    loss_mask[j] = 1
+                i = end + len(self.eos_id) if end < len(input_ids) else len(input_ids)
+            else:
+                i += 1
+        return loss_mask
+```
+:::
+
 ## 五、RLAIF / Agent RL 数据
 
 RLAIF 数据格式与 SFT 相同，但 assistant 内容是占位符：
@@ -223,6 +482,67 @@ RLAIF 数据格式与 SFT 相同，但 assistant 内容是占位符：
 ```
 
 `RLAIFDataset` 返回的是 `{prompt, answer: ""}`——只有 prompt 进模型，回答完全由策略模型实时采样生成（on-policy）。这是 RL 训练与监督训练最本质的数据差异：监督学习的 label 是静态的（数据集给定），RL 的"label"是模型自己生成、再被奖励函数评价的。`create_chat_prompt` 里 `open_thinking` 按 `thinking_ratio`（默认 0.9）随机开关，让模型在思考/直答两种模式上都得到训练。
+
+::: details 完整源码：RLAIFDataset 与 AgentRLDataset
+```python
+class RLAIFDataset(Dataset):
+    def __init__(self, jsonl_path, tokenizer, max_length=1024, thinking_ratio=0.5):
+        super().__init__()
+        self.tokenizer = tokenizer
+        self.max_length = max_length
+        self.thinking_ratio = thinking_ratio  # 按概率开启 thinking
+        self.samples = load_dataset('json', data_files=jsonl_path, split='train')
+        self.bos_id = tokenizer(f'{tokenizer.bos_token}assistant', add_special_tokens=False).input_ids
+        self.eos_id = tokenizer(f'{tokenizer.eos_token}', add_special_tokens=False).input_ids
+
+    def __len__(self):
+        return len(self.samples)
+
+    def create_chat_prompt(self, conversations):
+        conversations = pre_processing_chat(conversations)
+        use_thinking = random.random() < self.thinking_ratio
+        return self.tokenizer.apply_chat_template(
+            conversations[:-1],          # 丢掉 assistant 占位轮
+            tokenize=False,
+            open_thinking=use_thinking,  # 随机开关思考
+            add_generation_prompt=True   # 给模型"起话头"
+        )
+
+    def __getitem__(self, index):
+        sample = self.samples[index]
+        prompt = self.create_chat_prompt(sample['conversations'])
+        return {'prompt': prompt, 'answer': ""}   # answer 留空：由 rollout 生成
+
+
+class AgentRLDataset(Dataset):
+    def __init__(self, jsonl_path, tokenizer, max_length=1024):
+        super().__init__()
+        self.tokenizer = tokenizer
+        self.max_length = max_length
+        self.samples = []
+        with open(jsonl_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                self.samples.append(json.loads(line.strip()))
+
+    def __len__(self):
+        return len(self.samples)
+
+    def parse_conversations(self, conversations):
+        messages = []
+        tools = None
+        for message in conversations:
+            message = dict(message)
+            if message.get("role") == "system" and message.get("tools"):
+                tools = json.loads(message["tools"]) if isinstance(message["tools"], str) else message["tools"]
+            messages.append(message)
+        return messages[:-1], tools
+
+    def __getitem__(self, index):
+        sample = self.samples[index]
+        messages, tools = self.parse_conversations(sample['conversations'])
+        return {'messages': messages, 'tools': tools, 'gt': sample['gt']}
+```
+:::
 
 Agent RL 数据多了 `gt`（ground truth）字段：
 
