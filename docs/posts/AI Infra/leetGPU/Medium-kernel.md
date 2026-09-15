@@ -524,3 +524,181 @@ extern "C" void solve(
 - online softmax 精华就在中间那几行：lane0 更新 `m_new = max(m, score)`，算出 rescale 因子 alpha（旧 acc/分母缩放）和 beta（新 score 的 exp），shuffle 广播后所有 lane 同步缩放自己的 acc 分片
 - 无效 warp（`q_raw >= M`）伪装成最后一行 Q 参与计算但不写回，避免了 warp divergence 又不用单独分支跳过 shared 搬运
 - 和 LeetCUDA 20 篇 FlashAttention-2 的关系：这里是没有 Tensor Core/MMA 的"教学版" FA——同样的 online softmax 数据流，用纯 CUDA C 手撕一遍更能看清 alpha/beta 缩放的时序
+
+# 2D Convolution
+
+[题目链接](https://leetgpu.com/challenges/2d-convolution)
+
+valid 边界的 2D 互相关：`output[i][j] = Σ_{m,n} input[i+m][j+n] * kernel[m][n]`，输入最大 3072×3072，kernel 最大 31×31（实测 3072×3072 + 15×15）。注意平台管 cross-correlation 叫 convolution——kernel 不翻转，和 `F.conv2d` 行为一致。
+
+基础解法（每线程一个输出点，kernel 常驻 shared）：
+
+<details>
+<summary>查看代码</summary>
+
+```c++
+#include <cuda_runtime.h>
+#define TILE 256
+#define MAX_KERNEL_SIZE 32
+
+__global__ void convolution2d_kernel(
+    const float* __restrict__ input,
+    const float* __restrict__ kernel,
+    float* output,
+    int input_rows,
+    int input_cols,
+    int kernel_rows,
+    int kernel_cols
+){
+    int output_rows = input_rows - kernel_rows + 1;
+    int output_cols = input_cols - kernel_cols + 1;
+    int N = output_rows * output_cols;
+    int tix = threadIdx.x;
+    // 搬运 kernel -> share mem
+    __shared__ float K_[MAX_KERNEL_SIZE][MAX_KERNEL_SIZE];
+    for (int i = tix;i < kernel_rows * kernel_cols;i+=blockDim.x){
+        int r = i / kernel_cols;
+        int c = i % kernel_cols;
+        K_[r][c] = kernel[i]; 
+    }
+    __syncthreads();
+    // 确定当前 thread 负责的 output
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= N) return;
+    int r = idx / output_cols;
+    int c = idx % output_cols;
+    // 很蠢的方法，来回读....
+    float sum = 0.f;
+    for (int i=0;i<kernel_rows;i++){
+        for (int j=0;j<kernel_cols;j++){
+            sum += K_[i][j] * input[(r + i)*input_cols + (c + j)];
+        }
+    }
+    output[idx] = sum;
+}
+
+// input, kernel, output are device pointers
+extern "C" void solve(
+    const float* input,
+    const float* kernel,
+    float* output,
+    int input_rows,
+    int input_cols,
+    int kernel_rows,
+    int kernel_cols) {        
+        int output_rows = input_rows - kernel_rows + 1;
+        int output_cols = input_cols - kernel_cols + 1;
+        // kernel很小，可直接存
+        // 每个线程负责一个 output 的位置
+        int N = output_rows * output_cols;
+        int threadsPerBlock = TILE;
+        int blocksPerGrid = (N + threadsPerBlock - 1) / threadsPerBlock;
+        convolution2d_kernel<<<blocksPerGrid, threadsPerBlock>>>(input,kernel, output,
+        input_rows,input_cols,kernel_rows,kernel_cols);
+        cudaDeviceSynchronize();
+}
+```
+
+</details>
+
+- 一维线程编号摊输出点：`r = idx / output_cols, c = idx % output_cols`，每个线程自己滑 15×15 窗口
+- kernel 只有 225 个数、全体线程复用，先合作搬进 shared（`i += blockDim.x` 步进循环），一次 `__syncthreads()` 后所有线程读 smem
+- input 侧没有复用：相邻输出点的窗口重叠 14 行 14 列，同样的 input 元素被反复从全局读。注释里自己写了"很蠢的方法，来回读"——正确性没问题，靠 L1/L2 兜住重复读，这是下面分块版要解决的问题
+- 实现细节：kernel 搬运用 `i / kernel_cols` 而不是写死维度，任意 kernel shape 都对；越界线程 `return` 前已经在 `__syncthreads()` 之后（先搬 kernel 再判断），不会卡 barrier
+
+进阶解法（input tile 也进 shared，halo 分块）：
+
+<details>
+<summary>查看代码</summary>
+
+```c++
+#include <cuda_runtime.h>
+
+#define TILE_H 16
+#define TILE_W 16
+#define THREADS (TILE_H * TILE_W)   // 256
+#define MAX_KERNEL_SIZE 32
+
+__global__ void convolution2d_kernel(
+    const float* __restrict__ input,
+    const float* __restrict__ kernel,
+    float* output,
+    int input_rows, int input_cols,
+    int kernel_rows, int kernel_cols)
+{
+    int output_rows = input_rows  - kernel_rows + 1;
+    int output_cols = input_cols  - kernel_cols + 1;
+
+    int tile_in_rows = TILE_H + kernel_rows - 1;
+    int tile_in_cols = TILE_W + kernel_cols - 1;
+
+    __shared__ float K_[MAX_KERNEL_SIZE][MAX_KERNEL_SIZE];
+    __shared__ float I_[TILE_H + MAX_KERNEL_SIZE - 1][TILE_W + MAX_KERNEL_SIZE - 1];
+
+    int tid = threadIdx.y * blockDim.x + threadIdx.x;
+    int out_r0 = blockIdx.y * TILE_H;
+    int out_c0 = blockIdx.x * TILE_W;
+
+    // 1) kernel 搬到 shared
+    for (int i = tid; i < kernel_rows * kernel_cols; i += THREADS) {
+        K_[i / kernel_cols][i % kernel_cols] = kernel[i];
+    }
+
+    // 2) input tile 搬到 shared
+    for (int i = tid; i < tile_in_rows * tile_in_cols; i += THREADS) {
+        int lr = i / tile_in_cols;
+        int lc = i % tile_in_cols;
+        int gr = out_r0 + lr;
+        int gc = out_c0 + lc;
+        I_[lr][lc] = (gr < input_rows && gc < input_cols)
+                     ? input[gr * input_cols + gc]
+                     : 0.f;
+    }
+
+    __syncthreads();
+
+    int r = out_r0 + threadIdx.y;
+    int c = out_c0 + threadIdx.x;
+    if (r >= output_rows || c >= output_cols) return;
+
+    // 3) 卷积：全部读 shared memory
+    float sum = 0.f;
+    #pragma unroll
+    for (int i = 0; i < kernel_rows; ++i) {
+        #pragma unroll
+        for (int j = 0; j < kernel_cols; ++j) {
+            sum += K_[i][j] * I_[threadIdx.y + i][threadIdx.x + j];
+        }
+    }
+
+    output[r * output_cols + c] = sum;
+}
+
+extern "C" void solve(
+    const float* input, const float* kernel, float* output,
+    int input_rows, int input_cols, int kernel_rows, int kernel_cols)
+{
+    int output_rows = input_rows - kernel_rows + 1;
+    int output_cols = input_cols - kernel_cols + 1;
+
+    dim3 block(TILE_W, TILE_H);
+    dim3 grid((output_cols + TILE_W - 1) / TILE_W,
+              (output_rows + TILE_H - 1) / TILE_H);
+
+    convolution2d_kernel<<<grid, block>>>(
+        input, kernel, output,
+        input_rows, input_cols, kernel_rows, kernel_cols);
+
+    cudaDeviceSynchronize();
+}
+```
+
+</details>
+
+- 核心思路：16×16 的输出 tile 对应一块 (16+15-1)×(16+15-1)=30×30 的输入 tile（含 halo，即窗口多伸出去的一圈边界）。整块搬进 shared 后，内层 225 次乘加全部读 smem，重复读的全局流量从 15×15 次降到每元素约 1 次
+- halo 装载是分块卷积的标准动作：`tile_in = TILE + kernel - 1`，256 线程用 `i += THREADS` 步进循环搬 900 个元素（每线程最多 4 个），零填充处理 tile 超出输入边界的部分
+- smem 开销算一笔账：`I_` 按 MAX 尺寸开 47×47×4B ≈ 8.8KB，`K_` 4KB，合计 ~13KB/block——不按运行时 kernel 尺寸动态开（C++ 里 shared 维度需编译期常量或动态分配），按上限开是省事的选择，占用率也没掉下去
+- 二维 block(16,16) 与输出 tile 对齐：`threadIdx.y/x` 直接就是 tile 内输出坐标，内层 `I_[threadIdx.y+i][threadIdx.x+j]` 索引清晰；`#pragma unroll` 上去后 225 次 smem 读基本是流水满的
+- 两个 `__syncthreads()` 要点：kernel 和 input tile 的装载可以共用一个 barrier（装载完再统一同步）；越界早退放在 barrier **之后**，先来的线程不会等一个已经 return 的线程（早退在 barrier 前是经典死锁写法）
+- 对比 LeetCUDA 12 篇 histogram 的 smem 私有化：同样是"先聚合进 smem 再落全局"，卷积分块聚合的是**读**，直方图聚合的是**写**，方向相反模式同源
+- 这一题和 1D Convolution（Easy 篇）对照看：1D 版 kernel 常驻 smem、input 各读各的；2D 进阶版把 input 也 tile 进 smem。窗口重叠度越高（kernel 越大），分块收益越大——3072 输入 + 15×15 kernel 时每点重复全局读 225 次 vs 分块后 ~1 次
