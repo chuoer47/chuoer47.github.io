@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.12.12",
+    "markdown-it-mathjax3": "^4.3.2",
     "vitepress": "^1.6.4",
     "vue": "^3.4.27"
   }

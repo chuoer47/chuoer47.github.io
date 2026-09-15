@@ -122,6 +122,7 @@ export default defineConfig({
 
   markdown: {
     lineNumbers: true,
+    math: true,
   },
 
   themeConfig: {
