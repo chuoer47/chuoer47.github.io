@@ -702,3 +702,253 @@ extern "C" void solve(
 - 两个 `__syncthreads()` 要点：kernel 和 input tile 的装载可以共用一个 barrier（装载完再统一同步）；越界早退放在 barrier **之后**，先来的线程不会等一个已经 return 的线程（早退在 barrier 前是经典死锁写法）
 - 对比 LeetCUDA 12 篇 histogram 的 smem 私有化：同样是"先聚合进 smem 再落全局"，卷积分块聚合的是**读**，直方图聚合的是**写**，方向相反模式同源
 - 这一题和 1D Convolution（Easy 篇）对照看：1D 版 kernel 常驻 smem、input 各读各的；2D 进阶版把 input 也 tile 进 smem。窗口重叠度越高（kernel 越大），分块收益越大——3072 输入 + 15×15 kernel 时每点重复全局读 225 次 vs 分块后 ~1 次
+# Prefix Sum
+
+[题目链接](https://leetgpu.com/challenges/prefix-sum)
+
+对长度 N（最大 1e8，实测 25 万）的 float 数组求前缀和（inclusive scan）：`output[i] = sum(input[0..i])`。
+
+前缀和在 GPU 上是经典难题：每个 output 依赖前面所有元素，看起来是串行的。核心思想是把 scan 拆成**块内并行 scan + 块间偏移修正**两步——块内可以并行扫，块间的依赖用一个全局的 block 前缀和（递归继续拆）来补。这正是 Blelloch / 现代库实现 scan 的标准三层结构。
+
+## 函数详解
+
+两个版本共用的骨架，先认识几个关键函数：
+
+- **`__syncthreads()`**：block 内所有线程在此会合，保证 barrier 之前写的 shared memory 对 barrier 之后的读可见。scan 循环里"读、同步、写、同步"是 Hillis-Steele 的标准节奏——第一个同步保证所有线程都读完旧值才允许覆盖，第二个同步保证写完才进下一轮
+- **`__shfl_up_sync(0xffffffff, x, offset)`**：warp 内洗牌，拿到**同 warp 里 lane-id 比自己小 offset** 的那个线程的 `x` 值（纯寄存器交换，不经过 shared memory，一条指令的事）。mask `0xffffffff` 表示 warp 内全部 32 线程都参与。注意 `__shfl_up` 对 lane < offset 的线程返回**自己的值**不变（没有更靠前的线程了）——这天然契合 inclusive scan 的边界
+- **`cudaMalloc` / `cudaFree`**：host 端动态分配显存。本题 block_sums 数组大小依赖 N，不能编译期定死，只能动态开。注意每层递归都 malloc/free，属于偷懒但可用的写法
+
+## 解法一：Hillis-Steele 块内 scan（shared memory 版）
+
+思路：每 block 256 线程，把 input 搬进 shared 后做 Hillis-Steele 并行 scan——每轮 offset 翻倍（1,2,4,...,128），每个线程把自己前面 offset 处的值加到自己身上，log2(256)=8 轮后块内前缀和完成。同时每块最后一个元素（块总和）写到 `block_sums[]`，对它递归 scan 得到块间前缀，最后一个 kernel 把 `block_sums[blockIdx.x - 1]`（前面所有块的总和）加到本块每个输出上。
+
+<details>
+<summary>查看代码</summary>
+
+```c++
+#include <cuda_runtime.h>
+
+constexpr int BLOCK_SIZE = 256;
+
+__global__ void scan_blocks(
+    const float* __restrict__ input,
+    float* __restrict__ output,
+    float* __restrict__ block_sums,
+    int N
+){
+    __shared__ float sdata[BLOCK_SIZE];
+    int tid = threadIdx.x;
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    sdata[tid] = (idx < N)?input[idx]:0.f;
+    __syncthreads();
+    
+#pragma unroll
+    for (int offset=1;offset<BLOCK_SIZE;offset<<=1){
+        float value = 0.f;
+        if (tid >= offset) value = sdata[tid - offset];
+        __syncthreads();
+        sdata[tid] += value;
+        __syncthreads();
+    }
+
+    if (idx < N) output[idx] = sdata[tid];
+
+    if (tid == BLOCK_SIZE - 1) block_sums[blockIdx.x] = sdata[tid];
+}
+
+__global__ void add_block_offsets(
+    float* output,
+    const float* block_sums,
+    int N
+){
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= N) return;
+    if (blockIdx.x == 0) return;
+    output[idx] += block_sums[blockIdx.x - 1];
+}
+
+void scan_recursive(float* data,int N){
+    if (N <= 1) return;
+    int num_blocks = (N + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    
+    if (num_blocks == 1){
+        float* dummy_sums = nullptr;
+        cudaMalloc(&dummy_sums,sizeof(float));
+        scan_blocks<<<1,BLOCK_SIZE>>>(data,data,dummy_sums,N);
+        cudaFree(dummy_sums);
+        return;
+    }
+
+    float* next_sums = nullptr;
+    cudaMalloc(&next_sums,num_blocks * sizeof(float));
+    scan_blocks<<<num_blocks,BLOCK_SIZE>>>(data,data,next_sums,N);
+    scan_recursive(next_sums,num_blocks);
+    add_block_offsets<<<num_blocks, BLOCK_SIZE>>>(data,next_sums,N);
+
+    cudaFree(next_sums);
+}
+
+
+
+// input, output are device pointers
+extern "C" void solve(const float* input, float* output, int N) {
+    if (N <= 0) return;
+    int num_blocks = (N + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    float* block_sums = nullptr;
+    cudaMalloc(&block_sums,num_blocks * sizeof(float));
+    scan_blocks<<<num_blocks,BLOCK_SIZE>>>(input,output,block_sums,N);
+    if (num_blocks > 1) scan_recursive(block_sums,num_blocks);
+    if (num_blocks > 1) add_block_offsets<<<num_blocks,BLOCK_SIZE>>>(output,block_sums,N);
+    cudaFree(block_sums);
+}
+```
+
+</details>
+
+**逐层拆解：**
+
+1. **块内 scan**（`scan_blocks` 前半）：`sdata[tid] = input[idx]` 装载（越界补 0，0 加进去不影响结果），然后 8 轮 doubling。Hillis-Steele 的不变量：第 k 轮结束后 `sdata[tid] = sum(input[tid-2^k+1 .. tid])`，拿 offset=1,2,4 三轮手工推一遍 [1,2,3,4] 就明白为什么 8 轮够
+2. **块总和上抛**：`tid == BLOCK_SIZE-1` 的线程把 `sdata[tid]`（= 本块全体之和，含尾部补的 0）写进 `block_sums[blockIdx.x]`
+3. **递归扫块间**（`scan_recursive`）：block_sums 本身又是一个待 scan 的数组，于是原问题缩小 256 倍递归下去。`num_blocks == 1` 是递归基——一个 block 自己就能扫完
+4. **偏移回加**（`add_block_offsets`）：第 0 块不用加；第 i 块（i>=1）每个元素加上"前面所有块的总和" = `block_sums[i-1]`（block_sums 已被就地 scan 成前缀和）。**注意加的是 `i-1` 不是 `i`**——inclusive scan 的语义决定的，差一位就是全错
+
+**这个版本的坑与要点：**
+
+- Hillis-Steele 每轮两次 `__syncthreads()`，8 轮 16 次 barrier，block 内同步开销不小——这是它输给解法二的地方
+- 循环内"先读 `value`，再 `__syncthreads()`，再写 `sdata[tid] += value`"顺序不能反：如果先写后读，同 block 的线程会读到本轮刚被覆盖的新值，结果直接错
+- `scan_recursive` 里 `scan_blocks(data,data,...)` 是**就地 scan**：kernel 只在开头读一次全局、结尾写一次，读写区间虽重叠但每线程只碰自己的位置，安全
+- `cudaMalloc(&dummy_sums, sizeof(float))` 给了 dummy 指针防 kernel 写空指针——kernel 里 `tid==BLOCK_SIZE-1` 无条件写 block_sums，传 `nullptr` 会崩
+
+## 解法二：warp shuffle 两级 scan（优化版）
+
+思路：把 256 线程的 scan 拆成两级——**warp 内用 `__shfl_up_sync` 寄存器交换扫**（无 shared、无 barrier），8 个 warp 各自扫完后把每个 warp 的总和（lane 31 的值）写进 `warp_sums[8]`；**warp 0 再对这 8 个数做一次 warp scan**，之后每个 warp 从 `warp_sums[warp-1]` 拿自己前面的偏移加回来。barrier 从 16 次降到 2 次。
+
+<details>
+<summary>查看代码</summary>
+
+```c++
+#include <cuda_runtime.h>
+
+constexpr int BLOCK_SIZE = 256;
+constexpr int WARP_SIZE = 32;
+constexpr int WARP_NUM = BLOCK_SIZE / WARP_SIZE;
+
+template<int WARP_SIZE=32>
+__device__ __forceinline__ float warp_scan(float x){
+#pragma unroll
+    for (int offset=1;offset < WARP_SIZE; offset <<= 1){
+        float y = __shfl_up_sync(0xffffffff,x,offset);
+        if ((threadIdx.x & 31) >= offset){
+            x += y;
+        }
+    }
+    return x;
+}
+
+__global__ void scan_blocks(
+    const float* __restrict__ input,
+    float* __restrict__ output,
+    float* __restrict__ block_sums,
+    int N
+){
+    __shared__ float warp_sums[WARP_NUM];
+
+    int tid = threadIdx.x;
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    
+    float x = (idx < N)?input[idx]:0.f;
+    float scanned = warp_scan<WARP_SIZE>(x);
+    
+    int lane = tid & 31;
+    int warp = tid >> 5;
+    if (lane == WARP_SIZE - 1) warp_sums[warp] = scanned;
+    __syncthreads();
+
+    if (warp == 0){
+        float v = (lane < WARP_NUM) ? warp_sums[lane] :0.f;
+        v = warp_scan<WARP_SIZE>(v);
+        if (lane < WARP_NUM)
+            warp_sums[lane] = v;
+    }
+    __syncthreads();
+
+    float warp_offset = 0.f;
+    if (warp > 0)
+        warp_offset = warp_sums[warp - 1];
+    scanned += warp_offset;
+
+    if (idx < N) output[idx] = scanned;
+
+    if (tid == BLOCK_SIZE - 1) block_sums[blockIdx.x] = scanned;
+}
+
+__global__ void add_block_offsets(
+    float* output,
+    const float* block_sums,
+    int N
+){
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= N) return;
+    if (blockIdx.x == 0) return;
+    output[idx] += block_sums[blockIdx.x - 1];
+}
+
+void scan_recursive(float* data,int N){
+    if (N <= 1) return;
+    int num_blocks = (N + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    
+    if (num_blocks == 1){
+        float* dummy_sums = nullptr;
+        cudaMalloc(&dummy_sums,sizeof(float));
+        scan_blocks<<<1,BLOCK_SIZE>>>(data,data,dummy_sums,N);
+        cudaFree(dummy_sums);
+        return;
+    }
+
+    float* next_sums = nullptr;
+    cudaMalloc(&next_sums,num_blocks * sizeof(float));
+    scan_blocks<<<num_blocks,BLOCK_SIZE>>>(data,data,next_sums,N);
+    scan_recursive(next_sums,num_blocks);
+    add_block_offsets<<<num_blocks, BLOCK_SIZE>>>(data,next_sums,N);
+
+    cudaFree(next_sums);
+}
+
+
+
+// input, output are device pointers
+extern "C" void solve(const float* input, float* output, int N) {
+    if (N <= 0) return;
+    int num_blocks = (N + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    float* block_sums = nullptr;
+    cudaMalloc(&block_sums,num_blocks * sizeof(float));
+    scan_blocks<<<num_blocks,BLOCK_SIZE>>>(input,output,block_sums,N);
+    if (num_blocks > 1) scan_recursive(block_sums,num_blocks);
+    if (num_blocks > 1) add_block_offsets<<<num_blocks,BLOCK_SIZE>>>(output,block_sums,N);
+    cudaFree(block_sums);
+}
+```
+
+</details>
+
+**逐层拆解：**
+
+1. **`warp_scan` 模板**：5 轮 `offset=1,2,4,8,16` 的 shuffle-up 累加（log2(32)=5），与解法一的 Hillis-Steele 同款算法，只是数据交换从 shared memory 换成了寄存器洗牌。`(threadIdx.x & 31) >= offset` 的判断就是"lane < offset 不用加"，对应 `__shfl_up` 边界语义
+2. **第一级**：每 warp 32 线程各扫各的，`lane == 31` 把 warp 总和写 `warp_sums[warp]`
+3. **第二级**：warp 0 的 32 个 lane 对 `warp_sums[0..7]`（其余 lane 补 0）再 `warp_scan` 一遍，就地变成 8 个 warp 的前缀和
+4. **偏移广播**：`warp > 0` 的线程读 `warp_sums[warp - 1]`（shared memory，第二级刚写完、已有 barrier 隔开），加到自己的 scanned 上。又是 `-1`，又是 inclusive 语义
+5. 块总和上抛、递归、回加三步与解法一**完全相同**——两级方案只改了块内 scan 的实现，分层结构不动。这也是好架构的价值：局部实现可替换
+
+**为什么快：**
+
+- barrier 从 16 次 → 2 次。`__syncthreads()` 会强制所有线程等待并刷新内存流水线，是 block 内最贵的操作之一
+- warp scan 全程寄存器：`__shfl_*_sync` 编译成单条 `SHFL` 指令，延迟约个位时钟周期，比读写 shared memory（约 30 周期）便宜一个量级
+- `warp_sums` 二次扫描时 lane 8~31 拿 0 参与完整 32-lane scan，牺牲一点无效计算换"不用分支判断 scan 宽度"——省下的分支比浪费的多
+
+## 通用注意事项
+
+- **inclusive vs exclusive**：本题要 inclusive（含自身）。如果是 exclusive scan（`output[i] = sum(input[0..i-1])`），偏移回加就该加 `block_sums[i]`（本块之前全部），两处 `-1`/不 `-1` 正好互换。面试里这个 off-by-one 是高频坑
+- **递归深度**：N=1e8 时 block 数约 39 万 → 1527 → 6 → 1，共 4 层递归、每层 2 个 kernel，总共约 10 次 launch。规模再大也是对数级
+- **`cudaMalloc` 频率**：每层递归一对 malloc/free，host 端同步开销存在但本题规模下可忽略；工程上应该用 cudaMallocAsync 或预分配 workspace（CUB 的做法）
+- **精度**：float 累加 25 万个 [-100,100] 的数，求和顺序不同结果略有差异；题面保证不溢出，判题容差 atol/rtol=1e-5 兜住。若要求严格确定性得用 double 或分段 Kahan
+- 和 LeetCUDA 03 篇 Reduce 的血缘：reduce 是 scan 的最后一步（只取最后一个值），scan 的分层结构 = 多次 reduce + 偏移回加。会写 reduce 之后 scan 只差"把中间结果都留下来"这一步
