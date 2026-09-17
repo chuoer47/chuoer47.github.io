@@ -2,7 +2,7 @@
 title: MQ高级
 date: 2025-10-03 17:58:22
 tags: code
-category: 工具
+category: 前后端
 description: RabbitMQ高级笔记
 order: 7
 ---

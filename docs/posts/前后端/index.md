@@ -10,4 +10,5 @@ order: 30
 - [设计模式](./设计模式/)
 - [MySQL](./mysql/)
 - [Redis](./redis/)
+- [RabbitMQ](./RabbitMq/)
 - [Streamlit](./Streamlit/)

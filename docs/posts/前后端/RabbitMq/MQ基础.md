@@ -2,7 +2,7 @@
 title: MQ基础
 date: 2025-10-03 17:58:22
 tags: code
-category: 工具
+category: 前后端
 description: RabbitMQ基础笔记
 order: 6
 ---
