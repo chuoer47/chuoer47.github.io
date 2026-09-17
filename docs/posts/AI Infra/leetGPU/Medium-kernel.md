@@ -952,3 +952,138 @@ extern "C" void solve(const float* input, float* output, int N) {
 - **`cudaMalloc` 频率**：每层递归一对 malloc/free，host 端同步开销存在但本题规模下可忽略；工程上应该用 cudaMallocAsync 或预分配 workspace（CUB 的做法）
 - **精度**：float 累加 25 万个 [-100,100] 的数，求和顺序不同结果略有差异；题面保证不溢出，判题容差 atol/rtol=1e-5 兜住。若要求严格确定性得用 double 或分段 Kahan
 - 和 LeetCUDA 03 篇 Reduce 的血缘：reduce 是 scan 的最后一步（只取最后一个值），scan 的分层结构 = 多次 reduce + 偏移回加。会写 reduce 之后 scan 只差"把中间结果都留下来"这一步
+# Dot Product
+
+[题目链接](https://leetgpu.com/challenges/dot-product)
+
+两个长度 N（最大 1e8）的 float 向量求内积 `result = Σ A[i]·B[i]`，写回标量。本质是 Reduction 的乘加融合版——分层归约结构完全复用，只是"载入"一步变成了"载入+逐元素相乘"。有意思的是题面性能测试 N=5：瓶颈不在算力而在 kernel launch 和 malloc，所以两级 kernel + 一次 cudaMalloc 的方案照样轻松过线。
+
+解法（两级 kernel：dot+块内归约 → 全局块和归约）：
+
+<details>
+<summary>查看代码</summary>
+
+```c++
+#include <cuda_runtime.h>
+
+// 1.创建 N / BLOCK_SIZE 全局内存 smem，每个BLOCK 完成 BLOCK_SIZE 的 dot product，然后存到 smem
+// 2.smem 在进行一个 reduce
+constexpr int BLOCK_SIZE = 256;
+constexpr int WARP_SIZE = 32;
+constexpr int WARP_NUM = BLOCK_SIZE / WARP_SIZE;
+
+template<int WARP_SIZE=32>
+__device__ __forceinline__ float warp_reduce(float sum){
+#pragma unroll
+    for (int offset=1;offset < WARP_SIZE; offset <<= 1){
+        sum += __shfl_down_sync(0xffffffff,sum,offset);
+    }
+    return sum;
+}
+
+__global__ void dot_product_kernel(
+    const float* __restrict__ A,
+    const float* __restrict__ B,
+    float* block_reduce,
+    int N
+){
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int lane = threadIdx.x & 31;
+    int warp = threadIdx.x >> 5;
+
+    __shared__ float warp_sums[WARP_NUM];
+
+    // WARP 归约
+    float sum = (idx < N)?A[idx] * B[idx]:0.f;
+    sum = warp_reduce<WARP_SIZE>(sum);
+
+    if (lane == 0){
+        warp_sums[warp] = sum;
+    }
+    __syncthreads();
+
+    // 跨 WARP 归约
+    if (warp == 0){
+        sum = (lane < WARP_NUM)?warp_sums[lane]:0.f;
+        sum = warp_reduce<WARP_SIZE>(sum);
+        if (lane == 0){
+            block_reduce[blockIdx.x] = sum;
+        }
+    }
+}
+
+__global__ void reduce_kernel(
+    const float* __restrict__ input,
+    float* __restrict__ output,
+    int N
+){
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    float sum = 0.0f;
+    if (idx < N) sum = input[idx];
+
+    const int WARP_NUM = BLOCK_SIZE / WARP_SIZE;
+    int warpId = threadIdx.x / WARP_SIZE;
+    int laneId = threadIdx.x % WARP_SIZE;
+    __shared__ float sum_s[WARP_NUM];
+
+#pragma unroll
+    for (int s=WARP_SIZE >> 1;s > 0;s >>= 1)
+        sum += __shfl_down_sync(0xffffffff,sum,s);
+
+    if (laneId == 0)
+        sum_s[warpId] = sum;
+
+    __syncthreads();
+
+    if (threadIdx.x < WARP_SIZE){
+        sum = (threadIdx.x < WARP_NUM)?sum_s[threadIdx.x]:0.0f;
+#pragma unroll
+        for (int s=WARP_NUM >> 1;s>0;s>>=1)
+            sum += __shfl_down_sync(0xffffffff,sum,s);
+        if (threadIdx.x == 0)
+            atomicAdd(output,sum);
+    }
+
+}
+
+// A, B, result are device pointers
+extern "C" void solve(const float* A, const float* B, float* result, int N) {
+    if (N <= 0) return;
+    cudaMemset(result, 0, sizeof(float));
+
+    int num_blocks = (N + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    float* block_reduce = nullptr;
+    cudaMalloc(&block_reduce,num_blocks * sizeof(float));
+
+    dot_product_kernel<<<num_blocks,BLOCK_SIZE>>>(A,B,block_reduce,N);
+
+    int nn_blocks = (num_blocks + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    reduce_kernel<<<nn_blocks,BLOCK_SIZE>>>(block_reduce,result,num_blocks);
+    cudaFree(block_reduce);
+
+}
+```
+
+</details>
+
+**逐层拆解：**
+
+1. **`warp_reduce` 模板**：与 Prefix Sum 解法二的 `warp_scan` 同门，只是用 `__shfl_down_sync`（往下折半折叠，lane 0~offset-1 拿到的是无效值，最终结果汇聚在 lane 0）而 scan 用 `__shfl_up_sync`（往上累加，结果在 lane 31）。direction 相反正好对应"取总和"vs"取前缀"
+2. **第一级 `dot_product_kernel`**：每个线程先 `A[idx]*B[idx]`（越界补 0，不污染求和），warp 内 shuffle 归约 → lane 0 写 `warp_sums[warp]` → barrier → warp 0 对 8 个 warp 部分和二次 shuffle 归约 → lane 0 写 `block_reduce[blockIdx.x]`。这就是 Reduction 那题的块内部分，一字未改只加了乘法
+3. **第二级 `reduce_kernel`**：把 `block_reduce` 数组（长度 = block 数）当作新输入再做一次同样的两阶段归约，最后 `atomicAdd(output, sum)` 收尾——这正是 Reduction 题解法原封不动的复用
+4. **`solve` 编排**：`cudaMemset` 清零 result（atomicAdd 的前提）、malloc 块和数组、launch 两级 kernel、free。两级都是"写中间数组再读"，靠默认 stream 的执行顺序保证依赖，无需额外同步
+
+**与 Reduction 一题的对比（为什么这道题没什么新东西）：**
+
+- Reduction 用的是单 kernel + atomicAdd（每 block 直接 atomicAdd 到 output）；这里换成了"块和写全局数组 + 第二个 kernel 归约"。两种收尾方式在前一题已经对比过，本题示范的是它们的组合：中间级用数组（避免百万级 block 打点 atomic），最末级 block 数只有几千，用 atomicAdd 一锤定音
+- 逐元素乘法在载入时完成，寄存器消耗不变（乘完就是标量），访存量不变（A、B 各读一次）——dot product 相比 reduce 的额外成本几乎为零，这也是 GEMM 能切分出 K 维归约的原因
+- **性能测试 N=5 的启示**：单 block 单 warp 都跑不满，耗时 = launch(2 次) + memset + malloc/free。真正想优化这个量级应该用单 kernel + atomicAdd 省掉一次 launch，甚至 `__grid_constant__`/固定 buffer。刷题阶段两级结构更通用，能扛 1e8
+
+**踩坑与要点：**
+
+- `if (N <= 0) return` 必须有：functional test 有 N=3、N=4 的用例，performance test N=5，但万一 N=0 时 malloc 0 字节 + launch 0 个 block 是 UB
+- `cudaMemset(result, 0, sizeof(float))` 不能省——`result` 是 `torch.empty` 出来的脏内存，atomicAdd 在垃圾值上累加必挂
+- warp 0 二次归约时 `lane < WARP_NUM ? warp_sums[lane] : 0.f` 的补零分支不可少：shuffle 是全 warp 参与的，任一 lane 读到未初始化 smem 都会污染结果（NaN 传染）
+- `reduce_kernel` 是 Reduction 解法的逐字复用——模板代码按"块内归约骨架 + 输入边界处理"拆开复用，刷题到第二题就已经开始吃复利了
+- 和 LeetCUDA 03 篇 Reduce 完全同构：那边讲的两阶段归约、warp shuffle 细节、atomicAdd vs 二次 launch 的取舍，这一题只是把 input 载入换成了 A·B 融合乘加
+
