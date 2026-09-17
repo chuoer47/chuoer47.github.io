@@ -139,7 +139,6 @@ export default defineConfig({
       { text: "LLM 基础", link: "/posts/LLM基础/" },
       { text: "Agent", link: "/posts/Agent/" },
       { text: "AI Infra", link: "/posts/AI%20Infra/" },
-      { text: "工具", link: "/posts/工具/" },
     ],
 
     sidebar: {

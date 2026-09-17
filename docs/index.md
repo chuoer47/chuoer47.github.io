@@ -24,7 +24,7 @@ features:
     details: 设计模式、MySQL、Redis、Streamlit 开发实践
     link: /posts/前后端/
   - title: 项目
-    details: Java 项目与 Agent 项目的复盘、技术亮点与实现细节
+    details: Java 项目与 LLM 项目的复盘、技术亮点与实现细节
     link: /posts/项目/
   - title: LLM 基础
     details: NumPy、PyTorch、Python 与 LLM 面试八股
