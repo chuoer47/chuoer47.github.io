@@ -13,6 +13,6 @@ order: 0
 - [算法](/posts/算法/) - 算法学习与刷题
 - [前后端](/posts/前后端/) - 设计模式、数据库、中间件与开发框架
 - [项目](/posts/项目/) - Java / LLM 项目实战笔记
-- [LLM 基础](/posts/LLM基础/) - NumPy、PyTorch、模型架构与八股
+- [LLM 基础](/posts/LLM/) - NumPy、PyTorch、模型架构与八股
 - [Agent](/posts/Agent/) - Agent 框架与八股
 - [AI Infra](/posts/AI%20Infra/) - C++、CUDA / Triton 高性能内核

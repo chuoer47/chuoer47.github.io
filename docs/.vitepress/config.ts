@@ -136,7 +136,7 @@ export default defineConfig({
       { text: "算法", link: "/posts/算法/" },
       { text: "前后端", link: "/posts/前后端/" },
       { text: "项目", link: "/posts/项目/" },
-      { text: "LLM 基础", link: "/posts/LLM基础/" },
+      { text: "LLM 基础", link: "/posts/LLM/" },
       { text: "Agent", link: "/posts/Agent/" },
       { text: "AI Infra", link: "/posts/AI%20Infra/" },
     ],

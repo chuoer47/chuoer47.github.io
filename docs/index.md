@@ -28,7 +28,7 @@ features:
     link: /posts/项目/
   - title: LLM 基础
     details: NumPy、PyTorch、模型架构与 LLM 面试八股
-    link: /posts/LLM基础/
+    link: /posts/LLM/
   - title: Agent
     details: CrewAI、LangChain、LangGraph 框架与 Agent 面试八股
     link: /posts/Agent/
