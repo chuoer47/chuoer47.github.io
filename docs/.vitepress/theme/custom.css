@@ -3,3 +3,56 @@
   --vp-c-brand-2: #FF5252;
   --vp-c-brand-3: #FF3838;
 }
+
+/* 侧边栏面板整体收起（桌面端） */
+html.sidebar-hidden .VPSidebar {
+  transform: translateX(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+html.sidebar-hidden .VPContent.has-sidebar {
+  padding-left: 0;
+}
+
+.sidebar-collapse-toggle {
+  position: fixed;
+  z-index: 70;
+  bottom: 24px;
+  left: calc(var(--vp-sidebar-width) + 8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background-color: var(--vp-c-bg-elv);
+  color: var(--vp-c-text-2);
+  cursor: pointer;
+  box-shadow: var(--vp-shadow-2);
+  transition: left 0.25s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+html.sidebar-hidden .sidebar-collapse-toggle {
+  left: 8px;
+}
+
+.sidebar-collapse-toggle:hover {
+  color: var(--vp-c-brand-1);
+  border-color: var(--vp-c-brand-1);
+}
+
+.sidebar-collapse-toggle svg {
+  transition: transform 0.25s ease;
+}
+
+.sidebar-collapse-toggle.is-sidebar-hidden svg {
+  transform: rotate(180deg);
+}
+
+@media (min-width: 960px) {
+  .sidebar-collapse-toggle {
+    display: flex;
+  }
+}
