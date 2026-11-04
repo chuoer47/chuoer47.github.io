@@ -103,11 +103,12 @@ async function fetchImage(url) {
     accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
   };
 
-  let response = await fetch(url, { headers, redirect: "follow" });
+  let response = await fetch(url, { headers, redirect: "follow", signal: AbortSignal.timeout(30000) });
   if (response.status === 403) {
     response = await fetch(url, {
       headers: { ...headers, referer: "https://blog.csdn.net/" },
       redirect: "follow",
+      signal: AbortSignal.timeout(30000),
     });
   }
 
@@ -136,6 +137,7 @@ async function main() {
   let downloaded = 0;
   let reused = 0;
   let skippedEmpty = 0;
+  let planned = 0;
 
   for (const filePath of files) {
     const oldContent = fs.readFileSync(filePath, "utf8");
@@ -154,6 +156,11 @@ async function main() {
       const url = normalizeImageUrl(rawUrl);
       if (!url) continue;
       remoteRefs += 1;
+      // A dry run only counts references: no network, directories, reports or edits.
+      if (dryRun) {
+        planned += 1;
+        continue;
+      }
 
       const assetsDir = path.join(path.dirname(filePath), `${sanitizeBaseName(path.basename(filePath))}.assets`);
       let targetPath;
@@ -213,7 +220,7 @@ async function main() {
 
   console.log(
     JSON.stringify(
-      { remoteRefs, localizedRefs, downloaded, reused, skippedEmpty, failures: failures.length, dryRun },
+      { remoteRefs, localizedRefs, downloaded, reused, skippedEmpty, planned, failures: failures.length, dryRun },
       null,
       2,
     ),
@@ -221,6 +228,7 @@ async function main() {
 
   if (failures.length) {
     console.log(`Report: ${path.relative(root, reportPath)}`);
+    process.exitCode = 1;
   }
 }
 

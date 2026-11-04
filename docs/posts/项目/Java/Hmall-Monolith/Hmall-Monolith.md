@@ -47,8 +47,8 @@ date: 2025-06-22
 
 | 服务 | 地址 |
 |------|------|
-| 前端页面 | http://localhost:18080 |
-| API 文档 | http://localhost:8080/doc.html |
+| 前端页面 | `http://localhost:18080` |
+| API 文档 | `http://localhost:8080/doc.html` |
 
 **默认账号：** jack / 123
 

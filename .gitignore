@@ -10,5 +10,6 @@ docs/.vitepress/dist/
 Thumbs.db
 
 # Temp files
+.cache/
 *.pyc
 __pycache__/

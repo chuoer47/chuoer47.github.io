@@ -111,7 +111,7 @@ function scanDir(dir: string): SidebarItem[] {
 export default defineConfig({
   title: "Chuoer47's Blog",
   description: "个人技术博客",
-  ignoreDeadLinks: true,
+  ignoreDeadLinks: false,
 
   locales: {
     root: {
@@ -123,10 +123,19 @@ export default defineConfig({
   markdown: {
     lineNumbers: true,
     math: true,
+    config(md) {
+      const fence = md.renderer.rules.fence!;
+      md.renderer.rules.fence = (tokens, index, options, env, self) => {
+        if (tokens[index].info.trim() === "mermaid") {
+          const source = md.utils.escapeHtml(encodeURIComponent(tokens[index].content));
+          return `<MermaidDiagram source="${source}" />\n`;
+        }
+        return fence(tokens, index, options, env, self);
+      };
+    },
   },
 
   themeConfig: {
-    logo: "/favicon.ico",
     outline: {
       level: [2, 3],
     },

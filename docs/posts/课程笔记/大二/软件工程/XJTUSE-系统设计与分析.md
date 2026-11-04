@@ -23,7 +23,7 @@ order: 3
 
 [实体和实体的职责](#%E5%AE%9E%E4%BD%93%E5%92%8C%E5%AE%9E%E4%BD%93%E7%9A%84%E8%81%8C%E8%B4%A3)
 
-[RBAC](#RBAC)
+[RBAC](#rbac)
 
 [第二部分](#%E7%AC%AC%E4%BA%8C%E9%83%A8%E5%88%86)
 
@@ -31,9 +31,9 @@ order: 3
 
 [范式概念](#%E8%8C%83%E5%BC%8F%E6%A6%82%E5%BF%B5)
 
-[ER图](#ER%E5%9B%BE)
+[ER图](#er%E5%9B%BE)
 
-[SQL](#SQL)
+[SQL](#sql)
 
 [用例图](#%E7%94%A8%E4%BE%8B%E5%9B%BE)
 

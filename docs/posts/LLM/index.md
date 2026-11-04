@@ -7,9 +7,9 @@ order: 50
 
 大模型与深度学习基础，涵盖数值计算、训练框架、语言/面试八股与 LLM 源码精读。
 
-- [NumPy](./numpy/)
-- [PyTorch](./Pytorch/)
-- [Python 八股](./Python八股/)
+- [NumPy](./Language/numpy/)
+- [PyTorch](./Language/Pytorch/)
+- [Python 八股](./Language/Python/)
 - [LLM 八股](./LLM八股/)
 - [Minimind 系列](./Minimind系列/)
 - [模型架构](./模型架构/)

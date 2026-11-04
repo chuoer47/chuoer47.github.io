@@ -130,7 +130,7 @@ return segmented_result
 
 如果 w= cici+1…cj (0<i<j<=n) 是一个词，则节点 vi-1 ， vj 之间建 立有向边 <vi-1 ， vj，边对应的词为 w。
 
-![[图片](./XJTUSE-NLP-词法分析.assets/image-003-b613a5be7d.png)
+![图片](./XJTUSE-NLP-词法分析.assets/image-003-b613a5be7d.png)
 
 重复步骤(2)，直到没有新路径(词序列)产生。
 

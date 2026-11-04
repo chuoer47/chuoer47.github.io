@@ -17,7 +17,7 @@ order: 2
 2、课后习题：4.4、4.17。
 
 ### 题目1
-学习Booth编码器[[1]](#_ftn1)的乘法器前，先要了解传统的乘法器，如下图：
+学习Booth编码器<span id="_ftnref1"></span>[[1]](#_ftn1)的乘法器前，先要了解传统的乘法器，如下图：
 
 ![](./XJTUSE-数电-第四次作业.assets/image-001-eac785e64e.png)
 
@@ -133,4 +133,4 @@ A~P表示0000~1111
 
 功能分析：可以看到一共形成了三个划分，而且没有形成环，均终止于自循环中。
 
-  [[1]](#_ftnref1) 参考资料：[【龙芯班笔记】基于booth二位乘的八位乘法器 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/424668223)
+  <span id="_ftn1"></span>[[1]](#_ftnref1) 参考资料：[【龙芯班笔记】基于booth二位乘的八位乘法器 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/424668223)
