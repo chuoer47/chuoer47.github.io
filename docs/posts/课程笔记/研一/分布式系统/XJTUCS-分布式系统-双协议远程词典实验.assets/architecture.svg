@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="14">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#555"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="none"/>
+
+  <rect x="30" y="40" width="250" height="230" rx="8" fill="#f2f6fd" stroke="#8aa8d8"/>
+  <text x="155" y="66" text-anchor="middle" fill="#34548a" font-weight="bold">客户端</text>
+  <rect x="55" y="86" width="200" height="70" rx="5" fill="#ffffff" stroke="#8aa8d8"/>
+  <text x="155" y="126" text-anchor="middle">SocketTranslatorClient</text>
+  <rect x="55" y="176" width="200" height="70" rx="5" fill="#ffffff" stroke="#8aa8d8"/>
+  <text x="155" y="216" text-anchor="middle">GrpcTranslatorClient</text>
+
+  <rect x="390" y="200" width="220" height="110" rx="8" fill="#fdf6ec" stroke="#d8a860"/>
+  <text x="500" y="238" text-anchor="middle" fill="#8a5a1f" font-weight="bold">注册中心</text>
+  <text x="500" y="272" text-anchor="middle" font-size="18" font-weight="bold" fill="#8a5a1f">Consul</text>
+
+  <rect x="710" y="40" width="260" height="540" rx="8" fill="#f0f8f2" stroke="#7fbf94"/>
+  <text x="840" y="66" text-anchor="middle" fill="#2e7048" font-weight="bold">服务端</text>
+  <rect x="735" y="86" width="210" height="64" rx="5" fill="#ffffff" stroke="#7fbf94"/>
+  <text x="840" y="123" text-anchor="middle">SocketDictionaryServer</text>
+  <rect x="735" y="168" width="210" height="64" rx="5" fill="#ffffff" stroke="#7fbf94"/>
+  <text x="840" y="205" text-anchor="middle">GrpcDictionaryServer</text>
+  <rect x="735" y="272" width="210" height="56" rx="5" fill="#ffffff" stroke="#7fbf94"/>
+  <text x="840" y="305" text-anchor="middle">DictionaryService</text>
+  <rect x="735" y="368" width="210" height="56" rx="5" fill="#ffffff" stroke="#7fbf94"/>
+  <text x="840" y="401" text-anchor="middle">DictionaryRepository</text>
+  <rect x="735" y="464" width="210" height="56" rx="5" fill="#ffffff" stroke="#7fbf94"/>
+  <text x="840" y="497" text-anchor="middle">SQLite / aiosqlite</text>
+
+  <line x1="255" y1="121" x2="390" y2="238" stroke="#555" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <text x="300" y="160" fill="#555" font-size="12">服务发现 / 轮询</text>
+  <line x1="255" y1="211" x2="390" y2="276" stroke="#555" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <text x="300" y="262" fill="#555" font-size="12">服务发现 / 轮询</text>
+
+  <line x1="610" y1="238" x2="735" y2="125" stroke="#555" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <text x="622" y="166" fill="#555" font-size="12">注册 / 心跳 / 注销</text>
+  <line x1="610" y1="272" x2="735" y2="204" stroke="#555" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <text x="622" y="250" fill="#555" font-size="12">注册 / 心跳 / 注销</text>
+
+  <line x1="255" y1="121" x2="735" y2="106" stroke="#c0392b" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="470" y="98" fill="#c0392b" font-size="12">Socket + JSON</text>
+  <line x1="255" y1="211" x2="735" y2="196" stroke="#c0392b" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="470" y="230" fill="#c0392b" font-size="12">gRPC + Protobuf</text>
+
+  <path d="M 735 118 L 720 118 L 720 300 L 735 300" fill="none" stroke="#555" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <path d="M 945 200 L 960 200 L 960 300 L 945 300" fill="none" stroke="#555" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <line x1="840" y1="328" x2="840" y2="368" stroke="#555" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <line x1="840" y1="424" x2="840" y2="464" stroke="#555" stroke-width="1.4" marker-end="url(#arrow)"/>
+</svg>
